@@ -28,12 +28,13 @@ public:
 	CBoundaryGridded(CDomain* = NULL);
 	~CBoundaryGridded();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string);
+	virtual bool					setupFromConfig();
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 													COCLBuffer*, COCLBuffer*, COCLBuffer*);
 	virtual void					applyBoundary(COCLBuffer*);
 	virtual void					streamBoundary(double);
 	virtual void					cleanBoundary();
+	void							setValue(unsigned char a)				{ ucValue = a; };
 
 	struct SBoundaryGridTransform
 	{
@@ -83,7 +84,6 @@ protected:
 		cl_ulong		GridCols;
 	};
 
-	void							setValue(unsigned char a)				{ ucValue = a; };
 
 	unsigned char					ucValue;
 

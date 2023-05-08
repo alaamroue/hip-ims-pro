@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
 #include "../common.h"
 #include "../Boundaries/CBoundaryMap.h"
@@ -27,7 +26,6 @@
 #include "CSchemeInertial.h"
 #include "../Domain/CDomain.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
 #include "../Datasets/CRasterDataset.h"
 
 /*
@@ -66,50 +64,16 @@ CScheme::~CScheme(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CScheme::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
+void	CScheme::setupFromConfig()
 {
-	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
-	char			*cParameterName = NULL, *cParameterValue = NULL;
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName,  pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
+		//unsigned char ucQueueMode = 255;
+		//ucQueueMode = model::queueMode::kAuto;
+		//ucQueueMode = model::queueMode::kFixed;
+		//this->setQueueMode( ucQueueMode );
 
-		if ( strcmp( cParameterName, "queuemode" ) == 0 )
-		{ 
-			unsigned char ucQueueMode = 255;
-			if ( strcmp( cParameterValue, "auto" ) == 0 )
-				ucQueueMode = model::queueMode::kAuto;
-			if ( strcmp( cParameterValue, "fixed" ) == 0 )
-				ucQueueMode = model::queueMode::kFixed;
-			if ( ucQueueMode == 255 )
-			{
-				model::doError(
-					"Invalid queue mode given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setQueueMode( ucQueueMode );
-			}
-		}
-		else if ( strcmp( cParameterName, "queueinitialsize" )	== 0 ||
-				  strcmp( cParameterName, "queuesize" )			== 0 ||
-				  strcmp( cParameterName, "queuefixedsize" )	== 0 )
-		{ 
-			if ( !CXMLDataset::isValidUnsignedInt( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid queue size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setQueueSize( boost::lexical_cast<unsigned int>( cParameterValue ) );
-			}
-		}
-
-		pParameter = pParameter->NextSiblingElement("parameter");
-	}
+		//this->setQueueSize(20);
+	
 }
 
 /*
@@ -138,38 +102,14 @@ CScheme* CScheme::createScheme( unsigned char ucType )
  *  Ask the executor to create a type of scheme with the defined
  *  flags.
  */
-CScheme* CScheme::createFromConfig( XMLElement *pXScheme )
+CScheme* CScheme::createFromConfig()
 {
-	char		*cSchemeName = NULL;
 	CScheme		*pScheme	 = NULL;
 
-	Util::toLowercase( &cSchemeName, pXScheme->Attribute( "name" ) );
-
-	if ( strcmp( cSchemeName, "muscl-hancock" ) == 0 )
-	{
-		pManager->log->writeLine( "MUSCL-Hancock scheme specified for the domain." );
-		pScheme	= CScheme::createScheme(
-			model::schemeTypes::kMUSCLHancock
-		);
-	} else if ( strcmp( cSchemeName, "godunov" ) == 0 )
-	{
-		pManager->log->writeLine( "Godunov-type scheme specified for the domain." );
-		pScheme	= CScheme::createScheme(
-			model::schemeTypes::kGodunov
-		);
-	} else if ( strcmp( cSchemeName, "inertial" ) == 0 )
-	{
-		pManager->log->writeLine( "Partial-inertial scheme specified for the domain." );
-		pScheme	= CScheme::createScheme(
-			model::schemeTypes::kInertialSimplification
-		);
-	} else {
-		model::doError(
-			"Unsupported scheme specified for the domain.",
-			model::errorCodes::kLevelWarning
-		);
-		return NULL;
-	}
+	
+	//pScheme	= CScheme::createScheme(model::schemeTypes::kMUSCLHancock);
+	pScheme	= CScheme::createScheme(model::schemeTypes::kGodunov);
+	//pScheme	= CScheme::createScheme(model::schemeTypes::kInertialSimplification);
 
 	return pScheme;
 }

@@ -50,10 +50,13 @@ class CDomainManager
 		};
 
 		// Public variables
+		std::vector<CDomainBase*> domains;															// Vector of all the domains we hold
+
 		// ...
 
 		// Public functions
-		bool					setupFromConfig( XMLElement* );										// Set up the domain set
+		bool					setupFromConfig();													// Set up the domain set
+		bool					checkDomainLinks();													//Check Domain Links
 		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
@@ -71,17 +74,17 @@ class CDomainManager
 		bool					isSetReady();														// Is the set of domains ready?
 		void					logDetails();														// Spit out some information
 		void					generateLinks();													// Generate domain link records
+		void					logDomainMultiOrSingle();											//Log if domain is Signle or Multi
 
 	protected:
 
 		// Private variables
-		std::vector<CDomainBase*> domains;															// Vector of all the domains we hold
 		unsigned char			ucSyncMethod;														// Method of domain synchronisation
 		unsigned int			uiSyncSpareIterations;												// Aim for # spare iterations when synchronising
 
 		// Private functions
 		CDomainBase*			createNewDomain( unsigned char );									// Add a new domain
-		CDomainBase*			createNewDomain( unsigned char, XMLElement* );						// Add a new domain and configure it
+		//CDomainBase*			createNewDomain( unsigned char, XMLElement* );						// Add a new domain and configure it
 
 };
 

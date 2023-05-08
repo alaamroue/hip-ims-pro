@@ -18,7 +18,6 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <cmath>
 #include <thread>
@@ -94,14 +93,14 @@ void COCLKernel::scheduleExecution()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Kernel queue failed for device #" + toString( this->uiDeviceID ) + ". Error " + toString( iErrorID ) + ".\n" 
+			"Kernel queue failed for device #" + std::to_string(this->uiDeviceID) + ". Error " + std::to_string(iErrorID) + ".\n"
 			+ "  " + sName,
 			model::errorCodes::kLevelModelStop
 		);
 		return;
 	}
 
-	if ( fCallback != NULL && fCallback != COCLDevice::defaultCallback )
+	if (fCallback != NULL && fCallback != COCLDevice::defaultCallback)
 	{
 		iErrorID = clSetEventCallback(
 			clEvent,
@@ -110,12 +109,12 @@ void COCLKernel::scheduleExecution()
 			&this->uiDeviceID
 		);
 
-		if ( iErrorID != CL_SUCCESS )
+		if (iErrorID != CL_SUCCESS)
 		{
 			// The model cannot continue in this case, odd though it is...
 			// Shouldn't ever really happen, but you never know
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + std::to_string(this->uiDeviceID) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;
@@ -130,7 +129,7 @@ void COCLKernel::scheduleExecutionAndFlush()
 {
 	cl_int			iErrorID;
 
-	if ( !this->bReady ) return;
+	if (!this->bReady) return;
 
 	scheduleExecution();
 
@@ -138,12 +137,12 @@ void COCLKernel::scheduleExecutionAndFlush()
 		this->clQueue
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		// The model cannot continue in this case, odd though it is...
 		// Shouldn't ever really happen, but you never know
 		model::doError(
-			"Failed flushing commands to device #" + toString( this->uiDeviceID ) + ".",
+			"Failed flushing commands to device #" + std::to_string(this->uiDeviceID) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return;
@@ -154,28 +153,29 @@ void COCLKernel::scheduleExecutionAndFlush()
  *  Assign all of the arguments, pass NULL if required
  */
 bool COCLKernel::assignArguments(
-		COCLBuffer*	aBuffers[]
-	)
+	COCLBuffer* aBuffers[]
+)
 {
-	if ( this->clKernel == NULL ) return false;
+	if (this->clKernel == NULL) return false;
 
 	pManager->log->writeLine("Assigning arguments for '" + this->sName + "':");
 
-	for( unsigned char i = 0; i < this->uiArgumentCount; i++ )
+	for (unsigned char i = 0; i < this->uiArgumentCount; i++)
 	{
-		if ( aBuffers[ i ] == NULL )
+		if (aBuffers[i] == NULL)
 		{
-			pManager->log->writeLine(" " + toString( i + 1 ) + ". NULL" );
+			pManager->log->writeLine(" " + std::to_string(i + 1) + ". NULL");
 		}
-		else if ( this->assignArgument( i, aBuffers[ i ] ) == false )
+		else if (this->assignArgument(i, aBuffers[i]) == false)
 		{
 			model::doError(
 				"Failed to assign a kernel argument for '" + this->sName + "'.",
 				model::errorCodes::kLevelModelStop
 			);
 			return false;
-		} else {
-			pManager->log->writeLine(" " + toString( i + 1 ) + ". " + aBuffers[i]->getName() );
+		}
+		else {
+			pManager->log->writeLine(" " + std::to_string(i + 1) + ". " + aBuffers[i]->getName());
 		}
 	}
 
@@ -183,26 +183,27 @@ bool COCLKernel::assignArguments(
 
 	return true;
 }
-	
+
 /*
  *  Assign a single argument
  */
 bool COCLKernel::assignArgument(
-		unsigned char	ucArgumentIndex,
-		COCLBuffer*		aBuffer
-	)
+	unsigned char	ucArgumentIndex,
+	COCLBuffer* aBuffer
+)
 {
 	cl_int	iErrorID;
 	cl_mem	clBuffer = aBuffer->getBuffer();
+	//printf("The value of sizeof( &clBuffer ): %zu\n", sizeof(&clBuffer));
 
 	iErrorID = clSetKernelArg(
 		clKernel,
 		ucArgumentIndex,
-		sizeof( &clBuffer ),
+		sizeof(&clBuffer),
 		&clBuffer
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 		return false;
 
 	return true;
@@ -222,31 +223,31 @@ void COCLKernel::prepareKernel()
 		&iErrorID
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
-			"Could not prepare the kernel to run on device #" + toString( this->program->device->uiDeviceNo ) + ".",
+			"Could not prepare the kernel to run on device #" + std::to_string(this->program->device->uiDeviceNo) + ".",
 			model::errorCodes::kLevelModelStop
 		);
-                model::doError(
-                        " Error code: " + toString( iErrorID ),
-                        model::errorCodes::kLevelModelStop
-                );
+		model::doError(
+			" Error code: " + std::to_string(iErrorID),
+			model::errorCodes::kLevelModelStop
+		);
 		return;
 	}
 
-	pManager->log->writeLine( "Kernel '" + sName + "' prepared for device #" + toString( this->program->device->uiDeviceNo ) + "." );
+	pManager->log->writeLine("Kernel '" + sName + "' prepared for device #" + std::to_string(this->program->device->uiDeviceNo) + ".");
 
 	// Fetch the kernel details on workgroup sizes etc.
 	iErrorID = clGetKernelInfo(
 		clKernel,
 		CL_KERNEL_NUM_ARGS,
-		sizeof( cl_uint ),
+		sizeof(cl_uint),
 		&this->uiArgumentCount,
 		NULL
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
 			"Could not identify argument count for '" + sName + "' kernel.",
@@ -259,12 +260,12 @@ void COCLKernel::prepareKernel()
 		clKernel,
 		this->program->device->clDevice,
 		CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
-		sizeof( size_t ) * 3,
+		sizeof(size_t) * 3,
 		&szRequiredWGSize,
 		NULL
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
 			"Could not identify work-group constraints for '" + sName + "' kernel.",
@@ -285,12 +286,12 @@ void COCLKernel::prepareKernel()
 		clKernel,
 		this->program->device->clDevice,
 		CL_KERNEL_PRIVATE_MEM_SIZE,
-		sizeof( cl_ulong ),
+		sizeof(cl_ulong),
 		&this->ulMemPrivate,
 		NULL
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
 			"Could not identify private mem usage for '" + sName + "' kernel.",
@@ -303,12 +304,12 @@ void COCLKernel::prepareKernel()
 		clKernel,
 		this->program->device->clDevice,
 		CL_KERNEL_LOCAL_MEM_SIZE,
-		sizeof( cl_ulong ),
+		sizeof(cl_ulong),
 		&this->ulMemLocal,
 		NULL
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
 			"Could not identify local mem usage for '" + sName + "' kernel.",
@@ -317,17 +318,17 @@ void COCLKernel::prepareKernel()
 		this->ulMemLocal = 0;
 	}
 
-	this->arguments = new COCLBuffer*[ this->uiArgumentCount ];
-	
-	pManager->log->writeLine( "Kernel '" + sName + "' is defined:" ); 
-	pManager->log->writeLine( "  Private memory:   " + toString( this->ulMemPrivate ) + " bytes" ); 
-	pManager->log->writeLine( "  Local memory:     " + toString( this->ulMemLocal )   + " bytes" ); 
-	pManager->log->writeLine( "  Arguments:        " + toString( this->uiArgumentCount ) ); 
-	pManager->log->writeLine( "  Work-group size:  [ " + toString( szRequiredWGSize[0] )   + "," + 
-														 toString( szRequiredWGSize[1] )   + "," +
-														 toString( szRequiredWGSize[2] )   + " ]"); 
+	this->arguments = new COCLBuffer * [this->uiArgumentCount];
 
-	if ( this->uiArgumentCount == 0 )
+	pManager->log->writeLine("Kernel '" + sName + "' is defined:");
+	pManager->log->writeLine("  Private memory:   " + std::to_string(this->ulMemPrivate) + " bytes");
+	pManager->log->writeLine("  Local memory:     " + std::to_string(this->ulMemLocal) + " bytes");
+	pManager->log->writeLine("  Arguments:        " + std::to_string(this->uiArgumentCount));
+	pManager->log->writeLine("  Work-group size:  [ " + std::to_string(szRequiredWGSize[0]) + "," +
+		std::to_string(szRequiredWGSize[1]) + "," +
+		std::to_string(szRequiredWGSize[2]) + " ]");
+
+	if (this->uiArgumentCount == 0)
 		this->bReady = true;
 }
 
@@ -335,14 +336,14 @@ void COCLKernel::prepareKernel()
  *  Set the global size of the work
  */
 void COCLKernel::setGlobalSize(
-		cl_ulong	X,
-		cl_ulong	Y,
-		cl_ulong	Z
-	)
+	cl_ulong	X,
+	cl_ulong	Y,
+	cl_ulong	Z
+)
 {
-	X = static_cast<size_t>( ceil( static_cast<double>( X ) / this->szGroupSize[0] ) * this->szGroupSize[0] );
-	Y = static_cast<size_t>( ceil( static_cast<double>( Y ) / this->szGroupSize[1] ) * this->szGroupSize[1] );
-	Z = static_cast<size_t>( ceil( static_cast<double>( Z ) / this->szGroupSize[2] ) * this->szGroupSize[2] );
+	X = static_cast<size_t>(ceil(static_cast<double>(X) / this->szGroupSize[0]) * this->szGroupSize[0]);
+	Y = static_cast<size_t>(ceil(static_cast<double>(Y) / this->szGroupSize[1]) * this->szGroupSize[1]);
+	Z = static_cast<size_t>(ceil(static_cast<double>(Z) / this->szGroupSize[2]) * this->szGroupSize[2]);
 
 	this->szGlobalSize[0] = static_cast<size_t>(X);
 	this->szGlobalSize[1] = static_cast<size_t>(Y);
@@ -350,9 +351,9 @@ void COCLKernel::setGlobalSize(
 
 	pManager->log->writeLine(
 		"Global work size for '" + this->sName + "' set to [" +
-		toString( this->szGlobalSize[0] ) + "," +
-		toString( this->szGlobalSize[1] ) + "," +
-		toString( this->szGlobalSize[2] ) + "]."
+		std::to_string(this->szGlobalSize[0]) + "," +
+		std::to_string(this->szGlobalSize[1]) + "," +
+		std::to_string(this->szGlobalSize[2]) + "]."
 	);
 }
 
@@ -360,35 +361,35 @@ void COCLKernel::setGlobalSize(
  *  Set the global offset of the work
  */
 void COCLKernel::setGlobalOffset(
-		cl_ulong	X,
-		cl_ulong	Y,
-		cl_ulong	Z
-	)
+	cl_ulong	X,
+	cl_ulong	Y,
+	cl_ulong	Z
+)
 {
-	this->szGlobalOffset[0]	= static_cast<size_t>( X );
-	this->szGlobalOffset[1]	= static_cast<size_t>( Y );
-	this->szGlobalOffset[2]	= static_cast<size_t>( Z );
+	this->szGlobalOffset[0] = static_cast<size_t>(X);
+	this->szGlobalOffset[1] = static_cast<size_t>(Y);
+	this->szGlobalOffset[2] = static_cast<size_t>(Z);
 }
 
 /*
  *  Set the work group size
  */
 void COCLKernel::setGroupSize(
-		cl_ulong	X,
-		cl_ulong	Y,
-		cl_ulong	Z
-	)
+	cl_ulong	X,
+	cl_ulong	Y,
+	cl_ulong	Z
+)
 {
-	if ( this->bGroupSizeForced ) return;
+	if (this->bGroupSizeForced) return;
 
-	this->szGroupSize[0]	= static_cast<size_t>( X );
-	this->szGroupSize[1]	= static_cast<size_t>( Y );
-	this->szGroupSize[2]	= static_cast<size_t>( Z );	
+	this->szGroupSize[0] = static_cast<size_t>(X);
+	this->szGroupSize[1] = static_cast<size_t>(Y);
+	this->szGroupSize[2] = static_cast<size_t>(Z);
 
 	pManager->log->writeLine(
 		"Work-group size for '" + this->sName + "' set to [" +
-		toString( this->szGroupSize[0] ) + "," +
-		toString( this->szGroupSize[1] ) + "," +
-		toString( this->szGroupSize[2] ) + "]."
+		std::to_string(this->szGroupSize[0]) + "," +
+		std::to_string(this->szGroupSize[1]) + "," +
+		std::to_string( this->szGroupSize[2] ) + "]."
 	);
 }

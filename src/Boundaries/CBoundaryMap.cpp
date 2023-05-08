@@ -17,8 +17,6 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "../common.h"
 #include "CBoundaryMap.h"
@@ -26,7 +24,6 @@
 #include "CBoundaryCell.h"
 #include "CBoundaryUniform.h"
 #include "CBoundaryGridded.h"
-#include "../Datasets/CXMLDataset.h"
 #include "../Domain/CDomainManager.h"
 #include "../Domain/CDomain.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
@@ -100,147 +97,54 @@ unsigned int CBoundaryMap::getBoundaryCount()
 
 /*
  *  Parse everything under the <boundaryConditions> element
- */
-bool	CBoundaryMap::setupFromConfig( XMLElement *pConfiguration )
+
+bool	CBoundaryMap::setupFromConfig()
 {
-	XMLElement					*pBoundariesElement,		// <boundaryConditions>
-								*pTimeSeriesElement,		// <timeseries .../>
-								*pDomainEdgeElement;		// <domainEdge .../>
-	CCSVDataset					*pMapFile = NULL;
 
-	pBoundariesElement = pConfiguration->FirstChildElement("boundaryConditions");
-	if (pBoundariesElement == NULL)
-	{
-		// Boundaries aren't a requirement
-		return true;
-	}
-
-	char						*cSourceDir, *cMapFile;
-	std::string					sSourceDir, sMapFile;
-
-	Util::toNewString(&cSourceDir, pBoundariesElement->Attribute("sourceDir"));
-	Util::toNewString(&cMapFile, pBoundariesElement->Attribute("mapFile"));
-	sSourceDir	= (cSourceDir == NULL || strcmp(cSourceDir, "") == 0 ? "./" : (std::string(cSourceDir) + "/"));
-	sMapFile	= (cMapFile == NULL ? "" : (sSourceDir + std::string(cMapFile)));
-	delete cSourceDir, cMapFile;
-
-	// ---
 	//  Map file
-	// ---
 	if (sMapFile.length() > 0)
 	{
 		pMapFile = new CCSVDataset(sMapFile);
 		pMapFile->readFile();
 	}
 
-	// ---
-	//  Timeseries boundaries
-	// ---
-	pTimeSeriesElement = pBoundariesElement->FirstChildElement("timeseries");
-
-	while (pTimeSeriesElement != NULL)
-	{
-		char	*cBoundaryType;
-		Util::toLowercase(&cBoundaryType, pTimeSeriesElement->Attribute("type"));
-
-		if (cBoundaryType != NULL)
-		{
-
-			CBoundary *pNewBoundary = NULL;
-
-			if (strcmp(cBoundaryType, "cell") == 0)
-			{
-				pNewBoundary = static_cast<CBoundary*>( new CBoundaryCell( this->pDomain ) );
-			}
-			else if (strcmp(cBoundaryType, "atmospheric") == 0 || strcmp(cBoundaryType, "uniform") == 0)
-			{
-				pNewBoundary = static_cast<CBoundary*>( new CBoundaryUniform( this->pDomain ) );
-			}
-			else if (strcmp(cBoundaryType, "gridded") == 0 || strcmp(cBoundaryType, "spatially-varying") == 0)
-			{
-				pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(this->pDomain));
-			} else {
-				model::doError(
-					"Ignored boundary timeseries of unrecognised type.",
-					model::errorCodes::kLevelWarning
-				);
-			}
-
-			// Configure the new boundary
-			if ( pNewBoundary == NULL || !pNewBoundary->setupFromConfig(pTimeSeriesElement, sSourceDir))
-			{
-				model::doError(
-					"Encountered an error loading a boundary definition.",
-					model::errorCodes::kLevelWarning
-				);
-			}
-			else {
-				if ( pMapFile != NULL )
-					pNewBoundary->importMap(pMapFile);
-			}
-
-			// Store the new boundary in the unordered map
-			if ( pNewBoundary != NULL )
-			{
-				// TODO: Add unique name boundary name check
-
-				mapBoundaries[ pNewBoundary->getName() ] = pNewBoundary;
-				pManager->log->writeLine("Loaded new boundary condition '" + pNewBoundary->getName() + "'.");
-			} else {
-				model::doError(
-					"Encountered a boundary type which is not yet available.",
-					model::errorCodes::kLevelWarning
-				);
-			}
-
-		} else {
-			model::doError(
-				"Ignored boundary timeseries with no type defined.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-		pTimeSeriesElement = pTimeSeriesElement->NextSiblingElement("timeseries");
-
-		delete cBoundaryType;
-	}
+		pNewBoundary->importMap(pMapFile);
 
 	delete pMapFile;
 
+
+
+	//  Timeseries boundaries
+	CBoundary *pNewBoundary = NULL;
+
+	//pNewBoundary = static_cast<CBoundary*>( new CBoundaryCell( this->pDomain ) );
+	pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(this->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(this->pDomain));
+
+
+	// Configure the new boundary
+	if (!pNewBoundary->setupFromConfig())
+	{
+		model::doError(
+			"Encountered an error loading a boundary definition.",
+			model::errorCodes::kLevelWarning
+		);
+	}
+
+	// Store the new boundary in the unordered map
+	mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
+	pManager->log->writeLine("Loaded new boundary condition '" + pNewBoundary->getName() + "'.");
+
+
 	return true;
 }
-
+ */
 /*
 *  Adjust cell bed elevations as necessary etc. around the boundaries
 */
 void	CBoundaryMap::applyDomainModifications()
 {
 	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
-
-	// Populate the relation data
-	// TODO: This needs to be moved into the CBoundary stuff...
-	/*
-	for (unsigned int i = 0;
-		i < this->uiRelationCount;
-		i++)
-	{
-		// TODO: Shouldn't need to cast this to Cartesian
-		double dResolution;
-		pDomain->getCellResolution(&dResolution);
-
-		// Reflective cells must be surrounded by disabled cells in all directions bar
-		// the one they are reflecting, otherwise mass will be distorted.
-		//if ( this->pBoundaries[ this->pRelations[ i ].uiTimeseries ]->getType() ==
-		//	 model::boundaries::types::kBndyTypeReflective )
-		//{
-		// Disable the boundary cell itself
-		pDomain->setStateValue(
-			pDomain->getCellID(this->pRelations[i].fTargetX, this->pRelations[i].fTargetY),
-			model::domainValueIndices::kValueMaxFreeSurfaceLevel,
-			-9998.0
-			);
-		//}
-	}
-	*/
 
 	// Closed/open boundary conditions
 	pDomain->imposeBoundaryModification(CDomainCartesian::kEdgeN, this->ucBoundaryTreatment[CDomainCartesian::kEdgeN]);

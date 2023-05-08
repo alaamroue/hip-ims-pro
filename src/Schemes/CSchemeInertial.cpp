@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -183,14 +182,14 @@ void CSchemeInertial::logDetails()
 
 	pManager->log->writeLine( "SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour );
 	pManager->log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? std::to_string( this->dCourantNumber ) : "N/A" ), true, wColour );
 	pManager->log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	pManager->log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
-	pManager->log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
+	pManager->log->writeLine( "  Data reduction:     " + std::to_string( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
+	pManager->log->writeLine( "  Boundaries:         " + std::to_string( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
 	pManager->log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
 	pManager->log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
 	pManager->log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + std::to_string( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
 	pManager->log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 	
 	pManager->log->writeDivide();
@@ -234,16 +233,16 @@ bool CSchemeInertial::prepareInertialConstants()
 	switch( this->ucCacheConstraints )
 	{
 		case model::cacheConstraints::inertialFormula::kCacheActualSize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "INE_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "INE_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::inertialFormula::kCacheAllowUndersize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "INE_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "INE_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::inertialFormula::kCacheAllowOversize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "INE_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "INE_DIM2", std::to_string( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
 			break;
 	}
 

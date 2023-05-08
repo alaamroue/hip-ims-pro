@@ -17,7 +17,6 @@
 *
 */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryUniform.h"
@@ -34,8 +33,14 @@ using std::vector;
 CBoundaryUniform::CBoundaryUniform( CDomain* pDomain )
 {
 	this->ucValue = model::boundaries::uniformValues::kValueLossRate;
-
 	this->pDomain = pDomain;
+	this->dTimeseriesInterval = 0;
+	this->dTimeseriesLength = 0;
+	this->dTotalVolume = 0;
+	this->pBufferConfiguration = nullptr;
+	this->pTimeseries = nullptr;
+	this->size = 0;
+	this->uiTimeseriesLength = 0;
 }
 
 /*
@@ -51,35 +56,19 @@ CBoundaryUniform::~CBoundaryUniform()
 
 /*
 *	Configure this boundary and load in any related files
-*/
-bool CBoundaryUniform::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
-{
-	char *cBoundaryType, *cBoundaryName, *cBoundarySource, *cBoundaryValue;
 
-	Util::toLowercase(&cBoundaryType, pElement->Attribute("type"));
-	Util::toNewString(&cBoundaryName, pElement->Attribute("name"));
-	Util::toLowercase(&cBoundarySource, pElement->Attribute("source"));
-	Util::toLowercase(&cBoundaryValue, pElement->Attribute("value"));
+bool CBoundaryUniform::setupFromConfig()
+{
 
 	// Must have unique name for each boundary (will get autoname by default)
-	this->sName = std::string(cBoundaryName);
+	this->sName = std::string("TimeSeriesName");
 
 	// Volume increase column represents...
-	if (cBoundaryValue == NULL || strcmp(cBoundaryValue, "rain-intensity") == 0) {
-		this->setValue(model::boundaries::uniformValues::kValueRainIntensity);
-	} else if ( strcmp(cBoundaryValue, "loss-rate") == 0) {
-		this->setValue(model::boundaries::uniformValues::kValueLossRate);
-	} else {
-		model::doError(
-			"Unrecognised value for uniform timeseries file.",
-			model::errorCodes::kLevelWarning
-		);
-	}
+	this->setValue(model::boundaries::uniformValues::kValueRainIntensity);
+	//this->setValue(model::boundaries::uniformValues::kValueLossRate);
 
 	// Timeseries file...
-	CCSVDataset* pCSVFile = new CCSVDataset(
-		sBoundarySourceDir + std::string(cBoundarySource)
-		);
+	CCSVDataset* pCSVFile = new CCSVDataset("C:\\Users\\abaghdad\\Desktop\\hipims\\hipims-ocl\\bin\\win32\\debug\\test\\data\\boundaries\\rainfall.csv");
 	if (pCSVFile->readFile())
 	{
 		if (pCSVFile->isReady())
@@ -97,10 +86,10 @@ bool CBoundaryUniform::setupFromConfig(XMLElement* pElement, std::string sBounda
 
 	return true;
 }
-
+*/
 /*
 *	Import timeseries data from a CSV file
-*/
+
 void CBoundaryUniform::importTimeseries(CCSVDataset *pCSV)
 {
 	unsigned int uiIndex = 0;
@@ -174,7 +163,7 @@ void CBoundaryUniform::importTimeseries(CCSVDataset *pCSV)
 	this->dTotalVolume = 0.0;
 
 	// TODO: Fix me... need to calculate volume but need to know number of cells in the domain
-	/*
+	
 	for (unsigned int i = 0; i < this->uiTimeseriesLength - 1; ++i)
 	{
 		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
@@ -182,8 +171,17 @@ void CBoundaryUniform::importTimeseries(CCSVDataset *pCSV)
 		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
 			(pTimeseries[i + 1].dDischargeComponentY + pTimeseries[i].dDischargeComponentY) / 2;
 	}
-	*/
+	
 }
+*/
+void CBoundaryUniform::setVariablesBasedonData() {
+	this->dTimeseriesInterval = this->pTimeseries[1].dTime - this->pTimeseries[0].dTime;
+	this->uiTimeseriesLength = this->size;
+	this->dTimeseriesLength = this->pTimeseries[this->size - 1].dTime;
+	this->dTotalVolume = 0.0;
+}
+
+
 
 void CBoundaryUniform::prepareBoundary(
 		COCLDevice* pDevice,

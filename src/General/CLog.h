@@ -59,10 +59,7 @@ class CLog
 		void		resetColour();							// Reset the console colour
 		void		setPath();								// Set path to default
 		void		setPath( char*, size_t );				// Set path to given string
-		void		setDir();								// Set the directory to default
-		void		setDir( char*, size_t );				// Set the directory to given string
 		std::string	getPath();								// Returns the path
-		std::string getDir();								// Returns the directory
 		
 	private:
 

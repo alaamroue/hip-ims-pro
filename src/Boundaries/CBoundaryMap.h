@@ -19,14 +19,12 @@
 #ifndef HIPIMS_BOUNDARIES_CBOUNDARYMAP_H_
 #define HIPIMS_BOUNDARIES_CBOUNDARYMAP_H_
 
-#include <boost/unordered_map.hpp>
 #include <vector>
 #include "../common.h"
-#include "../Datasets/CCSVDataset.h"
 #include "../OpenCL/opencl.h"
 #include "../OpenCL/Executors/COCLProgram.h"
 
-using boost::unordered_map;
+using std::unordered_map;
 
 // Class stubs
 class CBoundary;
@@ -42,7 +40,7 @@ public:
 	CBoundaryMap( CDomain* );
 	~CBoundaryMap();
 
-	bool							setupFromConfig( XMLElement* );
+	//bool							setupFromConfig();
 	CBoundary*						getBoundaryByName( std::string );
 
 	void							prepareBoundaries( COCLProgram*, COCLBuffer*, COCLBuffer*, COCLBuffer*, COCLBuffer*, COCLBuffer* );
@@ -51,14 +49,13 @@ public:
 
 	unsigned int					getBoundaryCount();
 	void							applyDomainModifications();
+	CDomain*						pDomain;
+	typedef unordered_map<std::string, CBoundary*> mapBoundaries_t;
+	mapBoundaries_t					mapBoundaries;
 
 private:	
 	
-	typedef unordered_map<std::string, CBoundary*> mapBoundaries_t;
-
-	CDomain*						pDomain;
 	unsigned char					ucBoundaryTreatment[4];
-	mapBoundaries_t					mapBoundaries;
 
 };
 

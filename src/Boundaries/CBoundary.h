@@ -20,7 +20,6 @@
 #define HIPIMS_BOUNDARIES_CBOUNDARY_H_
 
 #include "../common.h"
-#include "../Datasets/CCSVDataset.h"
 
 #define BOUNDARY_DEPTH_IGNORE			0
 #define BOUNDARY_DEPTH_IS_FSL			1
@@ -84,22 +83,22 @@ public:
 	CBoundary( CDomain* = NULL );
 	~CBoundary();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string) = 0;
+	//virtual bool					setupFromConfig() = 0;
+	virtual void					setValue(unsigned char a) = 0;
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 												    COCLBuffer*, COCLBuffer*, COCLBuffer*) = 0;
 	virtual void					applyBoundary(COCLBuffer*) = 0;
 	virtual void					streamBoundary(double) = 0;
 	virtual void					cleanBoundary() = 0;
-	virtual void					importMap(CCSVDataset*)				{};
 	std::string						getName()							{ return sName; };
 
 	static int			uiInstances;
+	std::string			sName;
 
 protected:	
 
 	CDomain*			pDomain;
 	COCLKernel*			oclKernel;
-	std::string			sName;
 
 	/*
 	unsigned int		iType;

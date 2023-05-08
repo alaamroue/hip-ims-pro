@@ -80,9 +80,9 @@ class CScheme
 
 		// Public functions
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
-		static CScheme*		createFromConfig( XMLElement* );										// Parse and configure a scheme class
+		static CScheme*		createFromConfig();										// Parse and configure a scheme class
 
-		virtual void		setupFromConfig( XMLElement*, bool = false );							// Set up the scheme
+		virtual void		setupFromConfig();							// Set up the scheme
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
 		virtual void		logDetails() = 0;														// Write some details about the scheme
@@ -128,6 +128,10 @@ class CScheme
 		virtual COCLBuffer*	getLastCellSourceBuffer() = 0;											// Get the last source cell state buffer
 		virtual COCLBuffer*	getNextCellSourceBuffer() = 0;											// Get the next source cell state buffer
 
+		virtual void		setCachedWorkgroupSize(unsigned char) = 0;								// Set the work-group size
+		virtual void		setCachedWorkgroupSize(unsigned char, unsigned char) = 0;				// Set the work-group size
+		virtual void		setNonCachedWorkgroupSize(unsigned char) = 0;							// Set the work-group size
+		virtual void		setNonCachedWorkgroupSize(unsigned char, unsigned char) = 0;			// Set the work-group size
 	protected:
 
 		// Private functions

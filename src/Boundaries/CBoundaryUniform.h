@@ -28,14 +28,34 @@ public:
 	CBoundaryUniform( CDomain* = NULL );
 	~CBoundaryUniform();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string);
+	//virtual bool					setupFromConfig();
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 													COCLBuffer*, COCLBuffer*, COCLBuffer*);
 	virtual void					applyBoundary(COCLBuffer*);
 	virtual void					streamBoundary(double);
 	virtual void					cleanBoundary();
+	void							setValue(unsigned char a)			{ ucValue = a; };
+	void							setVariablesBasedonData();
 
-protected:
+	//void							importTimeseries(CCSVDataset*);
+
+	unsigned char					ucValue;
+
+	double							dTotalVolume;
+	double							dTimeseriesLength;
+	double							dTimeseriesInterval;
+
+	struct sTimeseriesUniform
+	{
+		cl_double		dTime;
+		cl_double		dComponent;	
+	};
+
+	sTimeseriesUniform*				pTimeseries;
+	unsigned int					uiTimeseriesLength;
+
+	COCLBuffer*						pBufferTimeseries;
+	COCLBuffer*						pBufferConfiguration;
 
 	struct sConfigurationSP
 	{
@@ -51,26 +71,8 @@ protected:
 		cl_double		TimeseriesLength;
 		cl_uint			Definition;
 	};
-	struct sTimeseriesUniform
-	{
-		cl_double		dTime;
-		cl_double		dComponent;	
-	};
 
-	void							setValue(unsigned char a)			{ ucValue = a; };
-	void							importTimeseries(CCSVDataset*);
-
-	unsigned char					ucValue;
-
-	double							dTotalVolume;
-	double							dTimeseriesLength;
-	double							dTimeseriesInterval;
-
-	sTimeseriesUniform*				pTimeseries;
-	unsigned int					uiTimeseriesLength;
-
-	COCLBuffer*						pBufferTimeseries;
-	COCLBuffer*						pBufferConfiguration;
+	int size;
 };
 
 #endif

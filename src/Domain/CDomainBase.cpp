@@ -16,14 +16,11 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
 #include "../common.h"
 #include "CDomainBase.h"
 #include "Cartesian/CDomainCartesian.h"
-#include "Remote/CDomainRemote.h"
 #include "Links/CDomainLink.h"
-#include "../Datasets/CXMLDataset.h"
 
 /*
  *  Constructor
@@ -52,15 +49,17 @@ CDomainBase::~CDomainBase(void)
 	pManager->log->writeLine("The domain base has been released.");
 }
 
-/*
- *  Configure the domain using the XML file
- */
-bool CDomainBase::configureDomain(XMLElement* pXDomain)
+
+//Configure the domain using the XML file
+ //Alaa: This is creating confusion and is not even needed
+bool CDomainBase::configureDomain()
 {
 	// We don't really care if the domain isn't on this node
 	// and can just ignore all the configuration stuff for it...
 	return true;
 }
+ 
+
 
 /*
  *  Helper function that create a new class of the appropriate type
@@ -70,11 +69,6 @@ bool CDomainBase::configureDomain(XMLElement* pXDomain)
  */
 CDomainBase* CDomainBase::createDomain(unsigned char cType)
 {
-	// Skeleton for remote?
-	if (cType == model::domainStructureTypes::kStructureRemote)
-	{
-		return new CDomainRemote;
-	}
 
 	// Cartesian grid?
 	if ( cType == model::domainStructureTypes::kStructureCartesian )

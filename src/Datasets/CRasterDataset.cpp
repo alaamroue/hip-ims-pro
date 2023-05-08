@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -32,7 +31,6 @@ using std::max;
 CRasterDataset::CRasterDataset()
 {
 	this->bAvailable = false;
-	this->gdDataset	 = NULL;
 }
 
 /*
@@ -40,8 +38,7 @@ CRasterDataset::CRasterDataset()
  */
 CRasterDataset::~CRasterDataset(void)
 {
-	if ( this->gdDataset != NULL )
-		GDALClose( this->gdDataset );
+
 }
 
 /*
@@ -49,7 +46,7 @@ CRasterDataset::~CRasterDataset(void)
  */
 void	CRasterDataset::registerAll()
 {
-	GDALAllRegister();
+	//GDALAllRegister();
 }
 
 /*
@@ -57,19 +54,19 @@ void	CRasterDataset::registerAll()
  */
 void	CRasterDataset::cleanupAll()
 {
-	try
-	{
-		VSICleanupFileManager();
-		CPLFinderClean();
-		CPLFreeConfig();
-		GDALDestroyDriverManager();
-	}
-	catch (std::exception e) {}
+	//try
+	//{
+		//VSICleanupFileManager();
+		//CPLFinderClean();
+		//CPLFreeConfig();
+		//GDALDestroyDriverManager();
+	//}
+	//catch (std::exception e) {}
 }
 
 /*
  *  Open a file as the underlying dataset
- */
+
 bool	CRasterDataset::openFileRead( std::string sFilename )
 {
 	GDALDataset		*gdDataset;
@@ -94,10 +91,10 @@ bool	CRasterDataset::openFileRead( std::string sFilename )
 	this->readMetadata();
 	return true;
 }
-
+ */
 /*
  *  Open a file for output
- */
+
 bool	CRasterDataset::domainToRaster( 
 			const char*			cDriver, 
 			std::string			sFilename,
@@ -106,9 +103,9 @@ bool	CRasterDataset::domainToRaster(
 		)
 {
 	// Get the driver and check it's capable of writing
-	GDALDriver*		pDriver;
-	GDALDataset*	pDataset;
-	GDALRasterBand*	pBand;
+	//GDALDriver*		pDriver;
+	//GDALDataset*	pDataset;
+	//GDALRasterBand*	pBand;
 	char**			czDriverMetadata;
 	char**			czOptions;
 	double			adfGeoTransform[6]		= { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -285,10 +282,10 @@ bool	CRasterDataset::domainToRaster(
 	
 	return true;
 }
-
+ */
 /*
  *  Read in metadata about the layer (e.g. resolution data)
- */
+
 void	CRasterDataset::readMetadata()
 {
 	double			adfGeoTransform[6];
@@ -329,7 +326,7 @@ void	CRasterDataset::readMetadata()
 
 	// TODO: Spatial reference systems (EPSG codes etc.) once needed by CDomain
 }
-
+*/
 /*
  *  Write details to the log file
  */
@@ -338,12 +335,10 @@ void	CRasterDataset::logDetails()
 	if ( !this->bAvailable ) return;
 
 	pManager->log->writeDivide();
-	pManager->log->writeLine( "Dataset driver:      " + std::string( this->cDriverDescription ) );
-	pManager->log->writeLine( "Dataset driver name: " + std::string( this->cDriverLongName ) );
-	pManager->log->writeLine( "Dataset band count:  " + toString( this->uiBandCount ) );
-	pManager->log->writeLine( "Cell dimensions:     [" + toString( this->ulColumns ) + ", " + toString( this->ulRows ) + "]" );
-	pManager->log->writeLine( "Cell resolution:     [" + toString( this->dResolutionX ) + ", " + toString( this->dResolutionY ) + "]" );
-	pManager->log->writeLine( "Lower-left offset:   [" + toString( this->dOffsetX ) + ", " + toString( this->dOffsetY ) + "]" );
+	pManager->log->writeLine( "Dataset band count:  " + std::to_string( this->uiBandCount ) );
+	pManager->log->writeLine( "Cell dimensions:     [" + std::to_string( this->ulColumns ) + ", " + std::to_string( this->ulRows ) + "]" );
+	pManager->log->writeLine( "Cell resolution:     [" + std::to_string( this->dResolutionX ) + ", " + std::to_string( this->dResolutionY ) + "]" );
+	pManager->log->writeLine( "Lower-left offset:   [" + std::to_string( this->dOffsetX ) + ", " + std::to_string( this->dOffsetY ) + "]" );
 	pManager->log->writeDivide();
 }
 
@@ -371,7 +366,7 @@ bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain )
 
 /*
  *  Apply some data to the domain from this raster's first band
- */
+
 bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian* pDomain )
 {
 	GDALRasterBand*	pBand;
@@ -423,7 +418,7 @@ bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian*
 
 	return true;
 }
-
+ */
 /*
  *  Is the domain the right dimension etc. to apply data from this raster?
  */
@@ -469,7 +464,7 @@ CBoundaryGridded::SBoundaryGridTransform* CRasterDataset::createTransformationFo
 
 /*
  *	Create an array for use as a boundary condition
- */
+
 double*		CRasterDataset::createArrayForBoundary( CBoundaryGridded::SBoundaryGridTransform *sTransform )
 {
 	double* dReturn = new double[ sTransform->uiColumns * sTransform->uiRows ]; 
@@ -504,7 +499,7 @@ double*		CRasterDataset::createArrayForBoundary( CBoundaryGridded::SBoundaryGrid
 
 	return dReturn;
 }
-
+ */
 /*
  *  Get some details for a data source type, like a full name we can use in the log
  */

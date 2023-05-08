@@ -21,26 +21,18 @@
 #include "../common.h"
 #include "../main.h"
 #include <sstream>
-#include <boost/algorithm/string_regex.hpp>
-#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor
  */
 CLog::CLog(void)
 {
-	this->setDir();
 	this->setPath();
 	this->openFile();
 	this->writeHeader();
 	this->uiDebugFileID = 1;
 	this->uiLineCount = 0;
 	setlocale( LC_ALL, "" );
-
-#ifdef MPI_ON
-	MPI_Comm_rank(MPI_COMM_WORLD, &this->iProcID);
-	MPI_Comm_size(MPI_COMM_WORLD, &this->iProcCount);
-#endif
 
 	this->writeLine( "Log component fully loaded." );
 }
@@ -132,25 +124,7 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 #else
 		ssLine << "[" << std::string(caTimeBuffer) << "] ";
 #endif
-#ifdef _CONSOLE
-#ifdef PLATFORM_UNIX
-		if ( !model::disableScreen )
-		{
-			addstr( ssLine.str().c_str() );
-		} else if ( !model::disableConsole ) {
-			std::cout << ssLine.str();
-		}
-#else
 		std::cout << ssLine.str();
-#endif
-#else
-		std::string	sTimestamp = ssLine.str();
-		char*		cAPIStringTimestamp = const_cast<char*>(sTimestamp.c_str());
-		model::fCallbackLog(
-			cAPIStringTimestamp,
-			wColour
-			);
-#endif
 	}
 
 	ssLine << sLine << std::endl;
@@ -158,29 +132,8 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 	this->resetColour();
 	this->setColour( wColour );
 
-#ifdef _CONSOLE
-#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-	{
-		addstr( sLine.c_str() );
-		addstr( "\n" );
-		clrtoeol();
-		refresh();
-	} else if ( !model::disableConsole ) {
-		std::cout << sLine << std::endl;
-	}
-#else
 	std::cout << sLine << std::endl;
-#endif
 	this->uiLineCount = ++this->uiLineCount % 1000;
-#else
-	sLine.append("\n");
-	char*		cAPIStringMessage = const_cast<char*>( sLine.c_str() );
-	model::fCallbackLog(
-		cAPIStringMessage,
-		wColour
-	);
-#endif
 	sLine = ssLine.str();
 
 	if ( this->isFileAvailable() )
@@ -224,14 +177,9 @@ void CLog::writeHeader(void)
 {
 	std::stringstream		ssHeader;
 
-	boost::cmatch		regmatchRevision;
-	const boost::regex	regexRevision( "\\$Revision\\:\\ ([0-9]+)\\ \\$" );
-
 	time_t tNow;
 	time( &tNow );
 	localtime( &tNow );
-
-	boost::regex_match( model::appRevision.c_str(), regmatchRevision, regexRevision );
 
 	ssHeader << "---------------------------------------------" << std::endl;
 	ssHeader << " " << model::appName << std::endl;
@@ -241,7 +189,6 @@ void CLog::writeHeader(void)
 	ssHeader << " " << model::appUnit << std::endl;
 	ssHeader << " " << model::appOrganisation << std::endl;
 	ssHeader << std::endl << " Contact:     " << model::appContact << std::endl;
-	ssHeader << " Source:      SVN Revision " << std::string( regmatchRevision[1] ) << std::endl;
 	ssHeader << "---------------------------------------------" << std::endl;
 
 	std::string sLogPath = this->getPath();
@@ -263,7 +210,7 @@ void CLog::writeHeader(void)
  */
 void CLog::setPath()
 {
-	std::string sPath = std::string( model::workingDir ) + "/" + std::string( model::logFile );
+	std::string sPath = std::string( model::logFile );
 	char*		cPath = new char[ sPath.length() + 1 ];
 
 	std::strcpy( cPath, sPath.c_str() );
@@ -291,37 +238,6 @@ void CLog::setPath( char* sPath, size_t uiLength )
 std::string CLog::getPath()
 {
 	return this->logPath;
-}
-
-/*
- *  Set the log directory to the default
- */
-void CLog::setDir()
-{
-	std::string sDir = std::string( model::workingDir ) + "/";
-
-	char*		cDir = new char[ sDir.length() + 1 ];
-	std::strcpy( cDir, sDir.c_str() );
-
-	this->setDir( cDir, sDir.length() );
-	delete[] cDir;
-}
-
-/*
- *  Set the log directory to the given value
- */
-void CLog::setDir( char* sDir, size_t stLength )
-{
-	this->logDir = new char[ stLength + 1 ];
-	std::strcpy( this->logDir, sDir );
-}
-
-/*
- *  Return the directory back
- */
-std::string CLog::getDir()
-{
-	return this->logDir;
 }
 
 /*
@@ -383,7 +299,7 @@ void CLog::resetColour()
 void CLog::writeDebugFile( char** cContents, unsigned int uiSegmentCount )
 {
 	std::ofstream ofsDebug;
-	std::string sFilePath = this->getDir() + "_debug" + toString( this->uiDebugFileID ) + ".log";
+	std::string sFilePath = std::to_string( this->uiDebugFileID ) + ".log";
 
 	try 
 	{

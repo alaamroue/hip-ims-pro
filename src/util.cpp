@@ -19,13 +19,15 @@
 
 // Includes
 #include <string>
+#include <chrono>
+#include <ctime>
+#include <cstdio>
+#include <cstring>
 #include <locale>
+#include <iomanip>
 #include <math.h>
 #include <cmath>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "common.h"
 
 namespace Util 
@@ -52,7 +54,7 @@ namespace Util
 
 		if ( uiDays > 0 )
 		{
-			sTime = toString( uiDays ) + " d ";
+			sTime = std::to_string( uiDays ) + " d ";
 		}
 
 		if ( dTime > 1 )
@@ -163,60 +165,40 @@ namespace Util
 
 	/*
 	 *	Timestamp conversion routines - from string to timestamp (1970-base)
-	 */
-	unsigned long toTimestamp( const char * cTime, const char * cFormat )
+
+	unsigned long toTimestamp(const char* cTime, const char* cFormat)
 	{
-		boost::local_time::local_time_input_facet *pFacet;
-		std::stringstream ssTime;
-
-		if (cFormat != NULL)
-		{
-			pFacet = new boost::local_time::local_time_input_facet(cFormat);
+		std::tm timeinfo = {};
+		std::istringstream ssTime(cTime);
+		ssTime >> std::get_time(&timeinfo, cFormat);
+		if (ssTime.fail()) {
+			throw std::runtime_error("Failed to parse time string");
 		}
-		else {
-			pFacet = new boost::local_time::local_time_input_facet("%Y-%m-%d %H:%M");
-		}
-
-		ssTime.imbue(std::locale(ssTime.getloc(), pFacet));
-
-		boost::local_time::local_date_time ldt(boost::local_time::not_a_date_time);
-		ssTime.str(cTime);
-
-		ssTime >> ldt;
-
-		boost::posix_time::ptime time_t_epoch(boost::gregorian::date(1970, 1, 1));
-		return (ldt.utc_time() - time_t_epoch).total_seconds();
+		auto tp = std::chrono::system_clock::from_time_t(std::mktime(&timeinfo));
+		return std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
 	}
-
+		 */
 	/*
 	 *	Timestamp conversion routines - from timestamp to time string
-	 */
-	const char * fromTimestamp(unsigned long ulTimestamp, const char * cFormat)
-	{
-		boost::posix_time::time_facet *pFacet;
-		std::stringstream ssTime;
-		ssTime.str("");
 
-		if (cFormat != NULL)
-		{
-			pFacet = new boost::posix_time::time_facet(cFormat);
+	const char* fromTimestamp(unsigned long ulTimestamp, const char* cFormat) {
+		const std::size_t bufferSize = 32; // Enough for YYYY-MM-DD HH:MM:SS format
+		char buffer[bufferSize];
+
+		const std::time_t time = static_cast<std::time_t>(ulTimestamp);
+		std::tm timeInfo;
+		std::gmtime(&time);
+
+		if (cFormat == nullptr) {
+			std::strftime(buffer, bufferSize, "%Y-%m-%d %H:%M:%S", &timeInfo);
 		}
 		else {
-			pFacet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M");
+			std::strftime(buffer, bufferSize, cFormat, &timeInfo);
 		}
 
-		ssTime.imbue(std::locale(std::locale::classic(), pFacet));
-
-		boost::posix_time::ptime time_t_epoch = boost::posix_time::from_time_t(ulTimestamp);
-
-		ssTime << time_t_epoch;
-
-		char* cNewString;
-		Util::toNewString( &cNewString, ssTime.str().c_str() );
-
-		return cNewString;
+		return strdup(buffer);
 	}
-
+		 */
 	/*
 	 *	Check if a file exists -- strictly speaking if it's accessible
 	 */

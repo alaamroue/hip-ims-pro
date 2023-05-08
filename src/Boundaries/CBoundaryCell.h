@@ -28,13 +28,13 @@ public:
 	CBoundaryCell( CDomain* = NULL );
 	~CBoundaryCell();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string);
+	virtual bool					setupFromConfig();
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 													COCLBuffer*, COCLBuffer*, COCLBuffer*);
 	virtual void					applyBoundary(COCLBuffer*);
 	virtual void					streamBoundary(double);
 	virtual void					cleanBoundary();
-	virtual void					importMap(CCSVDataset*);
+	//virtual void					importMap(CCSVDataset*);
 
 protected:	
 
@@ -72,7 +72,7 @@ protected:
 
 	void							setDischargeValue( unsigned char a )		{ ucDischargeValue = a; };
 	void							setDepthValue( unsigned char a )			{ ucDepthValue = a; };
-	void							importTimeseries( CCSVDataset* );
+	//void							importTimeseries( CCSVDataset* );
 
 	unsigned char					ucDischargeValue;
 	unsigned char					ucDepthValue;

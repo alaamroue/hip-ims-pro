@@ -16,12 +16,10 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
 #include "../common.h"
 #include "CDomain.h"
 #include "Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
 #include "../Datasets/CRasterDataset.h"
 #include "../Boundaries/CBoundaryMap.h"
 #include "../Schemes/CScheme.h"
@@ -77,7 +75,7 @@ CDomain::~CDomain(void)
 
 /*
  *  Configure the domain using the XML file
- */
+
 bool CDomain::configureDomain( XMLElement* pXDomain )
 {
 	XMLElement*		pXData;
@@ -108,7 +106,7 @@ bool CDomain::configureDomain( XMLElement* pXDomain )
 			);
 		}
 	}
-	*/
+	///
 
 	if ( pDevice == NULL )
 	{
@@ -136,7 +134,7 @@ bool CDomain::configureDomain( XMLElement* pXDomain )
 
 	return true;
 }
-
+*/
 /*
  *  Creates an OpenCL memory buffer for the specified data store
  */

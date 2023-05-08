@@ -26,9 +26,7 @@
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
 #include "Schemes/CScheme.h"
-#include "Datasets/CXMLDataset.h"
 #include "Datasets/CRasterDataset.h"
-#include "MPI/CMPIManager.h"
 
 using std::min;
 using std::max;
@@ -42,15 +40,11 @@ CModel::CModel(void)
 
 	this->execController	= NULL;
 	this->domains			= new CDomainManager();
-#ifdef MPI_ON
-	this->mpiManager		= new CMPIManager();
-#else
 	this->mpiManager		= NULL;
-#endif
 
 	this->dCurrentTime		= 0.0;
-	this->dSimulationTime	= 60;
-	this->dOutputFrequency	= 60;
+	this->dSimulationTime	= 0;
+	this->dOutputFrequency	= 0;
 	this->bDoublePrecision	= true;
 
 	this->pProgressCoords.sX = -1;
@@ -59,78 +53,6 @@ CModel::CModel(void)
 	this->ulRealTimeStart = 0;
 }
 
-/*
- *  Setup the simulation using parameters specified in the configuration file
- */
-void CModel::setupFromConfig( XMLElement* pXNode )
-{
-	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
-	char			*cParameterFormat   = NULL;
-
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-		Util::toNewString( &cParameterFormat, pParameter->Attribute( "format" ) );
-
-		if ( strcmp( cParameterName, "duration" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid simulation length given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setSimulationLength( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "realstart" ) == 0 )
-		{ 
-			this->setRealStart( cParameterValue, cParameterFormat );
-		}
-		else if ( strcmp( cParameterName, "outputfrequency" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid output frequency given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setOutputFrequency( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "floatingpointprecision" ) == 0 )
-		{ 
-			unsigned char ucFPPrecision = 255;
-			if ( strcmp( cParameterValue, "single" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kSingle;
-			if ( strcmp( cParameterValue, "double" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kDouble;
-			if ( ucFPPrecision == 255 )
-			{
-				model::doError(
-					"Invalid float precision given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setFloatPrecision( ucFPPrecision );
-			}
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement( "parameter" );
-	}
-}
 
 /*
  *  Destructor
@@ -164,6 +86,19 @@ bool CModel::setExecutor(CExecutorControl* pExecutorControl)
 		);
 		return false;
 	}
+
+	return true;
+}
+
+/*
+ *  Set the type of executor to use for the model as the default GPU Excutor
+ */
+bool CModel::setExecutorToDefaultGPU()
+{
+	CExecutorControl* pExecutor = new CExecutorControlOpenCL();						//Create Executor
+	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);                //Set Type
+	if (!pExecutor->createDevices()) return false;									//Creates Device
+	this->setExecutor(pExecutor);
 
 	return true;
 }
@@ -203,8 +138,8 @@ void CModel::logDetails()
 	this->log->writeDivide();
 	this->log->writeLine( "SIMULATION CONFIGURATION", true, wColour );
 	this->log->writeLine( "  Name:               " + this->sModelName, true, wColour );
-	this->log->writeLine( "  Start time:         " + std::string( Util::fromTimestamp( this->ulRealTimeStart, "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
-	this->log->writeLine( "  End time:           " + std::string( Util::fromTimestamp( this->ulRealTimeStart + static_cast<unsigned long>( std::ceil( this->dSimulationTime ) ), "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
+	//this->log->writeLine( "  Start time:         " + std::string( Util::fromTimestamp( this->ulRealTimeStart, "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
+	//this->log->writeLine( "  End time:           " + std::string( Util::fromTimestamp( this->ulRealTimeStart + static_cast<unsigned long>( std::ceil( this->dSimulationTime ) ), "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
 	this->log->writeLine( "  Simulation length:  " + Util::secondsToTime( this->dSimulationTime ), true, wColour );
 	this->log->writeLine( "  Output frequency:   " + Util::secondsToTime( this->dOutputFrequency ), true, wColour );
 	this->log->writeLine( "  Floating-point:     " + (std::string)( this->getFloatPrecision() == model::floatPrecision::kDouble ? "Double-precision" : "Single-precision" ), true, wColour );
@@ -288,7 +223,7 @@ void	CModel::setOutputFrequency( double dFrequency )
 
 /*
  *  Sets the real world start time
- */
+
 void	CModel::setRealStart( char* cTime, char* cFormat )
 {
 	this->ulRealTimeStart = Util::toTimestamp( cTime, cFormat );
@@ -296,12 +231,12 @@ void	CModel::setRealStart( char* cTime, char* cFormat )
 
 /*
  *  Fetch the real world start time
- */
+
 unsigned long CModel::getRealStart()
 {
 	return this->ulRealTimeStart;
 }
-
+ */
 /*
  *  Get the frequency of outputs
  */
@@ -395,9 +330,9 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 #ifdef PLATFORM_UNIX
 	sprintf( cCells,		"%llu", ulCurrentCellsCalculated );
 #endif
-	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, toString( ulRate ).c_str() );
+	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, std::to_string( ulRate ).c_str() );
 	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
-	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", toString( uiBatchSizeMin ).c_str() );
+	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", std::to_string( uiBatchSizeMin ).c_str() );
 	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
@@ -440,11 +375,11 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 		sprintf(
 			cDomainLine,
 			"| Domain #%-2s | %8s | %14s | %10s | %8s |",
-			toString(i + 1).c_str(),
+			std::to_string(i + 1).c_str(),
 			sDeviceName.c_str(),
 			Util::secondsToTime(pProgress.dBatchTimesteps).c_str(),
-			toString(pProgress.uiBatchSuccessful).c_str(),
-			toString(pProgress.uiBatchSkipped).c_str()
+			std::to_string(pProgress.uiBatchSuccessful).c_str(),
+			std::to_string(pProgress.uiBatchSkipped).c_str()
 		);
 
 		pManager->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
@@ -537,10 +472,10 @@ void	CModel::runModelPrepareDomains()
 
 		if (domains->getDomainCount() > 1)
 		{
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " has rollback limit of " +
-				toString(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
+			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
+				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
 		} else {
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " is not constrained by " +
+			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
 				"overlapping.");
 		}
 	}
@@ -755,7 +690,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 		if ( pManager->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
 		{
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "Invoked MPI to reduce target time with " + toString( dEarliestSyncProposal ) );
+			pManager->log->writeLine( "Invoked MPI to reduce target time with " + std::to_string( dEarliestSyncProposal ) );
 #endif
 			bAllIdle = false;
 		}
@@ -822,7 +757,7 @@ void	CModel::runModelSync()
 			   )
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + toString( i ) );
+				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + std::to_string( i ) );
 #endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
@@ -944,10 +879,10 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
 				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//pManager->log->writeLine( "Global timestep: " + toString( dGlobalTimestep ) + " Current time: " + toString( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
+			//pManager->log->writeLine( "Global timestep: " + std::to_string( dGlobalTimestep ) + " Current time: " + std::to_string( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
 
 			// Run a batch
-			//pManager->log->writeLine("[DEBUG] Running scheme to " + toString(dTargetTime));
+			//pManager->log->writeLine("[DEBUG] Running scheme to " + std::to_string(dTargetTime));
 			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 		}
 	}
@@ -1080,7 +1015,7 @@ void	CModel::runModelMain()
 
 		// Perform a sync if possible
 		this->runModelSync();
-		
+
 		// Don't proceed beyond this point if we need to rollback and we're just waiting for 
 		// devices to finish first...
 		if (bRollbackRequired)
@@ -1129,8 +1064,8 @@ void	CModel::runModelMain()
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
 	pManager->log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
-	//pManager->log->writeLine( "Calculation rate:    " + toString( floor(dCellRate) ) + " cells/sec" );
-	//pManager->log->writeLine( "Final volume:        " + toString( static_cast<int>( dVolume ) ) + "m3" );
+	//pManager->log->writeLine( "Calculation rate:    " + std::to_string( floor(dCellRate) ) + " cells/sec" );
+	//pManager->log->writeLine( "Final volume:        " + std::to_string( static_cast<int>( dVolume ) ) + "m3" );
 	pManager->log->writeDivide();
 
 	delete   pBenchmarkAll;

@@ -19,7 +19,10 @@
  * ------------------------------------------
  *
  */
-
+ 
+#define DEBUG_OUTPUT
+#define DEBUG_CELLX 2
+#define DEBUG_CELLY 2
 
 /*
  *  Reconstruct the cell data in a non-negative way (depth positivity preserving)
@@ -171,6 +174,7 @@ void gts_cacheDisabled (
 		)
 {
 
+
 	// Identify the cell we're reconstructing (no overlap)
 	__private cl_long					lIdxX			= get_global_id(0);
 	__private cl_long					lIdxY			= get_global_id(1);
@@ -178,12 +182,16 @@ void gts_cacheDisabled (
 	__private cl_uchar					ucDirection;
 	
 	ulIdx = getCellID(lIdxX, lIdxY);
+	if (lIdxY != 0){
+	//printf("lIdxY    : %ld \n",lIdxX*10000+lIdxY);
+	}
 
 	// Don't bother if we've gone beyond the domain bounds
 	if ( lIdxX >= DOMAIN_COLS - 1 || 
 		 lIdxY >= DOMAIN_ROWS - 1 || 
 		 lIdxX <= 0 || 
-		 lIdxY <= 0 ) 
+		 lIdxY <= 0 )
+		 //printf("Went Beyoooond {%i, %i} {%ld,%ld}\n",DOMAIN_COLS,DOMAIN_ROWS,lIdxX,lIdxY);
 		return;
 
 	__private cl_double		dLclTimestep	= *dTimestep;
@@ -236,12 +244,38 @@ void gts_cacheDisabled (
 
 	#ifdef DEBUG_OUTPUT
 	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
-	{
-		printf( "Current data:  { %f, %f, %f, %f )\n", pCellData.x, pCellData.y, pCellData.z, pCellData.w );
-		printf( "Neighbour N:   { %f, %f, %f, %f )\n", pNeigDataN.x, dNeigBedElevN, pNeigDataN.z, pNeigDataN.w );
-		printf( "Neighbour E:   { %f, %f, %f, %f )\n", pNeigDataE.x, dNeigBedElevE, pNeigDataE.z, pNeigDataE.w );
-		printf( "Neighbour S:   { %f, %f, %f, %f )\n", pNeigDataS.x, dNeigBedElevS, pNeigDataS.z, pNeigDataS.w );
-		printf( "Neighbour W:   { %f, %f, %f, %f )\n", pNeigDataW.x, dNeigBedElevW, pNeigDataW.z, pNeigDataW.w );
+	{	
+		//printf( "\n");
+		//printf( "    ulIdx:  { %f )\n", ulIdx);
+		//printf( "    ulIdxNeig:  { %f )\n", ulIdxNeig);
+		//printf( "    dNeigBedElevW:  { %f )\n", dNeigBedElevW);
+		//printf( "    pNeigDataW:  { %f )\n", pNeigDataW);
+
+		//printf( "DOMAIN_CELLCOUNT:  { %f )\n", DOMAIN_CELLCOUNT);
+		//printf( "DOMAIN_ROWS:  { %f )\n", DOMAIN_ROWS);
+		//printf( "DOMAIN_COLS:  { %f )\n", DOMAIN_COLS);
+
+		//printf( "GTS_DIM1:  { %f )\n", GTS_DIM1);
+		//printf( "GTS_DIM2:  { %f )\n", GTS_DIM2);
+		//printf( "get_group_id:  { %f )\n", get_group_id(0));
+
+
+		// Print the value of dManning for the current work-item
+	    //printf("\nGlobalId: {%i,%i} \n", get_global_id(0),get_global_id(1));
+		//printf("dTimestep    :  %lf\n", dTimestep[gid]);
+		//printf("dBedElevation    :  %lf\n", dBedElevation[gid]);
+		//printf("dManning     :  %lf \n",dManning[gid]);
+		//printf("ulIdxNeig     :  %lld \n" , ulIdxNeig);
+
+		//printf("pCellStateSrc = (%lf, %lf, %lf, %lf)\n", (pCellStateSrc)[ulIdxNeig].x, (pCellStateSrc)[ulIdxNeig].y, (pCellStateSrc)[ulIdxNeig].z, (pCellStateSrc)[ulIdxNeig]);
+		//printf("pCellStateDst = (%lf, %lf, %lf, %lf)\n", (pCellStateDst)[ulIdxNeig], (pCellStateDst)[ulIdxNeig], (pCellStateDst)[ulIdxNeig], (pCellStateDst)[ulIdxNeig]);
+
+		//printf( "Current data:  { %f, %f, %f, %f )\n", pCellData.x, pCellData.y, pCellData.z, pCellData.w );
+		//printf( "Neighbour N:   { %f, %f, %f, %f )\n", pNeigDataN.x, dNeigBedElevN, pNeigDataN.z, pNeigDataN.w );
+		//printf( "Neighbour E:   { %f, %f, %f, %f )\n", pNeigDataE.x, dNeigBedElevE, pNeigDataE.z, pNeigDataE.w );
+		//printf( "Neighbour S:   { %f, %f, %f, %f )\n", pNeigDataS.x, dNeigBedElevS, pNeigDataS.z, pNeigDataS.w );
+		//printf( "Neighbour W:   { %f, %f, %f, %f )\n", pNeigDataW.x, dNeigBedElevW, pNeigDataW.z, pNeigDataW.w );
+
 	}
 	#endif
 
@@ -270,8 +304,8 @@ void gts_cacheDisabled (
 	#ifdef DEBUG_OUTPUT
 	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
 	{
-		printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
-		printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
+		//printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
+		//printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
 	}
 	#endif
 	pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );
@@ -382,6 +416,37 @@ void gts_cacheDisabled (
 	// Commit to global memory
 	pCellStateDst[ ulIdx ] = pCellData;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
  *  Calculate everything by also using LDS caching

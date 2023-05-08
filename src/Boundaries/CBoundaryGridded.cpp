@@ -18,11 +18,9 @@
  */
 #include <vector>
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryGridded.h"
-#include "../Datasets/CXMLDataset.h"
 #include "../Datasets/CRasterDataset.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
 #include "../OpenCL/Executors/COCLBuffer.h"
@@ -65,8 +63,9 @@ CBoundaryGridded::~CBoundaryGridded()
 /*
 *	Configure this boundary and load in any related files
 */
-bool CBoundaryGridded::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
+bool CBoundaryGridded::setupFromConfig()
 {
+	/*
 	char *cBoundaryType, *cBoundaryName, *cBoundaryMask, *cBoundaryInterval, *cBoundaryValue;
 	double dInterval = 0.0;
 
@@ -153,7 +152,7 @@ bool CBoundaryGridded::setupFromConfig(XMLElement* pElement, std::string sBounda
 	}
 
 	this->pTransform = pTransform;
-
+	*/
 	return true;
 }
 

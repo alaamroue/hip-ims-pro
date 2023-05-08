@@ -16,9 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -29,7 +26,6 @@
 #include "../Domain/CDomain.h"
 #include "../Domain/Links/CDomainLink.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
@@ -110,231 +106,56 @@ CSchemeGodunov::~CSchemeGodunov(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
+void	CSchemeGodunov::setupFromConfig()
 {
 	// Call the base class function which handles a couple of things
-	CScheme::setupFromConfig( pXScheme, true );
+	CScheme::setupFromConfig();
 
-	// Read the parameters
-	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
-	char			*cParameterName = NULL, *cParameterValue = NULL;
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName,  pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
+	this->setCourantNumber(0.5);
 
-		// These parameter apply to Godunov and all its child classes
-		if ( strcmp( cParameterName, "courantnumber" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid Courant number given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setCourantNumber( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "drythreshold" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid dry threshold depth given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setDryThreshold( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepmode" ) == 0 )
-		{ 
-			unsigned char ucTimestepMode = 255;
-			if ( strcmp( cParameterValue, "auto" ) == 0 ||
-					strcmp( cParameterValue, "cfl" ) == 0 )
-				ucTimestepMode = model::timestepMode::kCFL;
-			if ( strcmp( cParameterValue, "fixed" ) == 0 )
-				ucTimestepMode = model::timestepMode::kFixed;
-			if ( ucTimestepMode == 255 )
-			{
-				model::doError(
-					"Invalid timestep mode given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setTimestepMode( ucTimestepMode );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepinitial" ) == 0 ||
-					strcmp( cParameterName, "timestepfixed" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid initial/fixed timestep given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setTimestep( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepreductiondivisions" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidUnsignedInt( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid reduction divisions given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setReductionWavefronts( boost::lexical_cast<unsigned int>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "frictioneffects" ) == 0 )
-		{ 
-			unsigned char ucFriction = 255;
-			if ( strcmp( cParameterValue, "yes" ) == 0 )
-				ucFriction = 1;
-			if ( strcmp( cParameterValue, "no" ) == 0 )
-				ucFriction = 0;
-			if ( ucFriction == 255 )
-			{
-				model::doError(
-					"Invalid friction state given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setFrictionStatus( ucFriction == 1 );
-			}
-		}
-		else if ( strcmp( cParameterName, "riemannsolver" ) == 0 )
-		{ 
-			unsigned char ucSolver = 255;
-			if ( strcmp( cParameterValue, "hllc" ) == 0 )
-				ucSolver = model::solverTypes::kHLLC;
-			if ( ucSolver == 255 )
-			{
-				model::doError(
-					"Invalid Riemann solver given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setRiemannSolver( ucSolver );
-			}
-		}
-		else if ( strcmp( cParameterName, "groupsize" ) == 0 )
-		{
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
-		else if ( strcmp( cParameterName, "cachedgroupsize" ) == 0 )
-		{ 
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid cached group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
-		else if ( strcmp( cParameterName, "noncachedgroupsize" ) == 0 )
-		{ 
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid non-cached group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
+	//this->setDryThreshold( boost::lexical_cast<double>( 0.5 ) );
 
-		if ( !bInheritanceChain )
-		{
-			if ( strcmp( cParameterName, "localcachelevel" ) == 0 )
-			{ 
-				unsigned char usCache = 255;
-				if ( strcmp( cParameterValue, "maximum" ) == 0 || strcmp( cParameterValue, "max" ) == 0 || strcmp( cParameterValue, "enabled" ) == 0 )
-					usCache = model::schemeConfigurations::godunovType::kCacheEnabled;
-				if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "no" ) == 0 )
-					usCache = model::schemeConfigurations::godunovType::kCacheNone;
-				if ( usCache == 255 )
-				{
-					model::doError(
-						"Invalid cache level given.",
-						model::errorCodes::kLevelWarning
-					);
-				} else {
-					this->setCacheMode( usCache );
-				}
-			}
-			else if ( strcmp( cParameterName, "localcacheconstraints" ) == 0 )
-			{ 
-				unsigned char ucCacheConstraints = 255;
-				if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "normal" ) == 0 || strcmp( cParameterValue, "actual" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
-				if ( strcmp( cParameterValue, "larger" ) == 0 || strcmp( cParameterValue, "oversized" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowOversize;
-				if ( strcmp( cParameterValue, "smaller" ) == 0 || strcmp( cParameterValue, "undersized" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowUndersize;
-				if ( ucCacheConstraints == 255 )
-				{
-					model::doError(
-						"Invalid cache constraints given.",
-						model::errorCodes::kLevelWarning
-					);
-				} else {
-					this->setCacheConstraints( ucCacheConstraints );
-				}
-			}
-		}
+	//unsigned char ucTimestepMode = 255;
+	//ucTimestepMode = model::timestepMode::kCFL;
+	//ucTimestepMode = model::timestepMode::kFixed;
+	//this->setTimestepMode( ucTimestepMode );
 
-		pParameter = pParameter->NextSiblingElement("parameter");
-	}
+
+	//this->setTimestep( boost::lexical_cast<double>( ?? ) );
+	//this->setReductionWavefronts( boost::lexical_cast<unsigned int>( ?? ) );
+
+
+
+	unsigned char ucFriction = 255;
+	//ucFriction = 1;
+	ucFriction = 0;
+	this->setFrictionStatus( ucFriction == 1 );
+	
+	//unsigned char ucSolver = 255;
+	//ucSolver = model::solverTypes::kHLLC;
+	//this->setRiemannSolver( ucSolver );
+
+	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( 32 ) );
+	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( 32 ) );
+	this->setCachedWorkgroupSize(  1 , 1 );
+	this->setNonCachedWorkgroupSize( 1 ,  1 );
+	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
+	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
+	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
+	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
+
+	//unsigned char usCache = 255;
+	//usCache = model::schemeConfigurations::godunovType::kCacheEnabled;
+	//usCache = model::schemeConfigurations::godunovType::kCacheNone;
+	//this->setCacheMode( usCache );
+
+	//unsigned char ucCacheConstraints = 255;
+	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
+	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowOversize;
+	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowUndersize;
+	//this->setCacheConstraints( ucCacheConstraints );
+
 }
 
 /*
@@ -366,15 +187,15 @@ void CSchemeGodunov::logDetails()
 
 	pManager->log->writeLine( "GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME", true, wColour );
 	pManager->log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? std::to_string( this->dCourantNumber ) : "N/A" ), true, wColour );
 	pManager->log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	pManager->log->writeLine( "  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
-	pManager->log->writeLine( "  Boundaries:         " + toString(this->pDomain->getBoundaries()->getBoundaryCount()), true, wColour);
+	pManager->log->writeLine( "  Data reduction:     " + std::to_string(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	pManager->log->writeLine( "  Boundaries:         " + std::to_string(this->pDomain->getBoundaries()->getBoundaryCount()), true, wColour);
 	pManager->log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
 	pManager->log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
 	pManager->log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
 	pManager->log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + std::to_string( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
 	pManager->log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 
 	pManager->log->writeDivide();
@@ -670,8 +491,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Dry cell threshold depths
 	// --
-	oclModel->registerConstant( "VERY_SMALL",			toString( this->dThresholdVerySmall ) );
-	oclModel->registerConstant( "QUITE_SMALL",			toString( this->dThresholdQuiteSmall ) );
+	oclModel->registerConstant( "VERY_SMALL",			std::to_string( this->dThresholdVerySmall ) );
+	oclModel->registerConstant( "QUITE_SMALL",			std::to_string( this->dThresholdQuiteSmall ) );
 
 	// --
 	// Debug mode 
@@ -680,8 +501,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	if ( this->bDebugOutput )
 	{
 		oclModel->registerConstant( "DEBUG_OUTPUT",		"1" );
-		oclModel->registerConstant( "DEBUG_CELLX",		toString( this->uiDebugCellX ) );
-		oclModel->registerConstant( "DEBUG_CELLY",		toString( this->uiDebugCellY ) );
+		oclModel->registerConstant( "DEBUG_CELLX",		std::to_string( this->uiDebugCellX ) );
+		oclModel->registerConstant( "DEBUG_CELLY",		std::to_string( this->uiDebugCellY ) );
 	} else {
 		oclModel->removeConstant( "DEBUG_OUTPUT" );
 		oclModel->removeConstant( "DEBUG_CELLX" );
@@ -696,20 +517,20 @@ bool CSchemeGodunov::prepare1OConstants()
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 	if ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled )
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 
 	oclModel->registerConstant( 
 		"REQD_WG_SIZE_LINE", 
-		"__attribute__((reqd_work_group_size(" + toString( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
+		"__attribute__((reqd_work_group_size(" + std::to_string( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
 	);
 
 	// --
@@ -719,16 +540,16 @@ bool CSchemeGodunov::prepare1OConstants()
 	switch( this->ucCacheConstraints )
 	{
 		case model::cacheConstraints::godunovType::kCacheActualSize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowUndersize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowOversize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
 			break;
 	}
 
@@ -741,7 +562,7 @@ bool CSchemeGodunov::prepare1OConstants()
 		oclModel->registerConstant( "TIMESTEP_DYNAMIC",	"1" );
 		oclModel->removeConstant( "TIMESTEP_FIXED" );
 	} else {
-		oclModel->registerConstant( "TIMESTEP_FIXED",	toString(this->dTimestep) );
+		oclModel->registerConstant( "TIMESTEP_FIXED",	std::to_string(this->dTimestep) );
 		oclModel->removeConstant( "TIMESTEP_DYNAMIC" );
 	}
 
@@ -761,11 +582,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Timestep reduction and simulation parameters
 	// --
-	oclModel->registerConstant( "TIMESTEP_WORKERS",		toString( this->ulReductionGlobalSize ) );
-	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	toString( this->ulReductionWorkgroupSize ) );
-	oclModel->registerConstant( "SCHEME_ENDTIME",		toString( pManager->getSimulationLength() ) );
-	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toString( pManager->getOutputFrequency() ) );
-	oclModel->registerConstant( "COURANT_NUMBER",		toString( this->dCourantNumber ) );
+	oclModel->registerConstant( "TIMESTEP_WORKERS",		std::to_string( this->ulReductionGlobalSize ) );
+	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	std::to_string( this->ulReductionWorkgroupSize ) );
+	oclModel->registerConstant( "SCHEME_ENDTIME",		std::to_string( pManager->getSimulationLength() ) );
+	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	std::to_string( pManager->getOutputFrequency() ) );
+	oclModel->registerConstant( "COURANT_NUMBER",		std::to_string( this->dCourantNumber ) );
 
 	// --
 	// Domain details (size, resolution, etc.)
@@ -774,11 +595,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	double	dResolution;
 	pDomain->getCellResolution( &dResolution );
 
-	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		toString( pDomain->getCellCount() ) );
-	oclModel->registerConstant( "DOMAIN_COLS",			toString( pDomain->getCols() ) );
-	oclModel->registerConstant( "DOMAIN_ROWS",			toString( pDomain->getRows() ) );
-	oclModel->registerConstant( "DOMAIN_DELTAX",		toString( dResolution ) );
-	oclModel->registerConstant( "DOMAIN_DELTAY",		toString( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		std::to_string( pDomain->getCellCount() ) );
+	oclModel->registerConstant( "DOMAIN_COLS",			std::to_string( pDomain->getCols() ) );
+	oclModel->registerConstant( "DOMAIN_ROWS",			std::to_string( pDomain->getRows() ) );
+	oclModel->registerConstant( "DOMAIN_DELTAX",		std::to_string( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_DELTAY",		std::to_string( dResolution ) );
 
 	return true;
 }
@@ -1057,7 +878,7 @@ void	CSchemeGodunov::prepareSimulation()
 	this->pDomain->getBoundaries()->applyDomainModifications();
 
 	// Initial volume in the domain
-	pManager->log->writeLine( "Initial domain volume: " + toString( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
+	pManager->log->writeLine( "Initial domain volume: " + std::to_string( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
 
 	// Copy the initial conditions
 	pManager->log->writeLine( "Copying domain data to device..." );
@@ -1276,7 +1097,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
-			pManager->log->writeLine("[DEBUG] Starting batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			pManager->log->writeLine("[DEBUG] Starting batch of " + std::to_string(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 #endif
 			
 		// Schedule a batch-load of work for the device
@@ -1353,7 +1174,7 @@ void CSchemeGodunov::Threaded_runBatch()
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
 		{
-			pManager->log->writeLine("[DEBUG] Finished batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			pManager->log->writeLine("[DEBUG] Finished batch of " + std::to_string(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 			if ( this->dCurrentTimestep < 0.0 )
 			{
 				pManager->log->writeLine( "[DEBUG] We have a negative timestep..." );
@@ -1397,11 +1218,11 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 			model::errorCodes::kLevelWarning
 		);
 		pManager->log->writeLine(
-			"Current time:   "  + toString( dCurrentTime ) + 
-			", Target time:  " + toString( dTargetTime )
+			"Current time:   "  + std::to_string( dCurrentTime ) + 
+			", Target time:  " + std::to_string( dTargetTime )
 		);
 		pManager->log->writeLine(
-			"Last sync point: "  + toString( dLastSyncTime )
+			"Last sync point: "  + std::to_string( dLastSyncTime )
 		);
 		return;
 	}
@@ -1544,8 +1365,8 @@ bool	CSchemeGodunov::isSimulationFailure( double dExpectedTargetTime )
 			model::errorCodes::kLevelWarning
 		);
 		pManager->log->writeLine(
-			"Current time: " + toString(dCurrentTime) + 
-			", target time: " + toString(dExpectedTargetTime)
+			"Current time: " + std::to_string(dCurrentTime) + 
+			", target time: " + std::to_string(dExpectedTargetTime)
 		);
 		return true;
 	}
@@ -1583,7 +1404,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 		if ( dExpectedTargetTime - dCurrentTime > 1E-5 )
 		{
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "Expected target: " + toString( dExpectedTargetTime ) + " Current time: " + toString( dCurrentTime ) );
+			pManager->log->writeLine( "Expected target: " + std::to_string( dExpectedTargetTime ) + " Current time: " + std::to_string( dCurrentTime ) );
 #endif
 			return false;
 		}
@@ -1744,7 +1565,7 @@ void CSchemeGodunov::setTargetTime( double dTime )
 		return;
 
 #ifdef DEBUG_MPI
-	pManager->log->writeLine("[DEBUG] Received request to set target to " + toString(dTime));
+	pManager->log->writeLine("[DEBUG] Received request to set target to " + std::to_string(dTime));
 #endif
 	this->dTargetTime = dTime;
 	//this->dLastSyncTime = this->dCurrentTime;

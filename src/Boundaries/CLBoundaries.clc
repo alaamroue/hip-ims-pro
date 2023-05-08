@@ -127,6 +127,21 @@ __kernel void bdy_Cell (
 	pCellState[ ulCellID ] = pCellData;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 __kernel void bdy_Uniform(
 	__constant		sBdyUniformConfiguration *	pConfiguration,
 	__global		cl_double2 const * restrict	pTimeseries,
@@ -148,8 +163,8 @@ __kernel void bdy_Uniform(
 	if (lIdxX >= DOMAIN_COLS - 1 ||
 		lIdxY >= DOMAIN_ROWS - 1 ||
 		lIdxX <= 0 ||
-		lIdxY <= 0)
-		return;
+		lIdxY <= 0){
+		return;}
 
 	ulIdx = getCellID(lIdxX, lIdxY);
 
@@ -172,9 +187,28 @@ __kernel void bdy_Uniform(
 	__private cl_ulong ulTimestep = (cl_ulong)floor(dLclTime / pConfig.TimeseriesInterval);
 	__private cl_double2 dRecord = pTimeseries[ulTimestep];
 
+	//printf("%i %lf %lf %i\n",
+	//pConfig.TimeseriesEntries,
+	//pConfig.TimeseriesInterval,
+	//pConfig.TimeseriesLength,
+	//pConfig.Definition
+	//);
+
+
+	
+	//cl_uint			TimeseriesEntries;
+	//cl_double		TimeseriesInterval;
+	//cl_double		TimeseriesLength;
+	//cl_uint			Definition;
+
+
+
+
+
 	// Apply the value...
 	if (pConfig.Definition == BOUNDARY_UNIFORM_RAIN_INTENSITY)
 		pCellData.x += dRecord.y / 3600000.0 * dLclTimestep;
+		//printf("\ndRecord.y: %lf", dRecord.y);
 
 	if (pConfig.Definition == BOUNDARY_UNIFORM_LOSS_RATE)
 		pCellData.x = max(dCellBedElev, pCellData.x - dRecord.y / 3600000.0 * dLclTimestep);
@@ -182,6 +216,24 @@ __kernel void bdy_Uniform(
 	// Return to global memory
 	pCellState[ulIdx] = pCellData;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 __kernel void bdy_Gridded (
 	__constant		sBdyGriddedConfiguration *	pConfiguration,

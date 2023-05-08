@@ -16,12 +16,12 @@
  * ------------------------------------------
  *
  */
+#define CL_TARGET_OPENCL_VERSION 300
 #ifndef HIPIMS_CMODEL_H_
 #define HIPIMS_CMODEL_H_
 
 #include "OpenCL/opencl.h"
 #include "General/CBenchmark.h"
-#include "Datasets/TinyXML/tinyxml2.h"
 #include <vector>
 
 // Some classes we need to know about...
@@ -32,7 +32,6 @@ class CScheme;
 class CLog;
 class CMPIManager;
 
-using tinyxml2::XMLElement;
 
 /*
  *  APPLICATION CLASS
@@ -48,8 +47,9 @@ class CModel
 		CModel(void);															// Constructor
 		~CModel(void);															// Destructor
 
-		void					setupFromConfig( XMLElement* );					// Setup the simulation
+		void					setupFromConfig();							// Setup the simulation
 		bool					setExecutor(CExecutorControl*);					// Sets the type of executor to use for the model
+		bool					setExecutorToDefaultGPU();						// Sets the type of executor to a Default GPU One
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
 		CDomainManager*			getDomainSet(void);								// Gets the domain set
 		CMPIManager*			getMPIManager(void);							// Gets the MPI manager
@@ -74,8 +74,8 @@ class CModel
 		void					logDetails();									// Spit some info out to the log
 		double					getSimulationLength();							// Get total length of simulation
 		void					setSimulationLength( double );					// Set total length of simulation
-		unsigned long			getRealStart();									// Get the real world start time (relative to epoch)
-		void					setRealStart( char*, char* = NULL );			// Set the real world start time
+		//unsigned long			getRealStart();									// Get the real world start time (relative to epoch)
+		//void					setRealStart( char*, char* = NULL );			// Set the real world start time
 		double					getOutputFrequency();							// Get the output frequency
 		void					setOutputFrequency( double );					// Set the output frequency
 		void					setFloatPrecision( unsigned char );				// Set floating point precision

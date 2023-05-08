@@ -17,7 +17,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -25,7 +24,6 @@
 #include "../Boundaries/CBoundary.h"
 #include "../Domain/CDomain.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
 #include "CSchemeMUSCLHancock.h"
 
 using std::min;
@@ -75,11 +73,11 @@ CSchemeMUSCLHancock::~CSchemeMUSCLHancock(void)
 
 /*
  *  Read in settings from the XML configuration file for this scheme
- */
+
 void	CSchemeMUSCLHancock::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
 {
 	// Call the base class function which handles most of the settings
-	CSchemeGodunov::setupFromConfig( pXScheme, true );
+	CSchemeGodunov::setupFromConfig();
 
 	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
 	char			*cParameterName = NULL, *cParameterValue = NULL;
@@ -148,7 +146,7 @@ void	CSchemeMUSCLHancock::setupFromConfig( XMLElement* pXScheme, bool bInheritan
 		pParameter = pParameter->NextSiblingElement("parameter");
 	}
 }
-
+ */
 /*
  *  Run all preparation steps
  */
@@ -302,15 +300,15 @@ void CSchemeMUSCLHancock::logDetails()
 
 	pManager->log->writeLine( "MUSCL-HANCOCK 2ND-ORDER-ACCURATE SCHEME", true, wColour );
 	pManager->log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? std::to_string( this->dCourantNumber ) : "N/A" ), true, wColour );
 	pManager->log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	pManager->log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
-	pManager->log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
+	pManager->log->writeLine( "  Data reduction:     " + std::to_string( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
+	pManager->log->writeLine( "  Boundaries:         " + std::to_string( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
 	pManager->log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
 	pManager->log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
 	pManager->log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
 	pManager->log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + std::to_string( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
 	pManager->log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 	
 	pManager->log->writeDivide();
@@ -397,33 +395,33 @@ bool CSchemeMUSCLHancock::prepare2OConstants()
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 	if ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction )
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulCachedWorkgroupSizeY )  + ", 1)))"
 		);
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 	if ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum )
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulCachedWorkgroupSizeY )  + ", 1)))"
 		);
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 
@@ -447,16 +445,16 @@ bool CSchemeMUSCLHancock::prepare2OConstants()
 	switch( this->ucCacheConstraints )
 	{
 		case model::cacheConstraints::musclHancock::kCacheActualSize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "MCH_STG1_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "MCH_STG1_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::musclHancock::kCacheAllowUndersize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "MCH_STG1_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "MCH_STG1_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::musclHancock::kCacheAllowOversize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "MCH_STG1_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "MCH_STG1_DIM2", std::to_string( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
 			break;
 	}
 

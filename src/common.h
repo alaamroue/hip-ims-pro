@@ -21,32 +21,23 @@
 
 // Base includes
 #include "util.h"
-#include "platforms.h"
+
+
+
+
+#include "Platforms/windows_platform.h"
 
 //#define DEBUG_MPI 1
 
-#define toString(s) boost::lexical_cast<std::string>(s)
+//#define std::to_string(s) std::to_string(s)
 
 // Windows-specific includes
-#ifdef PLATFORM_WIN
 #include <tchar.h>
 #include <direct.h>
-#endif
-#ifdef PLATFORM_UNIX
-#include <unistd.h>
-#include <time.h>
-#include <ncurses.h>
-#include "CLCode.h"
-#endif
-#ifdef MPI_ON
-#include <mpi.h>
-#endif
 
-#include "Datasets/TinyXML/tinyxml2.h"
 #include "General/CLog.h"
 #include "CModel.h"
 
-using tinyxml2::XMLElement;
 
 // Basic functions and variables used throughout
 namespace model
@@ -76,10 +67,12 @@ namespace floatPrecision{
 }
 
 extern	CModel*			pManager;
-extern  char*			configFile;
 extern  char*			codeDir;
 void					doError( std::string, unsigned char );
 }
+
+
+
 
 // Variables in use throughput
 using	model::pManager;

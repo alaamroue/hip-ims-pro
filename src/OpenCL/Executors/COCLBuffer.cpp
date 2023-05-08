@@ -18,7 +18,6 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
 
 #include "../../common.h"
 #include "../opencl.h"
@@ -119,7 +118,7 @@ bool COCLBuffer::createBuffer()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Memory buffer creation failed for '" + this->sName + "'. Error " + toString( iErrorID ) + ".",
+			"Memory buffer creation failed for '" + this->sName + "'. Error " + std::to_string( iErrorID ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return NULL;
@@ -128,7 +127,7 @@ bool COCLBuffer::createBuffer()
 	this->bReady = true;
 
 	pManager->log->writeLine(
-		"Memory buffer created for '" + this->sName + "' with " + toString( this->ulSize ) + " bytes."
+		"Memory buffer created for '" + this->sName + "' with " + std::to_string( this->ulSize ) + " bytes."
 	);
 
 	return true;
@@ -219,10 +218,10 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 
 	if ( iReturn != CL_SUCCESS )
 	{
-		pManager->log->writeLine("Error code returned from memory read is " + toString(iReturn));
+		pManager->log->writeLine("Error code returned from memory read is " + std::to_string(iReturn));
 		model::doError(
 			"Unable to read memory buffer from device back to host  " 
-			+ this->sName + " (" + toString( iReturn ) + ")",
+			+ this->sName + " (" + std::to_string( iReturn ) + ")",
 			model::errorCodes::kLevelModelStop
 		);
 	}
@@ -239,7 +238,7 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 		if ( iReturn != CL_SUCCESS )
 		{
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + std::to_string( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;
@@ -290,11 +289,11 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 	{
 		model::doError(
 			"Unable to write to memory buffer for device\n  " 
-			+ this->sName + " (" + toString( iReturn ) + ")\n"
-			+ "  Offset: " + toString( ulOffset ) 
-			+ "  Size: " + toString( ulSize ) 
-			+ "  Pointer: " + toString( pMemBlock )
-			+ "  Buf size: " + toString( this->ulSize ),
+			+ this->sName + " (" + std::to_string( iReturn ) + ")\n"
+			+ "  Offset: " + std::to_string( ulOffset ) 
+			+ "  Size: " + std::to_string( ulSize ) 
+			+ "  Pointer: " + std::to_string((unsigned long long)(void**) pMemBlock )
+			+ "  Buf size: " + std::to_string( this->ulSize ),
 			model::errorCodes::kLevelModelStop
 		);
 	}
@@ -312,7 +311,7 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 		if ( iReturn != CL_SUCCESS )
 		{
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + std::to_string( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;

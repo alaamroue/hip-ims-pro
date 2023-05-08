@@ -19,7 +19,6 @@
 #include <limits>
 #include <stdio.h>
 #include <cstring>
-#include <boost/lexical_cast.hpp>
 
 #include "../../common.h"
 #include "../../main.h"
@@ -27,12 +26,12 @@
 #include "../CDomainManager.h"
 #include "../CDomain.h"
 #include "../../Schemes/CScheme.h"
-#include "../../Datasets/CXMLDataset.h"
 #include "../../Datasets/CRasterDataset.h"
 #include "../../OpenCL/Executors/CExecutorControlOpenCL.h"
 #include "../../Boundaries/CBoundaryMap.h"
-#include "../../MPI/CMPIManager.h"
 #include "CDomainCartesian.h"
+#include "../../Boundaries/CBoundaryUniform.h"
+#include "../../Floodplain/Normalplain.h"
 
 /*
  *  Constructor
@@ -66,93 +65,64 @@ CDomainCartesian::~CDomainCartesian(void)
 /*
  *  Configure the domain using the XML file
  */
-bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
+bool CDomainCartesian::configureDomain()
 {
-	XMLElement* pXData;
-	XMLElement* pXScheme;
-	XMLElement* pXDataSource;
+	
+	CRasterDataset	pDataset;
 
-	char	*cSourceType = NULL, 
-			*cSourceValue = NULL,
-			*cSourceFile = NULL;
+	pDataset.bAvailable = true;
+	pDataset.ulColumns = 100;
+	pDataset.ulRows = 100;
+	pDataset.uiBandCount = 1;
+	pDataset.dResolutionX = 100.0;
+	pDataset.dResolutionY = 100.00;
+	pDataset.dOffsetX = 0.00;
+	pDataset.dOffsetY = 0.00;
 
-	// Call the base-class configuration loading stuff first
-	// which will address the device ID and the source/target
-	// dirs.
-	if ( !CDomain::configureDomain( pXDomain ) )
-		return false;
-
-	pXData = pXDomain->FirstChildElement( "data" );
-	pXDataSource	= pXData->FirstChildElement("dataSource");
-
-	while ( pXDataSource != NULL )
-	{
-		Util::toLowercase( &cSourceType,  pXDataSource->Attribute( "type" ) );
-		Util::toLowercase( &cSourceValue, pXDataSource->Attribute( "value" ) );
-		Util::toNewString( &cSourceFile,  pXDataSource->Attribute( "source" ) );
-
-		// TODO: What if there is no structure definition? Should try the DEM instead?
-		if ( strstr( cSourceValue, "structure" ) != NULL )
-		{
-			if ( strcmp( cSourceType, "raster" ) != 0 )
-			{
-				model::doError(
-					"Domain structure can only be loaded from a raster.",
-					model::errorCodes::kLevelWarning
-				);
-				return false;
-			}
-
-			CRasterDataset	pDataset;
-			pManager->log->writeLine( "Attempting to read domain structure data." );
-			pDataset.openFileRead( std::string( cSourceDir ) + std::string( cSourceFile ) );
-			pManager->log->writeLine( "Successfully opened domain dataset for structure data." );
-			pDataset.logDetails();
+	pDataset.logDetails();
 			
-			pDataset.applyDimensionsToDomain( this );
-		}
-
-		pXDataSource = pXDataSource->NextSiblingElement("dataSource");
+	this->setProjectionCode(0);					// Unknown
+	this->setUnits("m");
+	this->setCellResolution(pDataset.dResolutionX);
+	this->setRealDimensions(pDataset.dResolutionX * pDataset.ulColumns, pDataset.dResolutionY * pDataset.ulRows);
+	this->setRealOffset(pDataset.dOffsetX, pDataset.dOffsetY);
+	this->setRealExtent(
+		pDataset.dOffsetY + pDataset.dResolutionY * pDataset.ulRows,
+		pDataset.dOffsetX + pDataset.dResolutionX * pDataset.ulColumns,
+		pDataset.dOffsetY,
+		pDataset.dOffsetX
+	);
+	
+	//Set Up Boundry
+	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(this->getBoundaries()->pDomain);
+	pNewBoundary->sName = std::string("TimeSeriesName");
+	pNewBoundary->size = 5;
+	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
+	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[pNewBoundary->size];
+	for (int i = 0; i < pNewBoundary->size; i++){
+		pNewBoundary->pTimeseries[i].dTime = i*10;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
+	pNewBoundary->setVariablesBasedonData();
 
-	pManager->log->writeLine( "Progressing to load boundary conditions." );
-	if ( !this->getBoundaries()->setupFromConfig( pXDomain ) )
-		return false;
+	this->getBoundaries()->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
-	pXScheme = pXDomain->FirstChildElement( "scheme" );
-	if ( pXScheme == NULL )
-	{
-		model::doError(
-			"The <scheme> element is missing.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	} else {
-		pScheme = CScheme::createFromConfig( pXScheme );
-		pScheme->setupFromConfig( pXScheme );
-		pScheme->setDomain( this );
-		pScheme->prepareAll();
-		setScheme( pScheme );
 
-		if ( !pScheme->isReady() )
-		{
-			model::doError(
-				"Numerical scheme is not ready. Check errors.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		} else {
-			pManager->log->writeLine( "Numerical scheme reports it is ready." );
-		}
-	}
+	pScheme = CScheme::createScheme(model::schemeTypes::kGodunov);
+	pScheme->setCourantNumber(0.5);
+	pScheme->setFrictionStatus(false);
+	pScheme->setCachedWorkgroupSize(1, 1);
+	pScheme->setNonCachedWorkgroupSize(1, 1);
 
+	pScheme->setDomain( this );
+
+	pScheme->prepareAll();
+	setScheme( pScheme );
+
+	pManager->log->writeLine( "Numerical scheme reports is ready." );
 	pManager->log->writeLine( "Progressing to load initial conditions." );
-	if ( !this->loadInitialConditions( pXData ) )
-		return false;
 
-	pManager->log->writeLine( "Progressing to load output file definitions." );
-	if ( !this->loadOutputDefinitions( pXData ) )
-		return false;
+	this->loadInitialConditions();
 
 	return true;
 }
@@ -160,98 +130,53 @@ bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 /*
  *  Load all the initial conditions and data from rasters or constant definitions
  */
-bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
+bool	CDomainCartesian::loadInitialConditions()
 {
 	bool							bSourceVelX			= false, 
 									bSourceVelY			= false, 
 									bSourceManning		= false;
+
 	sDataSourceInfo					pDataDEM;
 	sDataSourceInfo					pDataDepth;
 	std::vector<sDataSourceInfo>	pDataOther;
-	XMLElement*						pDataSource			= pXData->FirstChildElement( "dataSource" );
 
-	pDataDEM.ucValue		= 255;
-	pDataDepth.ucValue		= 255;
+	sDataSourceInfo pDataInfo;
 
-	// Read data source information but don't process it, because
-	// a specific order is required...
-	while ( pDataSource != NULL )
-	{
-		char			*cSourceType = NULL, *cSourceValue = NULL, *cSourceFile = NULL;
-		unsigned char	ucValueType;
-		Util::toLowercase( &cSourceType, pDataSource->Attribute( "type" ) );
-		Util::toLowercase( &cSourceValue, pDataSource->Attribute( "value" ) );
-		Util::toNewString( &cSourceFile, pDataSource->Attribute( "source" ) );
+	//VelocityX
+	pDataInfo.cSourceType = "constant";
+	pDataInfo.cFileValue = "0.0";
+	pDataInfo.ucValue = this->getDataValueCode("velocityx");
+	pDataOther.push_back(pDataInfo);
 
-		ucValueType  = this->getDataValueCode( cSourceValue );
+	//VelocityY
+	pDataInfo.cSourceType = "constant";
+	pDataInfo.cFileValue = "0.0";
+	pDataInfo.ucValue = this->getDataValueCode("velocityy");
+	pDataOther.push_back(pDataInfo);
 
-		sDataSourceInfo pDataInfo;
-		pDataInfo.cSourceType	= cSourceType;
-		pDataInfo.cFileValue	= cSourceFile;
-		pDataInfo.ucValue		= ucValueType;
+	//Depth
+	pDataInfo.cSourceType = "constant";
+	pDataInfo.cFileValue = "0.0";
+	pDataInfo.ucValue = this->getDataValueCode("depth");
+	pDataDepth = pDataInfo;
 
-		switch( ucValueType )
-		{
-			case model::rasterDatasets::dataValues::kBedElevation:
-				pDataDEM	= pDataInfo;
-				break;
-			case model::rasterDatasets::dataValues::kDepth:
-			case model::rasterDatasets::dataValues::kFreeSurfaceLevel:
-				pDataDepth	= pDataInfo;
-				break;
-			case model::rasterDatasets::dataValues::kDischargeX:
-			case model::rasterDatasets::dataValues::kVelocityX:
-				pDataOther.push_back( pDataInfo );
-				bSourceVelX = true;
-				break;
-			case model::rasterDatasets::dataValues::kDischargeY:
-			case model::rasterDatasets::dataValues::kVelocityY:
-				pDataOther.push_back( pDataInfo );
-				bSourceVelY = true;
-				break;
-			case model::rasterDatasets::dataValues::kManningCoefficient:
-				pDataOther.push_back( pDataInfo );
-				bSourceManning = true;
-				break;
-			default:
-				pDataOther.push_back( pDataInfo );
-				break;
-		}
+	//manning
+	pDataInfo.cSourceType = "constant";
+	pDataInfo.cFileValue = "0.0286";
+	pDataInfo.ucValue = this->getDataValueCode("manningcoefficient");
+	pDataOther.push_back(pDataInfo);
+	bSourceManning = true;
 
-		pDataSource = pDataSource->NextSiblingElement( "dataSource" );
-	}
+	//Bed
+	pDataInfo.cSourceType = "raster";
+	pDataInfo.cFileValue = "large_fp_topography_imp_v2_with_mountain_WGS.tif";
+	pDataInfo.ucValue = this->getDataValueCode("structure,dem");
+	pDataDEM = pDataInfo;
 
-	// Need a DEM and a depth data source as a minimum
-	if ( pDataDEM.ucValue == 255 || pDataDepth.ucValue == 255 )
-	{
-		model::doError(
-			"Missing DEM or depth data source.",
-			model::errorCodes::kLevelWarning
-		);
-	}
+	char* cSourceDir = "C:\\Users\\abaghdad\\Desktop\\hipims\\hipims-ocl\\bin\\win32\\debug\\test\\data\\topography\\";
 
-	// Present warnings if some things aren't defined
-	if ( !bSourceVelX )
-		model::doError(
-			"No source defined for X-velocity - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-	if ( !bSourceVelY )
-		model::doError(
-			"No source defined for Y-velocity - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-	if ( !bSourceManning )
-		model::doError(
-			"No source defined for Manning coefficient - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-
-	// Process the initial conditions in the order:
-	// 1. DEM
-	// 2. Depth/FSL
-	// 3. All others
-	if ( !this->loadInitialConditionSource( pDataDEM,	cSourceDir ) )
+	///////////////////////For Loading Depth Map Grid///////////////////////
+	if ( !this->loadInitialConditionSource( pDataDEM, cSourceDir))
 	{
 		model::doError(
 			"Could not load DEM data.",
@@ -259,6 +184,9 @@ bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 		);
 		return false;
 	}
+
+
+	///////////////////////For Loading Water depth Grid///////////////////////
 	if ( !this->loadInitialConditionSource( pDataDepth,	cSourceDir ) )
 	{
 		model::doError(
@@ -267,6 +195,8 @@ bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 		);
 		return false;
 	}
+
+	///////////////////////For Loading Initial velocity and Manning///////////////////////
 	for ( unsigned int i = 0; i < pDataOther.size(); ++i )
 	{
 		if ( !this->loadInitialConditionSource( pDataOther[i], cSourceDir ) ) 
@@ -285,55 +215,19 @@ bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 /*
  *  Load the output definitions for what should be written to disk
  */
-bool	CDomainCartesian::loadOutputDefinitions( XMLElement* pXData )
+bool	CDomainCartesian::loadOutputDefinitions()
 {
-	XMLElement*		pDataTarget		= pXData->FirstChildElement("dataTarget");
-	char			*cOutputType    = NULL, 
-					*cOutputValue   = NULL,
-					*cOutputFormat  = NULL,
-					*cOutputFile    = NULL;
 
-	while ( pDataTarget != NULL )
-	{
-		Util::toLowercase( &cOutputType,   pDataTarget->Attribute( "type" ) );
-		Util::toLowercase( &cOutputValue,  pDataTarget->Attribute( "value" ) );
-		Util::toNewString( &cOutputFormat, pDataTarget->Attribute( "format" ) );
-		Util::toNewString( &cOutputFile,   pDataTarget->Attribute( "target" ) );
+	sDataTargetInfo	pOutput;
 
-		if ( cOutputType   == NULL || 
-			 cOutputValue  == NULL || 
-			 cOutputFormat == NULL || 
-			 cOutputFile   == NULL )
-		{
-			model::doError(
-				"Output definition is missing data.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
+	pOutput.cFormat = "GTiff";
+	pOutput.cType = "raster";
+	pOutput.sTarget = "C:\\Users\\abaghdad\\Desktop\\hipims\\hipims-ocl\\bin\\win32\\debug\\test\\data\\output\\depth_%t.img";
+	pOutput.ucValue = this->getDataValueCode("depth");
 
-		if ( strcmp( cOutputType, "raster" ) == 0 )
-		{
-			sDataTargetInfo	pOutput;
+	addOutput( pOutput );
 
-			pOutput.cFormat	= cOutputFormat;
-			pOutput.cType   = cOutputType;
-			pOutput.sTarget = std::string( cTargetDir ) + std::string( cOutputFile );
-			pOutput.ucValue = this->getDataValueCode( cOutputValue );
-
-			addOutput( pOutput );
-		} else {
-			// TODO: Allow for timeseries outputs in specific cells etc.
-			model::doError(
-				"An invalid output format type was given.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pDataTarget = pDataTarget->NextSiblingElement("dataTarget");
-	}
-
-	pManager->log->writeLine( "Identified " + toString( this->pOutputs.size() ) + " output file definition(s)." );
+	pManager->log->writeLine( "Identified " + std::to_string( this->pOutputs.size() ) + " output file definition(s)." );
 
 	return true;
 }
@@ -346,22 +240,44 @@ bool	CDomainCartesian::loadInitialConditionSource( sDataSourceInfo pDataSource, 
 	if ( strcmp( pDataSource.cSourceType, "raster" ) == 0 )
 	{
 		CRasterDataset	pDataset;
-		pDataset.openFileRead( 
-			std::string( cDataDir ) + std::string( pDataSource.cFileValue ) 
-		);
-		return pDataset.applyDataToDomain( pDataSource.ucValue, this );
+		unsigned long	ulCellID;
+		double			dValue;
+		unsigned char	ucRounding = 4;			// decimal places
+
+		std::string sFilename = "C:\\Users\\abaghdad\\Desktop\\hipims\\hipims-ocl\\bin\\win32\\debug\\test\\data\\topography\\large_fp_topography_imp_v2_with_mountain_WGS.tif";
+		//pDataset.gdDataset = static_cast<GDALDataset*>(GDALOpen(sFilename.c_str(), GA_ReadOnly));
+		pDataset.bAvailable = true;
+		pDataset.ulColumns = 100;
+		pDataset.ulRows = 100;
+		pDataset.uiBandCount = 1;
+		pDataset.dResolutionX = 100.0;
+		pDataset.dResolutionY = 100.00;
+		pDataset.dOffsetX = 0.00;
+		pDataset.dOffsetY = 0.00;
+
+		//TODO: Alaa Rows vs Coloumns which is correct?
+		Normalplain np = Normalplain(pDataset.ulRows, pDataset.ulColumns);
+		np.SetBedElevationMountain();
+
+		for (unsigned long iRow = 0; iRow < pDataset.ulRows; iRow++)
+		{
+			for (unsigned long iCol = 0; iCol < pDataset.ulColumns; iCol++)
+			{
+				ulCellID = this->getCellID(iCol, pDataset.ulRows - iRow - 1);		// Scan lines start in the top left
+				dValue = np.getBedElevation(ulCellID);
+				this->handleInputData(
+					ulCellID,
+					dValue,
+					pDataSource.ucValue,
+					ucRounding
+				);
+			}
+		}
+
 	} 
 	else if ( strcmp( pDataSource.cSourceType, "constant" ) == 0 )
 	{
-		if ( !CXMLDataset::isValidFloat( pDataSource.cFileValue ) )
-		{
-			model::doError(
-				"Invalid source constant given.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
-		double	dValue = boost::lexical_cast<double>( pDataSource.cFileValue );
+		double	dValue = atof(pDataSource.cFileValue);
 
 		// NOTE: The outer layer of cells are exempt here, as they are not computed
 		// but there may be some circumstances where we want a value here?
@@ -425,12 +341,12 @@ bool	CDomainCartesian::validateDomain( bool bQuiet )
 	}
 
 	// Got a size?
-	if ( ( std::isnan( this->dRealDimensions[ kAxisX ] ) || 
-		   std::isnan( this->dRealDimensions[ kAxisY ] ) ) &&
-		 ( std::isnan( this->dRealExtent[ kEdgeN ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeE ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeS ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeW ] ) ) )
+	if ( ( isnan( this->dRealDimensions[ kAxisX ] ) || 
+		   isnan( this->dRealDimensions[ kAxisY ] ) ) &&
+		 ( isnan( this->dRealExtent[ kEdgeN ] ) || 
+		   isnan( this->dRealExtent[ kEdgeE ] ) || 
+		   isnan( this->dRealExtent[ kEdgeS ] ) || 
+		   isnan( this->dRealExtent[ kEdgeW ] ) ) )
 	{
 		if ( !bQuiet ) model::doError(
 			"Domain extent not defined",
@@ -440,8 +356,8 @@ bool	CDomainCartesian::validateDomain( bool bQuiet )
 	}
 
 	// Got an offset?
-	if ( std::isnan( this->dRealOffset[ kAxisX ] ) ||
-		 std::isnan( this->dRealOffset[ kAxisY ] ) )
+	if ( isnan( this->dRealOffset[ kAxisX ] ) ||
+		 isnan( this->dRealOffset[ kAxisY ] ) )
 	{
 		if ( !bQuiet ) model::doError(
 			"Domain offset not defined",
@@ -493,17 +409,17 @@ void	CDomainCartesian::logDetails()
 	pManager->log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
 	if ( this->ulProjectionCode > 0 ) 
 	{
-		pManager->log->writeLine( "  Projection:        EPSG:" + toString( this->ulProjectionCode ), true, wColour );
+		pManager->log->writeLine( "  Projection:        EPSG:" + std::to_string( this->ulProjectionCode ), true, wColour );
 	} else {
 		pManager->log->writeLine( "  Projection:        Unknown", true, wColour );
 	}
-	pManager->log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
-	pManager->log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
-	pManager->log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ) + this->cUnits, true, wColour );
-	pManager->log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
-														 toString( this->ulRows ) + "]", true, wColour );
-	pManager->log->writeLine( "  Real dimensions:   [" + toString( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " + 
-														 toString( this->dRealDimensions[ kAxisY ] ) + this->cUnits + "]", true, wColour );
+	pManager->log->writeLine( "  Device number:     " + std::to_string( this->pDevice->uiDeviceNo ), true, wColour );
+	pManager->log->writeLine( "  Cell count:        " + std::to_string(this->ulCellCount), true, wColour);
+	pManager->log->writeLine("  Cell resolution:   " + std::to_string(this->dCellResolution) + this->cUnits, true, wColour);
+	pManager->log->writeLine("  Cell dimensions:   [" + std::to_string(this->ulCols) + ", " +
+		std::to_string(this->ulRows) + "]", true, wColour);
+	pManager->log->writeLine("  Real dimensions:   [" + std::to_string(this->dRealDimensions[kAxisX]) + this->cUnits + ", " +
+		std::to_string(this->dRealDimensions[kAxisY]) + this->cUnits + "]", true, wColour);
 
 	pManager->log->writeDivide();
 }
@@ -511,56 +427,56 @@ void	CDomainCartesian::logDetails()
 /*
  *  Set real domain dimensions (X, Y)
  */
-void	CDomainCartesian::setRealDimensions( double dSizeX, double dSizeY )
+void	CDomainCartesian::setRealDimensions(double dSizeX, double dSizeY)
 {
-	this->dRealDimensions[ kAxisX ]	= dSizeX;
-	this->dRealDimensions[ kAxisY ]	= dSizeY;
+	this->dRealDimensions[kAxisX] = dSizeX;
+	this->dRealDimensions[kAxisY] = dSizeY;
 	this->updateCellStatistics();
 }
 
-/*	
+/*
  *  Fetch real domain dimensions (X, Y)
  */
-void	CDomainCartesian::getRealDimensions( double* dSizeX, double* dSizeY )
+void	CDomainCartesian::getRealDimensions(double* dSizeX, double* dSizeY)
 {
-	*dSizeX = this->dRealDimensions[ kAxisX ];
-	*dSizeY = this->dRealDimensions[ kAxisY ];
+	*dSizeX = this->dRealDimensions[kAxisX];
+	*dSizeY = this->dRealDimensions[kAxisY];
 }
 
 /*
  *  Set real domain offset (X, Y) for lower-left corner
  */
-void	CDomainCartesian::setRealOffset( double dOffsetX, double dOffsetY )
+void	CDomainCartesian::setRealOffset(double dOffsetX, double dOffsetY)
 {
-	this->dRealOffset[ kAxisX ]	= dOffsetX;
-	this->dRealOffset[ kAxisY ]	= dOffsetY;
+	this->dRealOffset[kAxisX] = dOffsetX;
+	this->dRealOffset[kAxisY] = dOffsetY;
 }
 
 /*
  *  Fetch real domain offset (X, Y) for lower-left corner
  */
-void	CDomainCartesian::getRealOffset( double* dOffsetX, double* dOffsetY )
+void	CDomainCartesian::getRealOffset(double* dOffsetX, double* dOffsetY)
 {
-	*dOffsetX = this->dRealOffset[ kAxisX ];
-	*dOffsetY = this->dRealOffset[ kAxisY ];
+	*dOffsetX = this->dRealOffset[kAxisX];
+	*dOffsetY = this->dRealOffset[kAxisY];
 }
 
 /*
  *  Set real domain extent (Clockwise: N, E, S, W)
  */
-void	CDomainCartesian::setRealExtent( double dEdgeN, double dEdgeE, double dEdgeS, double dEdgeW )
+void	CDomainCartesian::setRealExtent(double dEdgeN, double dEdgeE, double dEdgeS, double dEdgeW)
 {
-	this->dRealExtent[ kEdgeN ]	= dEdgeN;
-	this->dRealExtent[ kEdgeE ]	= dEdgeE;
-	this->dRealExtent[ kEdgeS ]	= dEdgeS;
-	this->dRealExtent[ kEdgeW ]	= dEdgeW;
+	this->dRealExtent[kEdgeN] = dEdgeN;
+	this->dRealExtent[kEdgeE] = dEdgeE;
+	this->dRealExtent[kEdgeS] = dEdgeS;
+	this->dRealExtent[kEdgeW] = dEdgeW;
 	//this->updateCellStatistics();
 }
 
 /*
  *  Fetch real domain extent (Clockwise: N, E, S, W)
  */
-void	CDomainCartesian::getRealExtent( double* dEdgeN, double* dEdgeE, double* dEdgeS, double* dEdgeW ) 
+void	CDomainCartesian::getRealExtent(double* dEdgeN, double* dEdgeE, double* dEdgeS, double* dEdgeW)
 {
 	*dEdgeN = this->dRealExtent[kEdgeN];
 	*dEdgeE = this->dRealExtent[kEdgeE];
@@ -571,7 +487,7 @@ void	CDomainCartesian::getRealExtent( double* dEdgeN, double* dEdgeE, double* dE
 /*
  *  Set cell resolution
  */
-void	CDomainCartesian::setCellResolution( double dResolution )
+void	CDomainCartesian::setCellResolution(double dResolution)
 {
 	this->dCellResolution = dResolution;
 	this->updateCellStatistics();
@@ -580,7 +496,7 @@ void	CDomainCartesian::setCellResolution( double dResolution )
 /*
  *   Fetch cell resolution
  */
-void	CDomainCartesian::getCellResolution( double* dResolution )
+void	CDomainCartesian::getCellResolution(double* dResolution)
 {
 	*dResolution = this->dCellResolution;
 }
@@ -588,9 +504,9 @@ void	CDomainCartesian::getCellResolution( double* dResolution )
 /*
  *  Set domain units
  */
-void	CDomainCartesian::setUnits( char* cUnits )
+void	CDomainCartesian::setUnits(char* cUnits)
 {
-	if ( std::strlen( cUnits ) > 2 ) 
+	if (std::strlen(cUnits) > 2)
 	{
 		model::doError(
 			"Domain units can only be two characters",
@@ -600,13 +516,13 @@ void	CDomainCartesian::setUnits( char* cUnits )
 	}
 
 	// Store the units (2 char max!)
-	std::strcpy( &this->cUnits[0], cUnits );
+	std::strcpy(&this->cUnits[0], cUnits);
 }
 
 /*
  *  Return a couple of characters representing the units in use
  */
-char*	CDomainCartesian::getUnits()
+char* CDomainCartesian::getUnits()
 {
 	return &this->cUnits[0];
 }
@@ -615,7 +531,7 @@ char*	CDomainCartesian::getUnits()
  *  Set the EPSG projection code currently in use
  *  0 = Not defined
  */
-void	CDomainCartesian::setProjectionCode( unsigned long ulProjectionCode )
+void	CDomainCartesian::setProjectionCode(unsigned long ulProjectionCode)
 {
 	this->ulProjectionCode = ulProjectionCode;
 }
@@ -636,29 +552,29 @@ void	CDomainCartesian::updateCellStatistics()
 	// Do we have enough information to proceed?...
 
 	// Got a resolution?
-	if ( this->dCellResolution == NAN )
+	if (this->dCellResolution == NAN)
 	{
 		return;
 	}
 
 	// Got a size?
-	if ( ( std::isnan( this->dRealDimensions[ kAxisX ] ) || 
-		   std::isnan( this->dRealDimensions[ kAxisY ] ) ) &&
-		 ( std::isnan( this->dRealExtent[ kEdgeN ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeE ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeS ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeW ] ) ) )
+	if ((isnan(this->dRealDimensions[kAxisX]) ||
+		isnan(this->dRealDimensions[kAxisY])) &&
+		(isnan(this->dRealExtent[kEdgeN]) ||
+			isnan(this->dRealExtent[kEdgeE]) ||
+			isnan(this->dRealExtent[kEdgeS]) ||
+			isnan(this->dRealExtent[kEdgeW])))
 	{
 		return;
 	}
 
 	// We've got everything we need...
-	this->ulRows	= static_cast<unsigned long>(
-		this->dRealDimensions[ kAxisY ] / this->dCellResolution
-	);
-	this->ulCols	= static_cast<unsigned long>(
-		this->dRealDimensions[ kAxisX ] / this->dCellResolution
-	);
+	this->ulRows = static_cast<unsigned long>(
+		this->dRealDimensions[kAxisY] / this->dCellResolution
+		);
+	this->ulCols = static_cast<unsigned long>(
+		this->dRealDimensions[kAxisX] / this->dCellResolution
+		);
 	this->ulCellCount = this->ulRows * this->ulCols;
 }
 
@@ -681,19 +597,19 @@ unsigned long	CDomainCartesian::getCols()
 /*
  *  Get a cell ID from an X and Y index
  */
-unsigned long	CDomainCartesian::getCellID( unsigned long ulX, unsigned long ulY )
+unsigned long	CDomainCartesian::getCellID(unsigned long ulX, unsigned long ulY)
 {
-	return ( ulY * this->getCols() ) + ulX;
+	return (ulY * this->getCols()) + ulX;
 }
 
 /*
  *  Get a cell ID from an X and Y coordinate
  */
-unsigned long	CDomainCartesian::getCellFromCoordinates( double dX, double dY )
+unsigned long	CDomainCartesian::getCellFromCoordinates(double dX, double dY)
 {
-	unsigned long ulX	= floor( ( dX - dRealOffset[ 0 ] ) / dCellResolution );
-	unsigned long ulY	= floor( ( dY - dRealOffset[ 2 ] ) / dCellResolution );
-	return getCellID( ulX, ulY );
+	unsigned long ulX = floor((dX - dRealOffset[0]) / dCellResolution);
+	unsigned long ulY = floor((dY - dRealOffset[2]) / dCellResolution);
+	return getCellID(ulX, ulY);
 }
 
 #ifdef _WINDLL
@@ -703,25 +619,25 @@ unsigned long	CDomainCartesian::getCellFromCoordinates( double dX, double dY )
 void	CDomainCartesian::sendAllToRenderer()
 {
 	// TODO: This needs fixing and changing to account for multi-domain stuff...
-	if ( pManager->getDomainSet()->getDomainCount() > 1 )
+	if (pManager->getDomainSet()->getDomainCount() > 1)
 		return;
 
-	if ( !this->isInitialised() ||
-		 ( this->ucFloatSize == 8 && this->dBedElevations == NULL ) ||
-		 ( this->ucFloatSize == 4 && this->fBedElevations == NULL ) ||
-		 ( this->ucFloatSize == 8 && this->dCellStates == NULL ) ||
-		 ( this->ucFloatSize == 4 && this->fCellStates == NULL ) ) 
+	if (!this->isInitialised() ||
+		(this->ucFloatSize == 8 && this->dBedElevations == NULL) ||
+		(this->ucFloatSize == 4 && this->fBedElevations == NULL) ||
+		(this->ucFloatSize == 8 && this->dCellStates == NULL) ||
+		(this->ucFloatSize == 4 && this->fCellStates == NULL))
 		return;
 
-#ifdef _WINDLL
-	if ( model::fSendTopography != NULL )
+	#ifdef _WINDLL
+	if (model::fSendTopography != NULL)
 		model::fSendTopography(
-			this->ucFloatSize == 8 ? 
-				static_cast<void*>( this->dBedElevations ) :
-				static_cast<void*>( this->fBedElevations ),
-			this->ucFloatSize == 8 ? 
-				static_cast<void*>( this->dCellStates ) : 
-				static_cast<void*>( this->fCellStates ),
+			this->ucFloatSize == 8 ?
+			static_cast<void*>(this->dBedElevations) :
+			static_cast<void*>(this->fBedElevations),
+			this->ucFloatSize == 8 ?
+			static_cast<void*>(this->dCellStates) :
+			static_cast<void*>(this->fCellStates),
 			this->ucFloatSize,
 			this->ulCols,
 			this->ulRows,
@@ -732,7 +648,7 @@ void	CDomainCartesian::sendAllToRenderer()
 			this->dMinTopo,
 			this->dMaxTopo
 		);
-#endif
+	#endif
 }
 #endif
 
@@ -744,15 +660,16 @@ double	CDomainCartesian::getVolume()
 {
 	double dVolume = 0.0;
 
-	for( unsigned int i = 0; i < this->ulCellCount; ++i )
+	for (unsigned int i = 0; i < this->ulCellCount; ++i)
 	{
-		if ( this->isDoublePrecision() )
+		if (this->isDoublePrecision())
 		{
-			dVolume += ( this->dCellStates[i].s[0] - this->dBedElevations[i] ) *
-					   this->dCellResolution * this->dCellResolution;
-		} else {
-			dVolume += ( this->fCellStates[i].s[0] - this->fBedElevations[i] ) *
-					   this->dCellResolution * this->dCellResolution;
+			dVolume += (this->dCellStates[i].s[0] - this->dBedElevations[i]) *
+				this->dCellResolution * this->dCellResolution;
+		}
+		else {
+			dVolume += (this->fCellStates[i].s[0] - this->fBedElevations[i]) *
+				this->dCellResolution * this->dCellResolution;
 		}
 	}
 
@@ -762,9 +679,9 @@ double	CDomainCartesian::getVolume()
 /*
  *  Add a new output
  */
-void	CDomainCartesian::addOutput( sDataTargetInfo pOutput )
+void	CDomainCartesian::addOutput(sDataTargetInfo pOutput)
 {
-	this->pOutputs.push_back( pOutput );
+	this->pOutputs.push_back(pOutput);
 }
 
 /*
@@ -774,14 +691,22 @@ void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, uns
 {
 	unsigned long ulMinX, ulMaxX, ulMinY, ulMaxY;
 
-	if (ucDirection == edge::kEdgeE) 
-		{ ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = this->ulCols - 1; ulMaxX = this->ulCols - 1; };
+	if (ucDirection == edge::kEdgeE)
+	{
+		ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = this->ulCols - 1; ulMaxX = this->ulCols - 1;
+	};
 	if (ucDirection == edge::kEdgeW)
-		{ ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = 0; };
+	{
+		ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = 0;
+	};
 	if (ucDirection == edge::kEdgeN)
-		{ ulMinY = this->ulRows - 1; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = this->ulCols - 1; };
+	{
+		ulMinY = this->ulRows - 1; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = this->ulCols - 1;
+	};
 	if (ucDirection == edge::kEdgeS)
-		{ ulMinY = 0; ulMaxY = 0; ulMinX = 0; ulMaxX = this->ulCols - 1; };
+	{
+		ulMinY = 0; ulMaxY = 0; ulMinX = 0; ulMaxX = this->ulCols - 1;
+	};
 
 	for (unsigned long x = ulMinX; x <= ulMaxX; x++)
 	{
@@ -790,7 +715,7 @@ void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, uns
 			if (ucType == CDomainCartesian::boundaryTreatment::kBoundaryClosed)
 			{
 				this->setBedElevation(
-					this->getCellID( x, y ),
+					this->getCellID(x, y),
 					9999.9
 				);
 			}
@@ -809,22 +734,24 @@ void	CDomainCartesian::writeOutputs()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	for( unsigned int i = 0; i < this->pOutputs.size(); ++i )
+	for (unsigned int i = 0; i < this->pOutputs.size(); ++i)
 	{
 		// Replaces %t with the time in the filename, if required
 		// TODO: Allow for decimal output filenames
-		std::string sFilename		= this->pOutputs[i].sTarget;
-		std::string sTime			= toString( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
+		std::string sFilename = this->pOutputs[i].sTarget;
+		std::string sTime = std::to_string( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
 		unsigned int uiTimeLocation = sFilename.find( "%t" );
 		if ( uiTimeLocation != std::string::npos )
 			sFilename.replace( uiTimeLocation, 2, sTime );
 
-		CRasterDataset::domainToRaster(
-			this->pOutputs[i].cFormat,
-			sFilename,
-			this,
-			this->pOutputs[i].ucValue
-		);
+		//TODO: Alaa Write replacement
+		//
+		//CRasterDataset::domainToRaster(
+		//	this->pOutputs[i].cFormat,
+		//	sFilename,
+		//	this,
+		//	this->pOutputs[i].ucValue
+		//);
 	}
 }
 

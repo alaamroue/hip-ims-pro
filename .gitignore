@@ -39,3 +39,10 @@ _debug*.log
 # Exceptions
 !tools/**/*.exe
 !tools/**/*.dll
+/.qtc_clangd
+/.vs/HiPIMS-OCL
+/dist/hipims-test-master.zip
+/dist/hipims-win32-master.zip
+/tools/model-builder/main.js
+/ClassDiagram.cd
+/x64/Debug

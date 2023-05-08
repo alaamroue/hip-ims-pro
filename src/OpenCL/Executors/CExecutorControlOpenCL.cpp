@@ -22,9 +22,7 @@
 #include "../../common.h"
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
-#include "../../Datasets/CXMLDataset.h"
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor
@@ -42,41 +40,14 @@ CExecutorControlOpenCL::CExecutorControlOpenCL(void)
 /*
  *  Setup the executor using parameters specified in the configuration file
  */
-void CExecutorControlOpenCL::setupFromConfig( XMLElement* pXNode )
+void CExecutorControlOpenCL::setupFromConfig()
 {
-	XMLElement*		pParameter			= pXNode->FirstChildElement();
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
 	unsigned int	uiDeviceFilter		= model::filters::devices::devicesCPU | 
 										  model::filters::devices::devicesGPU |
 										  model::filters::devices::devicesAPU;
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
 
-		if ( strcmp( cParameterName, "devicefilter" ) == 0 )
-		{ 
-			uiDeviceFilter = 0;
-			if ( strstr( cParameterValue, "cpu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesCPU;
-			if ( strstr( cParameterValue, "gpu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesGPU;
-			if ( strstr( cParameterValue, "apu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesAPU;
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement();
-	}
-
+	uiDeviceFilter |= model::filters::devices::devicesGPU;
 	this->setDeviceFilter( uiDeviceFilter );
 	if ( !this->createDevices() ) return;
 }
@@ -187,7 +158,7 @@ void CExecutorControlOpenCL::logPlatforms(void)
 
 	for ( unsigned int iPlatformID = 0; iPlatformID < this->clPlatformCount; iPlatformID++ )
 	{
-		sPlatformNo = "  " + toString( iPlatformID + 1 ) + ". ";
+		sPlatformNo = "  " + std::to_string( iPlatformID + 1 ) + ". ";
 
 		pLog->writeLine( 
 			sPlatformNo + this->platformInfo[ iPlatformID ].cName,
@@ -195,7 +166,7 @@ void CExecutorControlOpenCL::logPlatforms(void)
 			wColour
 		);
 		pLog->writeLine( 
-			std::string( sPlatformNo.size(), ' ' ) + std::string( this->platformInfo[ iPlatformID ].cVersion ) + " with " + toString( this->platformInfo[ iPlatformID ].uiDeviceCount ) + " device(s)" ,
+			std::string( sPlatformNo.size(), ' ' ) + std::string( this->platformInfo[ iPlatformID ].cVersion ) + " with " + std::to_string( this->platformInfo[ iPlatformID ].uiDeviceCount ) + " device(s)" ,
 			true,
 			wColour
 		);
@@ -394,7 +365,7 @@ void	CExecutorControlOpenCL::selectDevice( unsigned int uiDeviceNo )
 		return;
 	} else {
 		pManager->log->writeLine(
-			"Selected device: #" + toString( uiDeviceNo )
+			"Selected device: #" + std::to_string( uiDeviceNo )
 		);
 	}
 

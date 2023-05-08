@@ -18,9 +18,6 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/algorithm/string.hpp>
 #include "../../common.h"
 #include "COCLProgram.h"
 #include "COCLKernel.h"
@@ -79,7 +76,7 @@ bool COCLProgram::compileProgram(
 	// For intel debugging only!
 	//this->sCompileParameters += " -g";
 
-	pManager->log->writeLine( "Compiling a new program for device #" + toString( this->device->getDeviceID() ) + "." );
+	pManager->log->writeLine( "Compiling a new program for device #" + std::to_string( this->device->getDeviceID() ) + "." );
 
 	// Should we add standard elements to the code stack first?
 	if ( bIncludeStandardElements )
@@ -105,7 +102,7 @@ bool COCLProgram::compileProgram(
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not create a program to run on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not create a program to run on device #" + std::to_string( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return false;
@@ -123,7 +120,7 @@ bool COCLProgram::compileProgram(
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not build the program to run on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not build the program to run on device #" + std::to_string( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		pManager->log->writeDivide();
@@ -133,7 +130,7 @@ bool COCLProgram::compileProgram(
 		return false;
 	}
 
-	pManager->log->writeLine( "Program successfully compiled for device #" + toString( this->device->getDeviceID() ) + "." );
+	pManager->log->writeLine( "Program successfully compiled for device #" + std::to_string( this->device->getDeviceID() ) + "." );
 
 	std::string sBuildLog = this->getCompileLog();
 	if ( sBuildLog.length() > 0 )
@@ -252,7 +249,7 @@ std::string COCLProgram::getCompileLog()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Could not obtain a build log for the program on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not obtain a build log for the program on device #" + std::to_string( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return "An error occured";
@@ -273,7 +270,7 @@ std::string COCLProgram::getCompileLog()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Could not obtain a build log for the program on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not obtain a build log for the program on device #" + std::to_string( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return "An error occured";
@@ -284,7 +281,9 @@ std::string COCLProgram::getCompileLog()
 	sLog = std::string( cBuildLog );
 	delete[] cBuildLog;
 
-	boost::trim(sLog);
+	//TODO: Alaa, it works for now but porbably need to do it in a better way?
+	//boost::trim(sLog);
+	sLog.erase(sLog.find_last_not_of(" \n\r\t") + 1);
 	return sLog;
 }
 

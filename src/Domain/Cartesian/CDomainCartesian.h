@@ -41,12 +41,12 @@ class CDomainCartesian : public CDomain
 
 		// Public functions
 		// - Replacements for CDomain stubs
-		bool			configureDomain( XMLElement* );							// Configure a domain, loading data etc.
+		bool			configureDomain();										// Configure a domain, loading data etc.
 		virtual	unsigned char	getType()										{ return model::domainStructureTypes::kStructureCartesian; };	// Fetch a type code
 		virtual	CDomainBase::DomainSummary getSummary();						// Fetch summary information for this domain
 		bool			validateDomain( bool );									// Verify required data is available
-		bool		    loadInitialConditions( XMLElement* );					// Load the initial condition raster/constant data
-		bool			loadOutputDefinitions( XMLElement* );					// Load the output file definitions
+		bool		    loadInitialConditions( );					// Load the initial condition raster/constant data
+		bool			loadOutputDefinitions( );					// Load the output file definitions
 		void			prepareDomain();										// Create memory structures etc.
 		void			logDetails();											// Log details about the domain
 		void			writeOutputs();											// Write output files to disk

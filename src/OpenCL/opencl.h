@@ -44,7 +44,7 @@ extern "C" {
 #include <CL/cl.h>
 #include <CL/cl_gl.h>
 #ifndef USE_SIMPLE_ARCH_OPENCL
-#include <CL/cl_gl_ext.h>
+//#include <CL/cl_gl_ext.h>
 #endif
 #include <CL/cl_ext.h>
 
