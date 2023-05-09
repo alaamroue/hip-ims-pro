@@ -19,7 +19,7 @@
 
 // Includes
 #include "../common.h"
-#include "../main.h"
+#include "../main2.h"
 #include <sstream>
 
 /*
@@ -210,7 +210,7 @@ void CLog::writeHeader(void)
  */
 void CLog::setPath()
 {
-	std::string sPath = std::string( model::logFile );
+	std::string sPath = std::string("./_modelzz.log");
 	char*		cPath = new char[ sPath.length() + 1 ];
 
 	std::strcpy( cPath, sPath.c_str() );
@@ -253,24 +253,13 @@ void CLog::writeDivide()
  */
 void CLog::setColour( unsigned short wColour )
 {
-	// This only runs for windows!
-	#ifdef PLATFORM_WIN
 	HANDLE	hOut		= GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetConsoleTextAttribute(		// Future text
 		hOut, 
 		wColour
 	);
-	#endif
-	#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-	{
-		if ( !has_colors() || !can_change_color() )
-			return;
 
-		attron(COLOR_PAIR( (int)wColour ));
-	}
-	#endif
 }
 
 /*

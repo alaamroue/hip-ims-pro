@@ -69,8 +69,8 @@ class CRasterDataset
 		//static bool		domainToRaster( const char*, std::string, CDomainCartesian*, unsigned char );		// Open a file as the dataset for writing
 		//bool			openFileRead( std::string );														// Open a file as the dataset for reading
 		//void			readMetadata();																		// Read metadata for the dataset
-		void			logDetails();																		// Write details (mainly metdata) to the log
-		bool			applyDimensionsToDomain( CDomainCartesian* );										// Applies the dimensions, offset and scaling to a domain
+		void			logDetails();																// Write details (mainly metdata) to the log
+		bool			applyDimensionsToDomain( CDomainCartesian*, CLog* log);								// Applies the dimensions, offset and scaling to a domain
 		//bool			applyDataToDomain( unsigned char, CDomainCartesian* );								// Applies first band of data in the raster to a domain variable
 		CBoundaryGridded::SBoundaryGridTransform* createTransformationForDomain(CDomainCartesian*);			// Create a transformation to match the domain
 		//double*			createArrayForBoundary(CBoundaryGridded::SBoundaryGridTransform*);					// Create an array for a boundary condition
@@ -84,6 +84,8 @@ class CRasterDataset
 		double			dOffsetX;																			// LL corner offset X
 		double			dOffsetY;																			// LL corner offset Y
 		unsigned int	uiEPSGCode;																			// EPSG projection code (0 if none)
+		void setLogger(CLog* log);
+		CLog* logger;
 
 	private:
 
@@ -94,6 +96,7 @@ class CRasterDataset
 		// Private variables
 		char*			cProjectionName;																	// String description of the projection
 		char*			cUnits;																				// Units used 
+																					//Pointer to Log Class
 
 		// Friendships
 		// ...

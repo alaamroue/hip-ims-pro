@@ -189,7 +189,8 @@ void CBoundaryGridded::prepareBoundary(
 			true,
 			true,
 			sizeof(sConfigurationSP),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -203,7 +204,8 @@ void CBoundaryGridded::prepareBoundary(
 			true,
 			true,
 			sizeof(cl_float)* this->pTransform->uiColumns * this->pTransform->uiRows * this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 
 		unsigned long ulSize;
@@ -239,7 +241,8 @@ void CBoundaryGridded::prepareBoundary(
 			true,
 			true,
 			sizeof(sConfigurationDP),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -253,7 +256,8 @@ void CBoundaryGridded::prepareBoundary(
 			true,
 			true,
 			sizeof( cl_double ) * this->pTransform->uiColumns * this->pTransform->uiRows * this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 
 		unsigned long ulSize;

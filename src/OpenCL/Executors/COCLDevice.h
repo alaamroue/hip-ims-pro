@@ -34,7 +34,7 @@ class COCLDevice
 
 	public:
 
-		COCLDevice( cl_device_id, unsigned int, unsigned int );				// Constructor
+		COCLDevice( cl_device_id, unsigned int, unsigned int, CExecutorControlOpenCL*);				// Constructor
 		~COCLDevice( void );												// Destructor
 
 		// Public structures
@@ -107,8 +107,9 @@ class COCLDevice
 		void						flushAndSetMarker();													// Set the kernel we should use to monitor completion
 		void						flush();
 		void						markerCompletion();														// Handle once the marker callback has been triggered (non-static)
-		static void CL_CALLBACK		
-									markerCallback( cl_event, cl_int, void * );								// Triggered when the marker is reached (but static...)
+		static void CL_CALLBACK		markerCallback( cl_event, cl_int, void * );								// Triggered when the marker is reached (but static...)
+		CLog* logger;
+		CExecutorControlOpenCL* cExecutorControlOpenCL;
 
 	private:
 

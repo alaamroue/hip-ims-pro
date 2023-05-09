@@ -16,8 +16,7 @@
  * ------------------------------------------
  *
  */
-#ifndef HIPIMS_COMMON_H_
-#define HIPIMS_COMMON_H_
+#pragma once
 
 // Base includes
 #include "util.h"
@@ -26,10 +25,6 @@
 
 
 #include "Platforms/windows_platform.h"
-
-//#define DEBUG_MPI 1
-
-//#define std::to_string(s) std::to_string(s)
 
 // Windows-specific includes
 #include <tchar.h>
@@ -42,6 +37,34 @@
 // Basic functions and variables used throughout
 namespace model
 {
+	// Application author details
+	const std::string appName = "High-performance Integrated Modelling System";
+	const std::string appAuthor = "Luke S. Smith and Qiuhua Liang";
+	const std::string appContact = "luke@smith.ac";
+	const std::string appUnit = "School of Civil Engineering and Geosciences";
+	const std::string appOrganisation = "Newcastle University";
+	const std::string appRevision = "$Revision: 717 $";
+
+	// Application version details
+	const unsigned int appVersionMajor = 0;	// Major 
+	const unsigned int appVersionMinor = 2;	// Minor
+	const unsigned int appVersionRevision = 0;	// Revision
+
+	// Data structures used in interop
+	struct DomainData
+	{
+		double			dResolution;
+		double			dWidth;
+		double			dHeight;
+		double			dCornerWest;
+		double			dCornerSouth;
+		unsigned long	ulCellCount;
+		unsigned long	ulRows;
+		unsigned long	ulCols;
+		unsigned long	ulBoundaryCells;
+		unsigned long	ulBoundaryOthers;
+	};
+
 // Application return codes
 namespace appReturnCodes{ enum appReturnCodes {
 	kAppSuccess							= 0,	// Success
@@ -66,8 +89,7 @@ namespace floatPrecision{
 	};
 }
 
-extern	CModel*			pManager;
-extern  char*			codeDir;
+//extern	CModel*			pManager;
 void					doError( std::string, unsigned char );
 }
 
@@ -75,6 +97,4 @@ void					doError( std::string, unsigned char );
 
 
 // Variables in use throughput
-using	model::pManager;
-
-#endif
+//using	model::pManager;

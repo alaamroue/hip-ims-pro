@@ -47,7 +47,7 @@ CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
 	this->bSent 		= true;
 	this->uiSmallestOverlap = 999999999;
 
-	pManager->log->writeLine("Generating link definitions between domains #" + std::to_string(this->uiTargetDomainID + 1) 
+	logger->writeLine("Generating link definitions between domains #" + std::to_string(this->uiTargetDomainID + 1) 
 		+ " and #" + std::to_string(this->uiSourceDomainID + 1));
 
 	this->generateDefinitions( pTarget, pSource );

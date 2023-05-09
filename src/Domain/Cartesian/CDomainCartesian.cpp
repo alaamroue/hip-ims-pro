@@ -21,7 +21,7 @@
 #include <cstring>
 
 #include "../../common.h"
-#include "../../main.h"
+#include "../../main2.h"
 #include "../../CModel.h"
 #include "../CDomainManager.h"
 #include "../CDomain.h"
@@ -38,6 +38,13 @@
  */
 CDomainCartesian::CDomainCartesian(void)
 {
+
+}
+CDomainCartesian::CDomainCartesian(CModel* cModel)
+{
+	this->logger = cModel->getLogger();
+	this->cExecutorControlOpenCL = cModel->getExecutor();
+	this->pDevice = cModel->getExecutor()->getDevice(1);       //TODO: Alaa why is it device 1, and wouldn't this cause problems? Maybe review the old code, I changed a lot in this.
 	// Default values will trigger errors on validation
 	this->dCellResolution			= std::numeric_limits<double>::quiet_NaN();
 	this->dRealDimensions[kAxisX]	= std::numeric_limits<double>::quiet_NaN();
@@ -70,6 +77,7 @@ bool CDomainCartesian::configureDomain()
 	
 	CRasterDataset	pDataset;
 
+	pDataset.setLogger(logger);
 	pDataset.bAvailable = true;
 	pDataset.ulColumns = 100;
 	pDataset.ulRows = 100;
@@ -95,6 +103,7 @@ bool CDomainCartesian::configureDomain()
 	
 	//Set Up Boundry
 	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(this->getBoundaries()->pDomain);
+	pNewBoundary->logger = logger;
 	pNewBoundary->sName = std::string("TimeSeriesName");
 	pNewBoundary->size = 5;
 	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
@@ -107,22 +116,6 @@ bool CDomainCartesian::configureDomain()
 
 	this->getBoundaries()->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
-
-	pScheme = CScheme::createScheme(model::schemeTypes::kGodunov);
-	pScheme->setCourantNumber(0.5);
-	pScheme->setFrictionStatus(false);
-	pScheme->setCachedWorkgroupSize(1, 1);
-	pScheme->setNonCachedWorkgroupSize(1, 1);
-
-	pScheme->setDomain( this );
-
-	pScheme->prepareAll();
-	setScheme( pScheme );
-
-	pManager->log->writeLine( "Numerical scheme reports is ready." );
-	pManager->log->writeLine( "Progressing to load initial conditions." );
-
-	this->loadInitialConditions();
 
 	return true;
 }
@@ -227,7 +220,7 @@ bool	CDomainCartesian::loadOutputDefinitions()
 
 	addOutput( pOutput );
 
-	pManager->log->writeLine( "Identified " + std::to_string( this->pOutputs.size() ) + " output file definition(s)." );
+	logger->writeLine( "Identified " + std::to_string( this->pOutputs.size() ) + " output file definition(s)." );
 
 	return true;
 }
@@ -403,25 +396,25 @@ void	CDomainCartesian::prepareDomain()
  */
 void	CDomainCartesian::logDetails()
 {
-	pManager->log->writeDivide();
+	logger->writeDivide();
 	unsigned short	wColour			= model::cli::colourInfoBlock;
 
-	pManager->log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
+	logger->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
 	if ( this->ulProjectionCode > 0 ) 
 	{
-		pManager->log->writeLine( "  Projection:        EPSG:" + std::to_string( this->ulProjectionCode ), true, wColour );
+		logger->writeLine( "  Projection:        EPSG:" + std::to_string( this->ulProjectionCode ), true, wColour );
 	} else {
-		pManager->log->writeLine( "  Projection:        Unknown", true, wColour );
+		logger->writeLine( "  Projection:        Unknown", true, wColour );
 	}
-	pManager->log->writeLine( "  Device number:     " + std::to_string( this->pDevice->uiDeviceNo ), true, wColour );
-	pManager->log->writeLine( "  Cell count:        " + std::to_string(this->ulCellCount), true, wColour);
-	pManager->log->writeLine("  Cell resolution:   " + std::to_string(this->dCellResolution) + this->cUnits, true, wColour);
-	pManager->log->writeLine("  Cell dimensions:   [" + std::to_string(this->ulCols) + ", " +
+	logger->writeLine("  Device number:     " + std::to_string(this->pDevice->uiDeviceNo), true, wColour);
+	logger->writeLine("  Cell count:        " + std::to_string(this->ulCellCount), true, wColour);
+	logger->writeLine("  Cell resolution:   " + std::to_string(this->dCellResolution) + this->cUnits, true, wColour);
+	logger->writeLine("  Cell dimensions:   [" + std::to_string(this->ulCols) + ", " +
 		std::to_string(this->ulRows) + "]", true, wColour);
-	pManager->log->writeLine("  Real dimensions:   [" + std::to_string(this->dRealDimensions[kAxisX]) + this->cUnits + ", " +
+	logger->writeLine("  Real dimensions:   [" + std::to_string(this->dRealDimensions[kAxisX]) + this->cUnits + ", " +
 		std::to_string(this->dRealDimensions[kAxisY]) + this->cUnits + "]", true, wColour);
 
-	pManager->log->writeDivide();
+	logger->writeDivide();
 }
 
 /*

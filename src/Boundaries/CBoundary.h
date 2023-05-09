@@ -94,6 +94,7 @@ public:
 
 	static int			uiInstances;
 	std::string			sName;
+	CLog* logger;
 
 protected:	
 

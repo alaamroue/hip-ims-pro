@@ -17,51 +17,37 @@
  * ------------------------------------------
  *
  */
-
 // Includes
-#include "main.h"
+#include "main2.h"
 #include "CModel.h"
 #include "Datasets/CRasterDataset.h"
 #include "OpenCL/Executors/COCLDevice.h"
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
+#include "Schemes\CSchemeGodunov.h"
 
 // Globals
-CModel*					model::pManager;
-char*					model::logFile;
-char*					model::codeDir;
-bool					model::quietMode;
-bool					model::forceAbort;
-bool					model::gdalInitiated;
-bool					model::disableScreen;
-bool					model::disableConsole;
+CModel* pManager;
+int loadConfiguration();
+int commenceSimulation();
+int closeConfiguration();
+int doClose(int iCode);
 
-
+//CModel*					model::pManager;
 
 /*
  *  Application entry-point. 
  */
-int _tmain(int argc, char* argv[])
+int main()
 {
-
-	// Default configurations
-	model::logFile = new char[50];
-	model::codeDir		= NULL;
-	model::quietMode	= false;
-	model::forceAbort	= false;
-	model::gdalInitiated = true;
-	model::disableScreen = true;
-	model::disableConsole = false;
-
-	std::strcpy( model::logFile,    "./_modelzz.log" );
 
 	// Nasty function calls for Windows console stuff
 	system("color 17");
 	SetConsoleTitle("HiPIMS Simulation Engine");
 
-	int iReturnCode = model::loadConfiguration();
-	iReturnCode = model::commenceSimulation();
-	iReturnCode = model::closeConfiguration();
+	int iReturnCode = loadConfiguration();
+	iReturnCode = commenceSimulation();
+	iReturnCode = closeConfiguration();
 
 	return iReturnCode;
 }
@@ -72,26 +58,38 @@ int _tmain(int argc, char* argv[])
 /*
  *  Load the specified model config file and probe for devices etc.
  */
-int model::loadConfiguration()
+int loadConfiguration()
 {
 	pManager	= new CModel();
-	CDomainManager* pManagerDomains = pManager->getDomainSet();						//Read Domain and Boundries
-
 
 	pManager->setExecutorToDefaultGPU();											//Set Executor to a default GPU Config
 	pManager->setName("Name");														//Set Name
 	pManager->setDescription("The Description");									//Set Description
-	pManager->setSimulationLength(3600*20);											//Set Simulation Length
-	pManager->setOutputFrequency(3600*20/20);												//Set Output Frequency
-	pManager->setFloatPrecision(model::floatPrecision::kDouble);					//Set Precision 
+	pManager->setSimulationLength(3600);											//Set Simulation Length
+	pManager->setOutputFrequency(3600);												//Set Output Frequency
+	pManager->setFloatPrecision(model::floatPrecision::kDouble);					//Set Precision
+	pManager->setCourantNumber(0.5);
+	pManager->setFrictionStatus(false);
+	pManager->setCachedWorkgroupSize(1, 1);
+	pManager->setNonCachedWorkgroupSize(1, 1);
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
 
-	//Create new Domain
-	CDomainCartesian* ourCartesianDomain = new CDomainCartesian;				//Creeate a new Domain
-	static_cast<CDomain*>(ourCartesianDomain)->setDevice(pManager->getExecutor()->getDevice(1));    //TODO: Alaa it not always 1 is it? Review the original code
-	
-	if (!ourCartesianDomain->configureDomain()) return 4141;
-	
+	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
+	ourCartesianDomain->configureDomain();
+
+
+
+	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
+	pScheme->setDomain(ourCartesianDomain);
+	pScheme->prepareAll();
+
+	ourCartesianDomain->setScheme(pScheme);
+	pManager->log->writeLine("Numerical scheme reports is ready.");
+	pManager->log->writeLine("Progressing to load initial conditions.");
+	ourCartesianDomain->loadInitialConditions();
+
+	CDomainManager* pManagerDomains = pManager->getDomainSet();
+
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking
@@ -108,10 +106,10 @@ int model::loadConfiguration()
 /*
  *  Read in configuration file and launch a new simulation
  */
-int model::commenceSimulation()
+int commenceSimulation()
 {
 	if ( !pManager ) 
-		return model::doClose(
+		return doClose(
 			model::appReturnCodes::kAppInitFailure	
 		);
 
@@ -124,7 +122,7 @@ int model::commenceSimulation()
 			"Simulation start failed.",
 			model::errorCodes::kLevelModelStop
 		);
-		return model::doClose( 
+		return doClose( 
 			model::appReturnCodes::kAppFatal 
 		);
 	}
@@ -138,9 +136,9 @@ int model::commenceSimulation()
 /*
  *  Close down the simulation
  */
-int model::closeConfiguration()
+int closeConfiguration()
 {
-	return model::doClose( 
+	return doClose( 
 		model::appReturnCodes::kAppSuccess 
 	);
 }
@@ -148,29 +146,15 @@ int model::closeConfiguration()
 /*
  *  Model is complete.
  */
-int model::doClose( int iCode )
+int doClose( int iCode )
 {
 	CRasterDataset::cleanupAll();
 	delete pManager;
-	delete [] model::logFile;			// TODO: Fix me...
-	delete [] model::codeDir;
-	model::doPause();
+	std::getchar();
 
 	pManager			= NULL;
-	//model::workingDir	= NULL;
-	model::logFile		= NULL;
 
 	return iCode;
-}
-
-/*
- *  Suspend the application temporarily pending the user
- *  pressing return to continue.
- */
-void model::doPause()
-{
-	if ( model::quietMode ) return;
-	//std::getchar();
 }
 
 /*
@@ -180,11 +164,9 @@ void model::doError( std::string sError, unsigned char cError )
 {
 	pManager->log->writeError( sError, cError );
 	if ( cError & model::errorCodes::kLevelModelStop )
-		model::forceAbort = true;
+		pManager->forcedAbort = true;
 	if ( cError & model::errorCodes::kLevelFatal )
 	{
-		model::doPause();
-		
+		std::getchar();
 	}
 }
-

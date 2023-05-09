@@ -53,7 +53,7 @@ class CSchemeMUSCLHancock : public CSchemeGodunov
 
 	public:
 
-		CSchemeMUSCLHancock( void );										// Constructor
+		CSchemeMUSCLHancock(CLog* logger);										// Constructor
 		virtual ~CSchemeMUSCLHancock( void );								// Destructor
 
 		// Public functions

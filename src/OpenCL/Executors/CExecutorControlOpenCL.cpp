@@ -34,7 +34,6 @@ CExecutorControlOpenCL::CExecutorControlOpenCL(void)
 
 	if ( !this->getPlatforms() ) return;
 
-	this->logPlatforms();
 }
 
 /*
@@ -75,7 +74,7 @@ CExecutorControlOpenCL::~CExecutorControlOpenCL(void)
 	this->pDevices.clear();
 	delete [] this->clPlatforms;
 
-	pManager->log->writeLine( "The OpenCL executor is now unloaded." );
+	logger->writeLine( "The OpenCL executor is now unloaded." );
 }
 
 /*
@@ -148,31 +147,30 @@ bool CExecutorControlOpenCL::getPlatforms(void)
  */
 void CExecutorControlOpenCL::logPlatforms(void)
 {
-	CLog*		pLog			= pManager->log;
 	std::string	sPlatformNo;
 
 	unsigned short	wColour		= model::cli::colourInfoBlock;
 
-	pLog->writeDivide();
-	pLog->writeLine( "OPENCL PLATFORMS", true, wColour );
+	logger->writeDivide();
+	logger->writeLine( "OPENCL PLATFORMS", true, wColour );
 
 	for ( unsigned int iPlatformID = 0; iPlatformID < this->clPlatformCount; iPlatformID++ )
 	{
 		sPlatformNo = "  " + std::to_string( iPlatformID + 1 ) + ". ";
 
-		pLog->writeLine( 
+		logger->writeLine(
 			sPlatformNo + this->platformInfo[ iPlatformID ].cName,
 			true,
 			wColour
 		);
-		pLog->writeLine( 
+		logger->writeLine(
 			std::string( sPlatformNo.size(), ' ' ) + std::string( this->platformInfo[ iPlatformID ].cVersion ) + " with " + std::to_string( this->platformInfo[ iPlatformID ].uiDeviceCount ) + " device(s)" ,
 			true,
 			wColour
 		);
 	}
 
-	pLog->writeDivide();
+	logger->writeDivide();
 }
 
 /*
@@ -214,7 +212,8 @@ bool CExecutorControlOpenCL::createDevices(void)
 			pDevice = new COCLDevice(
 				clDevice[ iDeviceID ],
 				iPlatformID,
-				uiDeviceCount
+				uiDeviceCount,
+				this
 			);
 
 			if ( pDevice->isReady() )		
@@ -230,11 +229,11 @@ bool CExecutorControlOpenCL::createDevices(void)
 					uiDeviceCount++;
 					pDevice->logDevice();
 				} else {
-					pManager->log->writeLine( "Device type is filtered." );
+					logger->writeLine( "Device type is filtered." );
 					delete pDevice;
 				}
 			} else {
-				pManager->log->writeLine( "Device is not ready." );
+				logger->writeLine( "Device is not ready." );
 				delete pDevice;
 			}
 		}
@@ -245,7 +244,7 @@ bool CExecutorControlOpenCL::createDevices(void)
 
 	delete[] clDevice;
 
-	pManager->log->writeLine( "The OpenCL executor is now fully loaded." );
+	logger->writeLine( "The OpenCL executor is now fully loaded." );
 	this->setState( model::executorStates::executorReady );
 
 	return true;
@@ -364,7 +363,7 @@ void	CExecutorControlOpenCL::selectDevice( unsigned int uiDeviceNo )
 		);
 		return;
 	} else {
-		pManager->log->writeLine(
+		logger->writeLine(
 			"Selected device: #" + std::to_string( uiDeviceNo )
 		);
 	}

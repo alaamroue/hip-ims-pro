@@ -44,7 +44,7 @@ CDomainManager::~CDomainManager(void)
 	for (unsigned int uiID = 0; uiID < domains.size(); ++uiID)
 		delete domains[uiID];
 
-	pManager->log->writeLine("The domain manager has been unloaded.");
+	logger->writeLine("The domain manager has been unloaded.");
 }
 
 /*
@@ -52,14 +52,14 @@ CDomainManager::~CDomainManager(void)
  */
 bool CDomainManager::setupFromConfig()
 {
-
+	/*
 	//this->setSyncMethod(model::syncMethod::kSyncTimestep);
 	//this->setSyncMethod(model::syncMethod::kSyncForecast);
 	//this->setSyncBatchSpares(boost::lexical_cast<unsigned int>(??));
 
 	CDomainBase* pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
-	pManager->log->writeLine("ocal device IDs are relative to # 1." );
-	pManager->log->writeLine("Assigning domain to device #1 ."  );
+	logger->writeLine("ocal device IDs are relative to # 1." );
+	logger->writeLine("Assigning domain to device #1 ."  );
 	static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(1));
 
 	//Domain Data
@@ -74,7 +74,7 @@ bool CDomainManager::setupFromConfig()
 	this->generateLinks();
 	this->logDetails();
 	if (!this->checkDomainLinks()) return false;
-
+	*/
 	return true;
 }
 
@@ -89,7 +89,7 @@ CDomainBase*	CDomainManager::createNewDomain( unsigned char ucType )
 	domains.push_back( pNewDomain );
 	pNewDomain->setID( uiID );
 
-	pManager->log->writeLine( "A new domain has been created within the model." );
+	logger->writeLine( "A new domain has been created within the model." );
 
 	return pNewDomain;
 }
@@ -223,7 +223,7 @@ bool	CDomainManager::isSetReady()
  */
 void	CDomainManager::generateLinks()
 {
-	pManager->log->writeLine("Generating link data for each domain");
+	logger->writeLine("Generating link data for each domain");
 
 	for (unsigned int i = 0; i < domains.size(); i++)
 	{
@@ -240,6 +240,7 @@ void	CDomainManager::generateLinks()
 			{
 				// Make a new link...
 				CDomainLink* pNewLink = new CDomainLink(domains[i], domains[j]);
+				pNewLink->logger = logger;
 				domains[i]->addLink(pNewLink);
 				domains[j]->addDependentLink(pNewLink);
 			}
@@ -252,30 +253,30 @@ void	CDomainManager::generateLinks()
  */
 void	CDomainManager::logDetails()
 {
-	pManager->log->writeDivide();
+	logger->writeDivide();
 	unsigned short	wColour = model::cli::colourInfoBlock;
 
-	pManager->log->writeLine("MODEL DOMAIN SET", true, wColour);
-	pManager->log->writeLine("  Domain count:      " + std::to_string(this->getDomainCount()), true, wColour);
+	logger->writeLine("MODEL DOMAIN SET", true, wColour);
+	logger->writeLine("  Domain count:      " + std::to_string(this->getDomainCount()), true, wColour);
 	if (this->getDomainCount() <= 1)
 	{
-		pManager->log->writeLine("  Synchronisation:   Not required", true, wColour);
+		logger->writeLine("  Synchronisation:   Not required", true, wColour);
 	}
 	else {
 		if (this->getSyncMethod() == model::syncMethod::kSyncForecast)
 		{
-			pManager->log->writeLine("  Synchronisation:   Domain-independent forecast", true, wColour);
-			pManager->log->writeLine("    Forecast method: Aiming for " + std::to_string(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
+			logger->writeLine("  Synchronisation:   Domain-independent forecast", true, wColour);
+			logger->writeLine("    Forecast method: Aiming for " + std::to_string(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
 		}
 		if (this->getSyncMethod() == model::syncMethod::kSyncTimestep)
-			pManager->log->writeLine("  Synchronisation:   Explicit timestep exchange", true, wColour);
+			logger->writeLine("  Synchronisation:   Explicit timestep exchange", true, wColour);
 	}
 
-	pManager->log->writeLine("", false, wColour);
+	logger->writeLine("", false, wColour);
 
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
-	pManager->log->writeLine("| Domain | Node | Device |  Rows  |  Cols  | Maths | Links | Resol |", false, wColour);
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
+	logger->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
+	logger->writeLine("| Domain | Node | Device |  Rows  |  Cols  | Maths | Links | Resol |", false, wColour);
+	logger->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
 
 	for (unsigned int i = 0; i < this->getDomainCount(); i++)
 	{
@@ -301,12 +302,12 @@ void	CDomainManager::logDetails()
 			resolutionShort.c_str()
 		);
 
-		pManager->log->writeLine(std::string(cDomainLine), false, wColour);	// 13
+		logger->writeLine(std::string(cDomainLine), false, wColour);	// 13
 	}
 
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
+	logger->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
 
-	pManager->log->writeDivide();
+	logger->writeDivide();
 }
 
 bool CDomainManager::checkDomainLinks()
@@ -330,10 +331,10 @@ bool CDomainManager::checkDomainLinks()
 void CDomainManager::logDomainMultiOrSingle()
 {
 	if (domains.size() <= 1) {
-		pManager->log->writeLine("This is a SINGLE-DOMAIN model, limited to 1 device.");
+		logger->writeLine("This is a SINGLE-DOMAIN model, limited to 1 device.");
 	}
 	else {
-		pManager->log->writeLine("This is a MULTI-DOMAIN model, and possibly multi-device.");
+		logger->writeLine("This is a MULTI-DOMAIN model, and possibly multi-device.");
 	}
 }
 

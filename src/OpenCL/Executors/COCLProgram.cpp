@@ -76,20 +76,20 @@ bool COCLProgram::compileProgram(
 	// For intel debugging only!
 	//this->sCompileParameters += " -g";
 
-	pManager->log->writeLine( "Compiling a new program for device #" + std::to_string( this->device->getDeviceID() ) + "." );
+	logger->writeLine("Compiling a new program for device #" + std::to_string(this->device->getDeviceID()) + ".");
 
 	// Should we add standard elements to the code stack first?
-	if ( bIncludeStandardElements )
+	if (bIncludeStandardElements)
 	{
-		this->prependCodeFromResource( "CLUniversalHeader_H" );						// Standard header with things like gravitational acceleration.
-		this->prependCode( this->getExtensionsHeader() );							// Required for double-precision etc.
-		this->prependCode( this->getConstantsHeader() );							// Domain constant data (i.e. rows, cols etc.)
+		this->prependCodeFromResource("CLUniversalHeader_H");						// Standard header with things like gravitational acceleration.
+		this->prependCode(this->getExtensionsHeader());							// Required for double-precision etc.
+		this->prependCode(this->getConstantsHeader());							// Domain constant data (i.e. rows, cols etc.)
 	}
 
-	cl_uint			uiStackLength	= static_cast<cl_uint>( oclCodeStack.size() );
-	OCL_RAW_CODE*	orcCode			= new char* [ uiStackLength ];
-	for ( unsigned int i = 0; i < uiStackLength; i++ )
-		orcCode[ i ] = oclCodeStack[ i ];
+	cl_uint			uiStackLength = static_cast<cl_uint>(oclCodeStack.size());
+	OCL_RAW_CODE* orcCode = new char* [uiStackLength];
+	for (unsigned int i = 0; i < uiStackLength; i++)
+		orcCode[i] = oclCodeStack[i];
 
 	clProgram = clCreateProgramWithSource(
 		this->clContext,
@@ -99,10 +99,10 @@ bool COCLProgram::compileProgram(
 		&iErrorID
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
-			"Could not create a program to run on device #" + std::to_string( this->device->getDeviceID() ) + ".",
+			"Could not create a program to run on device #" + std::to_string(this->device->getDeviceID()) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return false;
@@ -117,33 +117,33 @@ bool COCLProgram::compileProgram(
 		NULL																			// Callback data
 	);
 
-	if ( iErrorID != CL_SUCCESS )
+	if (iErrorID != CL_SUCCESS)
 	{
 		model::doError(
-			"Could not build the program to run on device #" + std::to_string( this->device->getDeviceID() ) + ".",
+			"Could not build the program to run on device #" + std::to_string(this->device->getDeviceID()) + ".",
 			model::errorCodes::kLevelModelStop
 		);
-		pManager->log->writeDivide();
-		pManager->log->writeLine( this->getCompileLog(), false );
-		pManager->log->writeDivide();
-		pManager->log->writeDebugFile( orcCode, uiStackLength );
+		logger->writeDivide();
+		logger->writeLine(this->getCompileLog(), false);
+		logger->writeDivide();
+		logger->writeDebugFile(orcCode, uiStackLength);
 		return false;
 	}
 
-	pManager->log->writeLine( "Program successfully compiled for device #" + std::to_string( this->device->getDeviceID() ) + "." );
+	logger->writeLine("Program successfully compiled for device #" + std::to_string(this->device->getDeviceID()) + ".");
 
 	std::string sBuildLog = this->getCompileLog();
-	if ( sBuildLog.length() > 0 )
+	if (sBuildLog.length() > 0)
 	{
-		model::doError( "Some messages were reported while building.", model::errorCodes::kLevelWarning );
-		pManager->log->writeDivide();
-		pManager->log->writeLine( sBuildLog, false );
-		pManager->log->writeDivide();
+		model::doError("Some messages were reported while building.", model::errorCodes::kLevelWarning);
+		logger->writeDivide();
+		logger->writeLine(sBuildLog, false);
+		logger->writeDivide();
 	}
 
 	// Write debug file containing the concatenated code
 	// TODO: Make debug outputs configurable/optional/debug only
-	pManager->log->writeDebugFile( orcCode, uiStackLength );
+	logger->writeDebugFile( orcCode, uiStackLength );
 
 	delete[] orcCode;
 

@@ -89,6 +89,8 @@ class CDomain : public CDomainBase
 		CScheme*					getScheme();													// Get the scheme running for this domain
 		void						setDevice( COCLDevice* );										// Set the device responsible for running this domain
 		COCLDevice*					getDevice();													// Get the device responsible for running this domain
+		void						setLogger(CLog* clog);											// Set reference to the CLog Class
+		CExecutorControlOpenCL* cExecutorControlOpenCL;
 
 		#ifdef _WINDLL
 		virtual void				sendAllToRenderer() {};											// Allows the renderer to read off the bed elevations
@@ -117,9 +119,11 @@ class CDomain : public CDomainBase
 		CBoundaryMap*		pBoundaries;															// Boundary map (management)
 		CScheme*			pScheme;																// Scheme we are running for this particular domain
 		COCLDevice*			pDevice;																// Device responsible for running this domain
+		CLog* logger;																				// Pointer to the logger class 
 
 		// Private functions
 		unsigned char		getDataValueCode( char* );												// Get a raster dataset code from text description
+
 };
 
 #endif

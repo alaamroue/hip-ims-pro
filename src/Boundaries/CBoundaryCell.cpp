@@ -327,7 +327,8 @@ void CBoundaryCell::prepareBoundary(
 			true,
 			true,
 			sizeof(sConfigurationSP),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -341,7 +342,8 @@ void CBoundaryCell::prepareBoundary(
 			true,
 			true,
 			sizeof(cl_float4)* this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 		cl_float4 *pTimeseries = this->pBufferTimeseries->getHostBlock<cl_float4*>();
 		for (unsigned int i = 0; i < this->uiTimeseriesLength; ++i)
@@ -373,7 +375,8 @@ void CBoundaryCell::prepareBoundary(
 			true,
 			true,
 			sizeof( sConfigurationDP ),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -387,7 +390,8 @@ void CBoundaryCell::prepareBoundary(
 			true,
 			true,
 			sizeof(cl_double4)* this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 		cl_double4 *pTimeseries = this->pBufferTimeseries->getHostBlock<cl_double4*>();
 		for (unsigned int i = 0; i < this->uiTimeseriesLength; ++i)
@@ -417,7 +421,8 @@ void CBoundaryCell::prepareBoundary(
 		true,
 		true,
 		sizeof( cl_ulong ) * this->uiRelationCount,
-		true
+		true,
+		logger
 	);
 	// This is a bit of a mess... but it works...
 	CDomainCartesian* pDomainCart = static_cast<CDomainCartesian*>(this->pDomain);

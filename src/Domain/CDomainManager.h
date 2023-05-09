@@ -75,6 +75,9 @@ class CDomainManager
 		void					logDetails();														// Spit out some information
 		void					generateLinks();													// Generate domain link records
 		void					logDomainMultiOrSingle();											//Log if domain is Signle or Multi
+		CLog* logger;
+		CExecutorControlOpenCL* cExecutorControlOpenCL;
+
 
 	protected:
 

@@ -21,6 +21,7 @@
 #include "../common.h"
 #include "CRasterDataset.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
+#include "../General/CLog.h"
 
 using std::min;
 using std::max;
@@ -31,6 +32,7 @@ using std::max;
 CRasterDataset::CRasterDataset()
 {
 	this->bAvailable = false;
+	this->logger = nullptr;
 }
 
 /*
@@ -334,22 +336,22 @@ void	CRasterDataset::logDetails()
 {
 	if ( !this->bAvailable ) return;
 
-	pManager->log->writeDivide();
-	pManager->log->writeLine( "Dataset band count:  " + std::to_string( this->uiBandCount ) );
-	pManager->log->writeLine( "Cell dimensions:     [" + std::to_string( this->ulColumns ) + ", " + std::to_string( this->ulRows ) + "]" );
-	pManager->log->writeLine( "Cell resolution:     [" + std::to_string( this->dResolutionX ) + ", " + std::to_string( this->dResolutionY ) + "]" );
-	pManager->log->writeLine( "Lower-left offset:   [" + std::to_string( this->dOffsetX ) + ", " + std::to_string( this->dOffsetY ) + "]" );
-	pManager->log->writeDivide();
+	logger->writeDivide();
+	logger->writeLine( "Dataset band count:  " + std::to_string( this->uiBandCount ) );
+	logger->writeLine( "Cell dimensions:     [" + std::to_string( this->ulColumns ) + ", " + std::to_string( this->ulRows ) + "]" );
+	logger->writeLine( "Cell resolution:     [" + std::to_string( this->dResolutionX ) + ", " + std::to_string( this->dResolutionY ) + "]" );
+	logger->writeLine( "Lower-left offset:   [" + std::to_string( this->dOffsetX ) + ", " + std::to_string( this->dOffsetY ) + "]" );
+	logger->writeDivide();
 }
 
 /*
  *  Apply the dimensions taken from the raster dataset to form the domain class structure
  */
-bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain )
+bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain, CLog* log)
 {
 	if ( !this->bAvailable ) return false;
 
-	pManager->log->writeLine( "Dimensioning domain from raster dataset." );
+	log->writeLine( "Dimensioning domain from raster dataset." );
 
 	pDomain->setProjectionCode( 0 );					// Unknown
 	pDomain->setUnits( "m" );							
@@ -547,4 +549,8 @@ void	CRasterDataset::getValueDetails( unsigned char ucValue, std::string* sValue
 		*sValueName  = "unknown value";
 		break;
 	}
+}
+
+void CRasterDataset::setLogger(CLog* log) {
+	this->logger = log;
 }

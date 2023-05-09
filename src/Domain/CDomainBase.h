@@ -110,6 +110,10 @@ class CDomainBase
 		virtual unsigned long		getCellID(unsigned long, unsigned long);						// Get the cell ID using an X and Y index
 		virtual mpiSignalDataProgress getDataProgress()		{ return pDataProgress; };				// Fetch some data on this domain's progress
 		virtual void 				setDataProgress( mpiSignalDataProgress a )	{ pDataProgress = a; };	// Set some data on this domain's progress
+		void setLogger(CLog* log);
+		CLog* logger;
+
+
 
 	protected:
 
@@ -121,6 +125,7 @@ class CDomainBase
 		mpiSignalDataProgress pDataProgress;														// Data on this domain's progress
 		std::vector<CDomainLink*>	links;															// Vector of domain links
 		std::vector<CDomainLink*>	dependentLinks;													// Vector of dependent domain links
+
 
 };
 

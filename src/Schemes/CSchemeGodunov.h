@@ -51,8 +51,8 @@ class CSchemeGodunov : public CScheme
 {
 
 	public:
-
-		CSchemeGodunov();															// Default constructor
+		CSchemeGodunov(void);
+		CSchemeGodunov(CModel* cmodel);															// Default constructor
 		virtual ~CSchemeGodunov( void );											// Destructor
 
 		// Public functions

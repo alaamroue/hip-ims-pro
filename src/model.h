@@ -15,11 +15,22 @@ namespace model
 	const unsigned int appVersionMinor = 2;	// Minor
 	const unsigned int appVersionRevision = 0;	// Revision
 
-	// Application structure for argument names
-	struct modelArgument {
-		const char		cShort[3];
-		const char* cLong;
-		const char* cDescription;
+	// Data structures used in interop
+	struct DomainData
+	{
+		double			dResolution;
+		double			dWidth;
+		double			dHeight;
+		double			dCornerWest;
+		double			dCornerSouth;
+		unsigned long	ulCellCount;
+		unsigned long	ulRows;
+		unsigned long	ulCols;
+		unsigned long	ulBoundaryCells;
+		unsigned long	ulBoundaryOthers;
 	};
+
+
+	//extern	CModel* pManager;
 
 }

@@ -42,7 +42,7 @@ class CExecutorControlOpenCL: public CExecutorControl
 
 	public:
 
-		CExecutorControlOpenCL( void );								// Constructor
+		CExecutorControlOpenCL( void);								// Constructor
 		~CExecutorControlOpenCL( void );							// Destructor
 
 		// Public variables
@@ -61,6 +61,7 @@ class CExecutorControlOpenCL: public CExecutorControl
 		bool					createDevices( void );				// Creates new classes for each device
 		unsigned int			getDeviceCount( void )		{ return clDeviceTotal; }		// Returns the number of devices in the system
 		unsigned int			getDeviceCurrent( void )	{ return uiSelectedDeviceID; }	// Returns the active device
+		void					logPlatforms(void);						// Write platform details to the log
 
 	private:
 
@@ -87,7 +88,6 @@ class CExecutorControlOpenCL: public CExecutorControl
 		// Private functions
 		char*					getPlatformInfo( unsigned int, cl_platform_info );	// Fetches information about the platform
 		bool					getPlatforms( void );						// Discovers the platforms available
-		void					logPlatforms( void );						// Write platform details to the log
 };
 
 #endif

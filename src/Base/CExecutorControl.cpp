@@ -28,7 +28,9 @@
 /*
  *  Constructor
  */
-CExecutorControl::CExecutorControl(void)
+
+
+CExecutorControl::CExecutorControl()
 {
 	// This stub class is not enough to be ready
 	// The child classes should change this value when they're
@@ -47,7 +49,7 @@ CExecutorControl::~CExecutorControl(void)
 /*
  *  Create a new executor of the specified type (static func)
  */
-CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType )
+CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType)
 {
 	switch ( cType )
 	{
@@ -62,13 +64,13 @@ CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType )
 /*
  *  Create and configure an executor using an XML configuration node
  */
-CExecutorControl*	CExecutorControl::createFromConfig()
+CExecutorControl*	CExecutorControl::createFromConfig(CLog* log)
 {
 	CExecutorControl*	pExecutor		= NULL;
 	char*				cExecutorName	= NULL;
 
 
-	pManager->log->writeLine( "OpenCL executor specified in configuration." );
+	log->writeLine( "OpenCL executor specified in configuration." );
 	pExecutor = CExecutorControl::createExecutor(
 			model::executorTypes::executorTypeOpenCL
 		);

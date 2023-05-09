@@ -76,10 +76,11 @@ class CScheme
 	public:
 
 		CScheme();																					// Default constructor
+		CScheme(CLog* logger);																					// Default constructor
 		virtual ~CScheme( void );																	// Destructor
 
 		// Public functions
-		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
+		static CScheme*		createScheme( unsigned char, CModel* cModel);											// Instantiate a scheme
 		static CScheme*		createFromConfig();										// Parse and configure a scheme class
 
 		virtual void		setupFromConfig();							// Set up the scheme
@@ -132,6 +133,14 @@ class CScheme
 		virtual void		setCachedWorkgroupSize(unsigned char, unsigned char) = 0;				// Set the work-group size
 		virtual void		setNonCachedWorkgroupSize(unsigned char) = 0;							// Set the work-group size
 		virtual void		setNonCachedWorkgroupSize(unsigned char, unsigned char) = 0;			// Set the work-group size
+		CLog* logger;
+		CExecutorControlOpenCL* cExecutorControlOpenCL;
+		unsigned char floatPrecision;
+		double simulationLength;
+		double outputFrequency;
+		unsigned char syncMethod;
+		unsigned int domainCount;
+		unsigned int syncBatchSpares;
 	protected:
 
 		// Private functions

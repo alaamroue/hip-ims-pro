@@ -52,6 +52,7 @@ public:
 	void						setForcedSinglePrecision( bool );
 	unsigned char				getFloatForm()						{ return ( bForceSinglePrecision ? model::floatPrecision::kSingle : model::floatPrecision::kDouble ); };
 	unsigned char				getFloatSize()						{ return ( bForceSinglePrecision ? sizeof( cl_float ) : sizeof( cl_double ) ); };
+	CLog* logger;
 
 protected:
 	OCL_RAW_CODE				getConstantsHeader( void );		

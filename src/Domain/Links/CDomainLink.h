@@ -62,6 +62,7 @@ class CDomainLink
 		unsigned int		getTargetDomainID()						{ return uiTargetDomainID; }	// Fetch the target domain ID number
 		void				pullFromMPI(double, char*);												// Fetch data received via MPI
 		bool				sendOverMPI();															// Send this domain data over MPI if needed
+		CLog* logger;
 
 	protected:
 

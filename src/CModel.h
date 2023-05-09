@@ -82,12 +82,26 @@ class CModel
 		unsigned char			getFloatPrecision();							// Get floating point precision
 		void					setName( std::string );							// Sets the name
 		void					setDescription( std::string );					// Sets the description
-		void					writeOutputs();									// Produce output files
-		void					logProgress( CBenchmark::sPerformanceMetrics* );// Write the progress bar etc.
-		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );	// Callback event used when memory reads complete, for visualisation updates
+		void					writeOutputs();												// Produce output files
+		void					logProgress( CBenchmark::sPerformanceMetrics* );			// Write the progress bar etc.
+		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );				// Callback event used when memory reads complete, for visualisation updates
+		void					setCourantNumber(double);									// Set the Courant number
+		double					getCourantNumber();											// Get the Courant number
+		void					setFrictionStatus(bool);									// Enable/disable friction effects
+		bool					getFrictionStatus();										// Get enabled/disabled for friction
+		void					setCachedWorkgroupSize(unsigned char);						// Set the work-group size
+		void					setCachedWorkgroupSize(unsigned char, unsigned char);		// Set the work-group size
+		void					setNonCachedWorkgroupSize(unsigned char);					// Set the work-group size
+		void					setNonCachedWorkgroupSize(unsigned char, unsigned char);	// Set the work-group size
+		CLog*					getLogger();												// Gets a pointer to the logger class
 
 		// Public variables
 		CLog*					log;											// Handle for the log singular class
+		int						forcedAbort;									//Check if user has force an abort
+		double					dCourantNumber;									// Courant number for CFL condition
+		bool					bFrictionEffects;														// Activate friction effects?
+		cl_ulong				ulCachedWorkgroupSizeX, ulCachedWorkgroupSizeY;
+		cl_ulong				ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
 
 	private:
 

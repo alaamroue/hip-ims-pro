@@ -44,6 +44,7 @@ CDomain::CDomain(void)
 
 	this->cTargetDir				= NULL;
 	this->cSourceDir				= NULL;
+	this->logger = nullptr;
 
 	this->pBoundaries = new CBoundaryMap( this );
 }
@@ -70,7 +71,7 @@ CDomain::~CDomain(void)
 	delete [] this->cSourceDir;
 	delete [] this->cTargetDir;
 
-	pManager->log->writeLine("All domain memory has been released.");
+	logger->writeLine("All domain memory has been released.");
 }
 
 /*
@@ -194,7 +195,7 @@ void	CDomain::createStoreBuffers(
  */
 void	CDomain::initialiseMemory()
 {
-	pManager->log->writeLine( "Initialising heap domain data." );
+	logger->writeLine( "Initialising heap domain data." );
 
 	for( unsigned long i = 0; i < this->ulCellCount; i++ )
 	{
@@ -495,4 +496,8 @@ unsigned char	CDomain::getDataValueCode( char* cSourceValue )
 		return model::rasterDatasets::dataValues::kFroudeNumber;
 
 	return 255;
+}
+
+void CDomain::setLogger(CLog* log) {
+	this->logger = log;
 }

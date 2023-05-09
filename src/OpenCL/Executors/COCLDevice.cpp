@@ -25,22 +25,27 @@
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
 
+CExecutorControlOpenCL* excontroler;
+
 /*
  *  Constructor
  */
-COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigned int iDeviceNo )
+COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigned int iDeviceNo, CExecutorControlOpenCL* cExecutorControlOpenCL)
 {
 	// Store the device and platform ID
 	this->uiPlatformID			= iPlatformID;
 	this->uiDeviceNo			= iDeviceNo + 1;
 	this->clDevice				= clDevice;
-	this->execController		= pManager->getExecutor();
+	this->execController = execController;
+	excontroler = execController;
 	this->bForceSinglePrecision	= false;
 	this->bErrored				= false;
 	this->bBusy					= false;
 	this->clMarkerEvent			= NULL;
+	this->cExecutorControlOpenCL = cExecutorControlOpenCL;
+	this->logger = cExecutorControlOpenCL->logger;
 
-	pManager->log->writeLine( "Querying the suitability of a discovered device." );
+	this->logger->writeLine("Querying the suitability of a discovered device.");
 
 	this->getAllInfo();
 	this->createQueue();
@@ -51,9 +56,9 @@ COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigne
  */
 COCLDevice::~COCLDevice(void)
 {
-	clFinish( this->clQueue );
-	clReleaseCommandQueue( this->clQueue );
-	clReleaseContext( this->clContext );
+	clFinish(this->clQueue);
+	clReleaseCommandQueue(this->clQueue);
+	clReleaseContext(this->clContext);
 
 	delete[] this->clDeviceMaxWorkItemSizes;
 	delete[] this->clDeviceName;
@@ -63,7 +68,7 @@ COCLDevice::~COCLDevice(void)
 	delete[] this->clDeviceOpenCLVersion;
 	delete[] this->clDeviceOpenCLDriver;
 
-	pManager->log->writeLine( "An OpenCL device has been released (#" + std::to_string(this->uiDeviceNo) + ").");
+	logger->writeLine("An OpenCL device has been released (#" + std::to_string(this->uiDeviceNo) + ").");
 }
 
 /*
@@ -200,10 +205,9 @@ void* COCLDevice::getDeviceInfo(cl_device_info clInfo)
  */
 void COCLDevice::logDevice()
 {
-	CLog* pLog = pManager->log;
 	std::string	sPlatformNo;
 
-	pLog->writeDivide();
+	logger->writeDivide();
 
 	unsigned short	wColour = model::cli::colourInfoBlock;
 
@@ -221,26 +225,26 @@ void COCLDevice::logDevice()
 		", " << this->clDeviceMaxWorkItemSizes[1] <<
 		", " << this->clDeviceMaxWorkItemSizes[2] << "]";
 
-	pLog->writeLine("#" + std::to_string(this->uiDeviceNo) + sDeviceType, true, wColour);
+	logger->writeLine("#" + std::to_string(this->uiDeviceNo) + sDeviceType, true, wColour);
 
-	pLog->writeLine("  Suitability:       " + (std::string)(this->clDeviceAvailable ? "Available" : "Unavailable") + ", " + (std::string)(this->clDeviceCompilerAvailable ? "Compiler found" : "No compiler available"), true, wColour);
-	pLog->writeLine("  Processor type:    " + std::string(this->clDeviceName), true, wColour);
-	pLog->writeLine("  Vendor:            " + std::string(this->clDeviceVendor), true, wColour);
-	pLog->writeLine("  OpenCL driver:     " + std::string(this->clDeviceOpenCLDriver), true, wColour);
-	pLog->writeLine("  Compute units:     " + std::to_string(this->clDeviceComputeUnits), true, wColour);
-	pLog->writeLine("  Profile:           " + (std::string)(std::string(this->clDeviceProfile).compare("FULL_PROFILE") == 0 ? "Full" : "Embedded"), true, wColour);
-	pLog->writeLine("  Clock speed:       " + std::to_string(this->clDeviceClockFrequency) + " MHz", true, wColour);
-	pLog->writeLine("  Memory:            " + std::to_string((unsigned int)(this->clDeviceGlobalMemSize / 1024 / 1024)) + " Mb", true, wColour);
-	pLog->writeLine("  OpenCL C:          " + std::string(this->clDeviceOpenCLVersion), true, wColour);
-	pLog->writeLine("  Max global size:   " + std::to_string(this->clDeviceGlobalSize), true, wColour);
-	pLog->writeLine("  Max group items:   " + std::to_string(this->clDeviceMaxWorkGroupSize), true, wColour);
-	pLog->writeLine("  Max group:         " + ssGroupDimensions.str(), true, wColour);
-	pLog->writeLine("  Max constant args: " + std::to_string(this->clDeviceMaxConstants), true, wColour);
-	pLog->writeLine("  Max allocation:    " + std::to_string(this->clDeviceMaxMemAlloc / 1024 / 1024) + "MB", true, wColour);
-	pLog->writeLine("  Max argument size: " + std::to_string(this->clDeviceMaxParamSize / 1024) + "kB", true, wColour);
-	pLog->writeLine("  Double precision:  " + sDoubleSupport, true, wColour);
+	logger->writeLine("  Suitability:       " + (std::string)(this->clDeviceAvailable ? "Available" : "Unavailable") + ", " + (std::string)(this->clDeviceCompilerAvailable ? "Compiler found" : "No compiler available"), true, wColour);
+	logger->writeLine("  Processor type:    " + std::string(this->clDeviceName), true, wColour);
+	logger->writeLine("  Vendor:            " + std::string(this->clDeviceVendor), true, wColour);
+	logger->writeLine("  OpenCL driver:     " + std::string(this->clDeviceOpenCLDriver), true, wColour);
+	logger->writeLine("  Compute units:     " + std::to_string(this->clDeviceComputeUnits), true, wColour);
+	logger->writeLine("  Profile:           " + (std::string)(std::string(this->clDeviceProfile).compare("FULL_PROFILE") == 0 ? "Full" : "Embedded"), true, wColour);
+	logger->writeLine("  Clock speed:       " + std::to_string(this->clDeviceClockFrequency) + " MHz", true, wColour);
+	logger->writeLine("  Memory:            " + std::to_string((unsigned int)(this->clDeviceGlobalMemSize / 1024 / 1024)) + " Mb", true, wColour);
+	logger->writeLine("  OpenCL C:          " + std::string(this->clDeviceOpenCLVersion), true, wColour);
+	logger->writeLine("  Max global size:   " + std::to_string(this->clDeviceGlobalSize), true, wColour);
+	logger->writeLine("  Max group items:   " + std::to_string(this->clDeviceMaxWorkGroupSize), true, wColour);
+	logger->writeLine("  Max group:         " + ssGroupDimensions.str(), true, wColour);
+	logger->writeLine("  Max constant args: " + std::to_string(this->clDeviceMaxConstants), true, wColour);
+	logger->writeLine("  Max allocation:    " + std::to_string(this->clDeviceMaxMemAlloc / 1024 / 1024) + "MB", true, wColour);
+	logger->writeLine("  Max argument size: " + std::to_string(this->clDeviceMaxParamSize / 1024) + "kB", true, wColour);
+	logger->writeLine("  Double precision:  " + sDoubleSupport, true, wColour);
 
-	pLog->writeDivide();
+	logger->writeDivide();
 }
 
 /*
@@ -259,7 +263,7 @@ void COCLDevice::createQueue()
 		return;
 	}
 
-	pManager->log->writeLine("Creating an OpenCL device context and command queue.");
+	logger->writeLine("Creating an OpenCL device context and command queue.");
 
 	this->clContext = clCreateContext(
 		NULL,						// Properties (nothing special required) 
@@ -295,7 +299,7 @@ void COCLDevice::createQueue()
 		return;
 	}
 
-	pManager->log->writeLine("Command queue created for device successfully.");
+	logger->writeLine("Command queue created for device successfully.");
 }
 
 /*
@@ -305,13 +309,13 @@ bool COCLDevice::isSuitable()
 {
 	if (!this->clDeviceAvailable)
 	{
-		pManager->log->writeLine("Device is not available.");
+		logger->writeLine("Device is not available.");
 		return false;
 	}
 
 	if (!this->clDeviceCompilerAvailable)
 	{
-		pManager->log->writeLine("No compiler is available.");
+		logger->writeLine("No compiler is available.");
 		return false;
 	}
 
@@ -328,7 +332,7 @@ bool COCLDevice::isReady()
 {
 	if (!this->isSuitable())
 	{
-		pManager->log->writeLine("Device is not considered suitable.");
+		logger->writeLine("Device is not considered suitable.");
 		return false;
 	}
 
@@ -336,13 +340,13 @@ bool COCLDevice::isReady()
 		!this->clQueue ||
 		this->bErrored == true)
 	{
-		pManager->log->writeLine("No context, queue or an error occured on device.");
+		logger->writeLine("No context, queue or an error occured on device.");
 		if (!this->clContext)
-			pManager->log->writeLine(" - No context");
+			logger->writeLine(" - No context");
 		if (!this->clQueue)
-			pManager->log->writeLine(" - No command queue");
+			logger->writeLine(" - No command queue");
 		if (!this->bErrored)
-			pManager->log->writeLine(" - Device error");
+			logger->writeLine(" - Device error");
 		return false;
 	}
 
@@ -354,13 +358,13 @@ bool COCLDevice::isReady()
  */
 bool COCLDevice::isFiltered()
 {
-	if (!(pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesGPU) &&
+	if (!(execController->getDeviceFilter() & model::filters::devices::devicesGPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_GPU)
 		return true;
-	if (!(pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesCPU) &&
+	if (!(execController->getDeviceFilter() & model::filters::devices::devicesCPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_CPU)
 		return true;
-	if (!(pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesAPU) &&
+	if (!(execController->getDeviceFilter() & model::filters::devices::devicesAPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_ACCELERATOR)
 		return true;
 
@@ -459,6 +463,7 @@ void	COCLDevice::flush()
 	clFlush(clQueue);
 }
 
+
 /*
  *  Mark this device as no longer being busy so we can queue some more work
  */
@@ -467,7 +472,7 @@ void CL_CALLBACK COCLDevice::markerCallback(cl_event clEvent, cl_int iStatus, vo
 	unsigned int uiDeviceNo = *(unsigned int*)vData;
 	clReleaseEvent(clEvent);
 
-	COCLDevice* pDevice = pManager->getExecutor()->getDevice(uiDeviceNo);
+	COCLDevice* pDevice = excontroler->getDevice(uiDeviceNo);
 	pDevice->markerCompletion();
 }
 
@@ -504,7 +509,7 @@ bool COCLDevice::isBusy()
 	if (iQueryStatus != CL_SUCCESS)
 		return true;
 
-	pManager->log->writeLine("Exec status for device #" + std::to_string(uiDeviceNo) + " is " + std::to_string(iStatus));
+	logger->writeLine("Exec status for device #" + std::to_string(uiDeviceNo) + " is " + std::to_string(iStatus));
 	if (iStatus == CL_COMPLETE)
 	{
 		return false;

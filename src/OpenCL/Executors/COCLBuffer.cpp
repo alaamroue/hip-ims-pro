@@ -34,7 +34,8 @@ COCLBuffer::COCLBuffer(
 		bool			bReadOnly,
 		bool			bExistsOnHost,
 		cl_ulong		ulSize,
-		bool			bAllocateNow
+		bool			bAllocateNow,
+		CLog* log
 	)
 {
 	this->sName				= sName;
@@ -53,6 +54,7 @@ COCLBuffer::COCLBuffer(
 	this->fCallbackWrite	= COCLDevice::defaultCallback;
 	this->clFlags			= 0;
 	this->clFlags		   |= ( this->bReadOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE ); 
+	this->logger = log;
 
 	// In theory it should be possible to use USE_HOST_PTR and reduce memory consumption
 	// but in a DLL environment it's a bit of a nightmare.
@@ -126,7 +128,7 @@ bool COCLBuffer::createBuffer()
 
 	this->bReady = true;
 
-	pManager->log->writeLine(
+	logger->writeLine(
 		"Memory buffer created for '" + this->sName + "' with " + std::to_string( this->ulSize ) + " bytes."
 	);
 
@@ -218,7 +220,7 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 
 	if ( iReturn != CL_SUCCESS )
 	{
-		pManager->log->writeLine("Error code returned from memory read is " + std::to_string(iReturn));
+		logger->writeLine("Error code returned from memory read is " + std::to_string(iReturn));
 		model::doError(
 			"Unable to read memory buffer from device back to host  " 
 			+ this->sName + " (" + std::to_string( iReturn ) + ")",

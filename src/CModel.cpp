@@ -21,7 +21,7 @@
 #include <cmath>
 #include <math.h>
 #include "common.h"
-#include "main.h"
+#include "main2.h"
 #include "OpenCL/Executors/CExecutorControlOpenCL.h"
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
@@ -31,15 +31,19 @@
 using std::min;
 using std::max;
 
+CModel* cModelClass;
+
 /*
  *  Constructor
  */
 CModel::CModel(void)
 {
 	this->log = new CLog();
+	cModelClass = this;
 
 	this->execController	= NULL;
 	this->domains			= new CDomainManager();
+	this->domains->logger	= this->log;
 	this->mpiManager		= NULL;
 
 	this->dCurrentTime		= 0.0;
@@ -51,6 +55,8 @@ CModel::CModel(void)
 	this->pProgressCoords.sY = -1;
 
 	this->ulRealTimeStart = 0;
+
+	this->forcedAbort = false;
 }
 
 
@@ -96,6 +102,8 @@ bool CModel::setExecutor(CExecutorControl* pExecutorControl)
 bool CModel::setExecutorToDefaultGPU()
 {
 	CExecutorControl* pExecutor = new CExecutorControlOpenCL();						//Create Executor
+	pExecutor->logger = this->log;
+	pExecutor->logPlatforms();
 	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);                //Set Type
 	if (!pExecutor->createDevices()) return false;									//Creates Device
 	this->setExecutor(pExecutor);
@@ -258,7 +266,7 @@ void	CModel::writeOutputs()
  */
 void	CModel::setFloatPrecision( unsigned char ucPrecision )
 {
-	if ( !pManager->getExecutor()->getDevice()->isDoubleCompatible() )
+	if ( !this->getExecutor()->getDevice()->isDoubleCompatible() )
 		ucPrecision = model::floatPrecision::kSingle;
 
 	this->bDoublePrecision = ( ucPrecision == model::floatPrecision::kDouble );
@@ -324,40 +332,27 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 
 	// String padding stuff
 	sprintf( cTimeLine,		" Simulation time:  %-15sLowest timestep: %15s", Util::secondsToTime( dCurrentTime ).c_str(), Util::secondsToTime( dSmallestTimestep ).c_str() );
-#ifdef PLATFORM_WIN
 	sprintf( cCells,		"%I64u", ulCurrentCellsCalculated );
-#endif
-#ifdef PLATFORM_UNIX
-	sprintf( cCells,		"%llu", ulCurrentCellsCalculated );
-#endif
 	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, std::to_string( ulRate ).c_str() );
 	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
 	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", std::to_string( uiBatchSizeMin ).c_str() );
 	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
-	// DLL callback goes before so the system knows when repeat outputs start
-#ifdef _WINDLL
-	model::fCallbackProgress(
-		dProgress
-	);
-#endif
-
-	pManager->log->writeDivide();																						// 1
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 2
-	pManager->log->writeLine( " SIMULATION PROGRESS                                              ", false, wColour );	// 3
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 4
-	pManager->log->writeLine( std::string( cTimeLine )											  , false, wColour );	// 5
-	pManager->log->writeLine( std::string( cCellsLine )											  , false, wColour );	// 6
-	pManager->log->writeLine( std::string( cTimeLine2 )											  , false, wColour );	// 7
-	pManager->log->writeLine( std::string( cBatchSizeLine )										  , false, wColour );	// 8
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 9
-	pManager->log->writeLine( std::string( cProgressLine )										  , false, wColour );	// 10
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 11
-
-	pManager->log->writeLine( "             +----------+----------------+------------+----------+", false, wColour );	// 12
-	pManager->log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
-	pManager->log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
+	this->log->writeDivide();																						// 1
+	this->log->writeLine( "                                                                  ", false, wColour );	// 2
+	this->log->writeLine( " SIMULATION PROGRESS                                              ", false, wColour );	// 3
+	this->log->writeLine( "                                                                  ", false, wColour );	// 4
+	this->log->writeLine( std::string( cTimeLine )											  , false, wColour );	// 5
+	this->log->writeLine( std::string( cCellsLine )											  , false, wColour );	// 6
+	this->log->writeLine( std::string( cTimeLine2 )											  , false, wColour );	// 7
+	this->log->writeLine( std::string( cBatchSizeLine )										  , false, wColour );	// 8
+	this->log->writeLine( "                                                                  ", false, wColour );	// 9
+	this->log->writeLine( std::string( cProgressLine )										  , false, wColour );	// 10
+	this->log->writeLine( "                                                                  ", false, wColour );	// 11
+	this->log->writeLine( "             +----------+----------------+------------+----------+", false, wColour );	// 12
+	this->log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
+	this->log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
 	
 	for( unsigned int i = 0; i < domains->getDomainCount(); i++ )
 	{
@@ -382,11 +377,11 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 			std::to_string(pProgress.uiBatchSkipped).c_str()
 		);
 
-		pManager->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
+		this->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
 	}
 
-	pManager->log->writeLine( "+------------+----------+----------------+------------+----------+" , false, wColour);	// 14
-	pManager->log->writeDivide();																						// 15
+	this->log->writeLine( "+------------+----------+----------------+------------+----------+" , false, wColour);	// 14
+	this->log->writeDivide();																						// 15
 
 	this->pProgressCoords = Util::getCursorPosition();
 	if (this->dCurrentTime < this->dSimulationTime) 
@@ -401,22 +396,16 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
  */
 void CModel::visualiserUpdate()
 {
-	CDomain*	pDomain = pManager->domains->getDomain(0);
-	COCLDevice*	pDevice	= pManager->domains->getDomain(0)->getDevice();
+	CDomain*	pDomain = this->domains->getDomain(0);
+	COCLDevice*	pDevice	= this->domains->getDomain(0)->getDevice();
 
 	#ifdef _WINDLL
-	pManager->domains->getDomain(0)->sendAllToRenderer();
+	this->domains->getDomain(0)->sendAllToRenderer();
 	#endif
 
-	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 || model::forceAbort )
+	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 || this->forcedAbort )
 		return;
 
-	// Request the next batch of data
-	// TODO: This should read from all of the domains and ask them all to read back their
-	// states...
-	#ifdef _WINDLL
-	//pManager->domains->getDomain(0)->getScheme()->readDomainAll();
-	#endif
 }
 
 /*
@@ -424,7 +413,7 @@ void CModel::visualiserUpdate()
  */
 void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, void * vData )
 {
-	pManager->visualiserUpdate();
+	cModelClass->visualiserUpdate();
 	clReleaseEvent( clEvent );
 }
 
@@ -434,7 +423,7 @@ void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, v
 void	CModel::runModelPrepare()
 {
 	// Allow external influences to interupt the simulation (i.e. UI windows)
-	model::forceAbort = false;
+	this->forcedAbort = false;
 
 	// Can't have timestep sync if we've only got one domain
 	if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
@@ -453,7 +442,7 @@ void	CModel::runModelPrepare()
 	// Don't use the global block function here as that's for async blocking during 
 	// the simulation
 #ifdef MPI_ON
-	pManager->getMPIManager()->blockOnComm();
+	this->getMPIManager()->blockOnComm();
 #endif
 }
 
@@ -472,10 +461,10 @@ void	CModel::runModelPrepareDomains()
 
 		if (domains->getDomainCount() > 1)
 		{
-			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
+			this->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
 				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
 		} else {
-			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
+			this->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
 				"overlapping.");
 		}
 	}
@@ -556,7 +545,7 @@ void	CModel::runModelDomainAssess(
 				if ( !domains->getDomainBase(i)->isLinkSetAtTime( dEarliestTime ) && dEarliestTime > 0.0 )
 				{
 #ifdef DEBUG_MPI
-					pManager->log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
+					this->log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
 #endif
 					bSynchronised = false;
 					bWaitOnLinks = true;
@@ -574,8 +563,8 @@ void	CModel::runModelDomainAssess(
 	// Force this loop to continue without scheduling work until we've sent/received
 	// all our MPI messages 
 #ifdef MPI_ON
-	if ( pManager->getMPIManager()->isWaitingOnTransmission() ||
-		 pManager->getMPIManager()->isWaitingOnBlock() )
+	if ( this->getMPIManager()->isWaitingOnTransmission() ||
+		 this->getMPIManager()->isWaitingOnBlock() )
 	{
 		bAllIdle = false;
 	}
@@ -606,7 +595,7 @@ void	CModel::runModelDomainAssess(
 		{
 			// Force a reduction in cases where we've just had to write outputs as our timestep would have been zero
 			if ( 
-					pManager->getMPIManager()->reduceTimeData( 
+					this->getMPIManager()->reduceTimeData( 
 						dMinTimestep, 
 						&this->dGlobalTimestep, 
 						this->dEarliestTime
@@ -614,7 +603,7 @@ void	CModel::runModelDomainAssess(
 				)
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] New reduction has cancelled all idle state..." );
+				this->log->writeLine( "[DEBUG] New reduction has cancelled all idle state..." );
 #endif
 				bAllIdle = false;
 			}
@@ -635,7 +624,7 @@ void	CModel::runModelDomainAssess(
 void	CModel::runModelDomainExchange()
 {
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
+	this->log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
 #endif
 
 	// Swap sync zones over
@@ -661,7 +650,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 	double dEarliestSyncProposal = this->dSimulationTime;
 
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Should now be updating the target time..." );
+	this->log->writeLine( "[DEBUG] Should now be updating the target time..." );
 #endif
 	
 	// Only bother with all this stuff if we actually need to synchronise,
@@ -687,10 +676,10 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 #ifdef MPI_ON
 	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
 	{
-		if ( pManager->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
+		if ( this->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
 		{
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "Invoked MPI to reduce target time with " + std::to_string( dEarliestSyncProposal ) );
+			this->log->writeLine( "Invoked MPI to reduce target time with " + std::to_string( dEarliestSyncProposal ) );
 #endif
 			bAllIdle = false;
 		}
@@ -753,11 +742,11 @@ void	CModel::runModelSync()
 			// for either domain sync/rollbacks or to write outputs
 			if ( 
 					( domains->getDomainCount() > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
-					( fabs(this->dCurrentTime - dLastOutputTime - pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
+					( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
 			   )
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + std::to_string( i ) );
+				this->log->writeLine( "[DEBUG] Saving domain state for domain #" + std::to_string( i ) );
 #endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
@@ -795,7 +784,7 @@ void	CModel::runModelBlockGlobal()
 {
 	this->runModelBlockNode();
 #ifdef MPI_ON
-	pManager->getMPIManager()->asyncBlockOnComm();
+	this->getMPIManager()->asyncBlockOnComm();
 #endif
 }
 
@@ -807,7 +796,7 @@ void	CModel::runModelOutputs()
 	if ( bRollbackRequired ||
 		 !bSynchronised ||
 		 !bAllIdle ||
-		 !( fabs(this->dCurrentTime - dLastOutputTime - pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
+		 !( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
 		return;
 
 	this->writeOutputs();
@@ -820,7 +809,7 @@ void	CModel::runModelOutputs()
 	}
 	
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Global block until all output files have been written..." );
+	this->log->writeLine( "[DEBUG] Global block until all output files have been written..." );
 #endif
 	this->runModelBlockGlobal();
 }
@@ -831,7 +820,7 @@ void	CModel::runModelOutputs()
 void	CModel::runModelMPI()
 {
 #ifdef MPI_ON
-	pManager->getMPIManager()->processQueue();
+	this->getMPIManager()->processQueue();
 #endif
 }
 
@@ -843,12 +832,12 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 	// Normally we don't wait for all idle to schedule new work (only one device needs to be idle)
 	// but if we're waiting on MPI activity then we can't do anything
 #ifdef MPI_ON
-	if ( pManager->getMPIManager()->isWaitingOnBlock() )
+	if ( this->getMPIManager()->isWaitingOnBlock() )
 		return;
 	
 	// Synchronising timesteps so every iteration needs a collective operation
 	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-	     this->dEarliestTime != pManager->getMPIManager()->getLastCollectiveTime() )
+	     this->dEarliestTime != this->getMPIManager()->getLastCollectiveTime() )
 		return;
 #endif
 
@@ -871,7 +860,7 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 #ifdef MPI_ON
 			// TODO: Review this - shouldn't be needed!
 			if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-			     domains->getDomain(i)->getScheme()->getCurrentTime() != pManager->getMPIManager()->getLastCollectiveTime() )
+			     domains->getDomain(i)->getScheme()->getCurrentTime() != this->getMPIManager()->getLastCollectiveTime() )
 				continue;
 #endif
 				
@@ -879,10 +868,10 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
 				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//pManager->log->writeLine( "Global timestep: " + std::to_string( dGlobalTimestep ) + " Current time: " + std::to_string( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
+			//this->log->writeLine( "Global timestep: " + std::to_string( dGlobalTimestep ) + " Current time: " + std::to_string( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
 
 			// Run a batch
-			//pManager->log->writeLine("[DEBUG] Running scheme to " + std::to_string(dTargetTime));
+			//this->log->writeLine("[DEBUG] Running scheme to " + std::to_string(dTargetTime));
 			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 		}
 	}
@@ -905,7 +894,7 @@ void	CModel::runModelUI( CBenchmark::sPerformanceMetrics * sTotalMetrics )
 		
 #ifdef MPI_ON
 		// Send data back to root on the COMM if needed
-		pManager->getMPIManager()->sendDataSimulation();
+		this->getMPIManager()->sendDataSimulation();
 #endif
 	}
 }
@@ -916,7 +905,7 @@ void	CModel::runModelUI( CBenchmark::sPerformanceMetrics * sTotalMetrics )
 void	CModel::runModelRollback()
 {
 	if ( !bRollbackRequired ||
-		 model::forceAbort  ||
+		this->forcedAbort ||
 		 !bAllIdle )
 		return;
 
@@ -932,7 +921,7 @@ void	CModel::runModelRollback()
 	// Use the data from the last run to work out how long we can run 
 	// the batch for. Same function as normal but relative to the last sync time instead.
 	this->runModelUpdateTarget(dLastSyncTime);
-	pManager->log->writeLine("Simulation rollback at " + Util::secondsToTime(this->dCurrentTime) + "; revised sync point is " + Util::secondsToTime(dTargetTime) + ".");
+	this->log->writeLine("Simulation rollback at " + Util::secondsToTime(this->dCurrentTime) + "; revised sync point is " + Util::secondsToTime(dTargetTime) + ".");
 
 	// ---
 	// TODO: Do we need to do an MPI reduce here...?
@@ -985,7 +974,7 @@ void	CModel::runModelMain()
 	this->logDetails();
 
 	// Track time for the whole simulation
-	pManager->log->writeLine( "Collecting time and performance data..." );
+	this->log->writeLine( "Collecting time and performance data..." );
 	pBenchmarkAll = new CBenchmark( true );
 	sTotalMetrics = pBenchmarkAll->getMetrics();
 
@@ -997,7 +986,7 @@ void	CModel::runModelMain()
 	// Run the main management loop
 	// ---------
 	// Even if user has forced abort, still wait until all idle state is reached
-	while ( ( this->dCurrentTime < dSimulationTime - 1E-5 && !model::forceAbort ) || !bAllIdle )
+	while ( ( this->dCurrentTime < dSimulationTime - 1E-5 && !this->forcedAbort) || !bAllIdle )
 	{
 		// Assess the overall state of the simulation at present
 		this->runModelDomainAssess(
@@ -1042,7 +1031,7 @@ void	CModel::runModelMain()
 	);
 
 	// Simulation was aborted?
-	if ( model::forceAbort )
+	if (this->forcedAbort)
 	{
 		model::doError(
 			"Simulation has been aborted",
@@ -1063,13 +1052,68 @@ void	CModel::runModelMain()
 	}
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
-	pManager->log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
-	//pManager->log->writeLine( "Calculation rate:    " + std::to_string( floor(dCellRate) ) + " cells/sec" );
-	//pManager->log->writeLine( "Final volume:        " + std::to_string( static_cast<int>( dVolume ) ) + "m3" );
-	pManager->log->writeDivide();
+	this->log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
+	//this->log->writeLine( "Calculation rate:    " + std::to_string( floor(dCellRate) ) + " cells/sec" );
+	//this->log->writeLine( "Final volume:        " + std::to_string( static_cast<int>( dVolume ) ) + "m3" );
+	this->log->writeDivide();
 
 	delete   pBenchmarkAll;
 	delete[] bSyncReady;
 	delete[] bIdle;
 }
 
+/*
+ *  Set the Courant number
+ */
+void	CModel::setCourantNumber(double dCourantNumber)
+{
+	this->dCourantNumber = dCourantNumber;
+}
+
+/*
+ *  Get the Courant number
+ */
+double	CModel::getCourantNumber()
+{
+	return this->dCourantNumber;
+}
+
+/*
+ *  Enable/disable friction effects
+ */
+void	CModel::setFrictionStatus(bool bEnabled)
+{
+	this->bFrictionEffects = bEnabled;
+}
+
+/*
+ *  Get enabled/disabled for friction
+ */
+bool	CModel::getFrictionStatus()
+{
+	return this->bFrictionEffects;
+}
+
+/*
+ *  Set the cache size
+ */
+void	CModel::setCachedWorkgroupSize(unsigned char ucSize)
+{
+	this->ulCachedWorkgroupSizeX = ucSize; this->ulCachedWorkgroupSizeY = ucSize;
+}
+void	CModel::setCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
+{
+	this->ulCachedWorkgroupSizeX = ucSizeX; this->ulCachedWorkgroupSizeY = ucSizeY;
+}
+void	CModel::setNonCachedWorkgroupSize(unsigned char ucSize)
+{
+	this->ulNonCachedWorkgroupSizeX = ucSize; this->ulNonCachedWorkgroupSizeY = ucSize;
+}
+void	CModel::setNonCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
+{
+	this->ulNonCachedWorkgroupSizeX = ucSizeX; this->ulNonCachedWorkgroupSizeY = ucSizeY;
+}
+
+CLog* CModel::getLogger() {
+	return this->log;
+}

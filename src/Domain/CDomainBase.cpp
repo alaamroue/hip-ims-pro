@@ -46,7 +46,7 @@ CDomainBase::~CDomainBase(void)
 	for (unsigned int uiID = 0; uiID < links.size(); ++uiID)
 		delete links[uiID];
 
-	pManager->log->writeLine("The domain base has been released.");
+	logger->writeLine("The domain base has been released.");
 }
 
 
@@ -206,4 +206,8 @@ bool CDomainBase::sendLinkData()
 	}
 	
 	return bAlreadySent;
+}
+
+void CDomainBase::setLogger(CLog* log) {
+	logger = log;
 }

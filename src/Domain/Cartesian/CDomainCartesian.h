@@ -34,6 +34,7 @@ class CDomainCartesian : public CDomain
 	public:
 
 		CDomainCartesian( void );												// Constructor
+		CDomainCartesian(CModel* cModel);													// 
 		~CDomainCartesian( void );												// Destructor
 
 		// Public variables
@@ -41,12 +42,12 @@ class CDomainCartesian : public CDomain
 
 		// Public functions
 		// - Replacements for CDomain stubs
-		bool			configureDomain();										// Configure a domain, loading data etc.
+		bool			configureDomain();								// Configure a domain, loading data etc.
 		virtual	unsigned char	getType()										{ return model::domainStructureTypes::kStructureCartesian; };	// Fetch a type code
 		virtual	CDomainBase::DomainSummary getSummary();						// Fetch summary information for this domain
 		bool			validateDomain( bool );									// Verify required data is available
 		bool		    loadInitialConditions( );					// Load the initial condition raster/constant data
-		bool			loadOutputDefinitions( );					// Load the output file definitions
+		bool			loadOutputDefinitions();					// Load the output file definitions
 		void			prepareDomain();										// Create memory structures etc.
 		void			logDetails();											// Log details about the domain
 		void			writeOutputs();											// Write output files to disk

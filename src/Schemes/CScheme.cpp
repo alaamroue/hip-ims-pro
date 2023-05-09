@@ -32,25 +32,44 @@
  *  Default constructor
  */
 CScheme::CScheme()
+{	// Not ready by default
+	this->bReady = false;
+	this->bRunning = false;
+	this->bThreadRunning = false;
+	this->bThreadTerminated = false;
+
+	this->bAutomaticQueue = true;
+	this->uiQueueAdditionSize = 1;
+	this->dCourantNumber = 0.5;
+	this->dTimestep = 0.001;
+	this->bDynamicTimestep = true;
+	this->bFrictionEffects = true;
+	this->dTargetTime = 0.0;
+	this->uiBatchSkipped = 0;
+	this->uiBatchSuccessful = 0;
+	this->dBatchTimesteps = 0.0;
+}
+CScheme::CScheme(CLog* logger)
 {
-	pManager->log->writeLine( "Scheme base-class instantiated." );
+	this->logger = logger;
+	this->logger->writeLine("Scheme base-class instantiated.");
 
 	// Not ready by default
-	this->bReady				= false;
-	this->bRunning				= false;
-	this->bThreadRunning		= false;
-	this->bThreadTerminated		= false;
+	this->bReady = false;
+	this->bRunning = false;
+	this->bThreadRunning = false;
+	this->bThreadTerminated = false;
 
-	this->bAutomaticQueue		= true;
-	this->uiQueueAdditionSize	= 1;
-	this->dCourantNumber		= 0.5;
-	this->dTimestep				= 0.001;
-	this->bDynamicTimestep		= true;
-	this->bFrictionEffects		= true;
-	this->dTargetTime			= 0.0;
-	this->uiBatchSkipped		= 0;
-	this->uiBatchSuccessful		= 0;
-	this->dBatchTimesteps		= 0.0;
+	this->bAutomaticQueue = true;
+	this->uiQueueAdditionSize = 1;
+	this->dCourantNumber = 0.5;
+	this->dTimestep = 0.001;
+	this->bDynamicTimestep = true;
+	this->bFrictionEffects = true;
+	this->dTargetTime = 0.0;
+	this->uiBatchSkipped = 0;
+	this->uiBatchSuccessful = 0;
+	this->dBatchTimesteps = 0.0;
 }
 
 /*
@@ -58,7 +77,7 @@ CScheme::CScheme()
  */
 CScheme::~CScheme(void)
 {
-	pManager->log->writeLine( "The abstract scheme class was unloaded from memory." );
+	logger->writeLine( "The abstract scheme class was unloaded from memory." );
 }
 
 /*
@@ -80,21 +99,21 @@ void	CScheme::setupFromConfig()
  *  Ask the executor to create a type of scheme with the defined
  *  flags.
  */
-CScheme* CScheme::createScheme( unsigned char ucType )
+CScheme* CScheme::createScheme( unsigned char ucType, CModel* cModel)
 {
-	switch( ucType )
-	{
-		case model::schemeTypes::kGodunov:
-			return static_cast<CScheme*>( new CSchemeGodunov() );
-		break;
-		case model::schemeTypes::kMUSCLHancock:
-			return static_cast<CScheme*>( new CSchemeMUSCLHancock() );
-		break;
-		case model::schemeTypes::kInertialSimplification:
-			return static_cast<CScheme*>( new CSchemeInertial() );
-		break;
-	}
-
+	//switch( ucType )
+	//{
+		//case model::schemeTypes::kGodunov:
+		//return static_cast<CScheme*>( new CSchemeGodunov(logger) );
+		//break;
+		//case model::schemeTypes::kMUSCLHancock:
+		//	return static_cast<CScheme*>( new CSchemeMUSCLHancock(logger) );
+		//break;
+		//case model::schemeTypes::kInertialSimplification:
+		//	return static_cast<CScheme*>( new CSchemeInertial(logger) );
+		//break;
+	//}
+	return static_cast<CScheme*>(new CSchemeGodunov(cModel));
 	return NULL;
 }
 
@@ -102,13 +121,14 @@ CScheme* CScheme::createScheme( unsigned char ucType )
  *  Ask the executor to create a type of scheme with the defined
  *  flags.
  */
+//TODO: Alaa this isn't used and wouldn't work if used. Maybe do something about it?
 CScheme* CScheme::createFromConfig()
 {
 	CScheme		*pScheme	 = NULL;
 
 	
 	//pScheme	= CScheme::createScheme(model::schemeTypes::kMUSCLHancock);
-	pScheme	= CScheme::createScheme(model::schemeTypes::kGodunov);
+	pScheme	= CScheme::createScheme(model::schemeTypes::kGodunov, nullptr);
 	//pScheme	= CScheme::createScheme(model::schemeTypes::kInertialSimplification);
 
 	return pScheme;

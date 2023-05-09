@@ -209,7 +209,8 @@ void CBoundaryUniform::prepareBoundary(
 			true,
 			true,
 			sizeof(sConfigurationSP),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -223,7 +224,8 @@ void CBoundaryUniform::prepareBoundary(
 			true,
 			true,
 			sizeof(cl_float2)* this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 		cl_float2 *pTimeseries = this->pBufferTimeseries->getHostBlock<cl_float2*>();
 		for (unsigned int i = 0; i < this->uiTimeseriesLength; ++i)
@@ -245,7 +247,8 @@ void CBoundaryUniform::prepareBoundary(
 			true,
 			true,
 			sizeof(sConfigurationDP),
-			true
+			true,
+			logger
 		);
 		std::memcpy(
 			this->pBufferConfiguration->getHostBlock<void*>(),
@@ -259,7 +262,8 @@ void CBoundaryUniform::prepareBoundary(
 			true,
 			true,
 			sizeof(cl_double2)* this->uiTimeseriesLength,
-			true
+			true,
+			logger
 		);
 		cl_double2 *pTimeseries = this->pBufferTimeseries->getHostBlock<cl_double2*>();
 		for (unsigned int i = 0; i < this->uiTimeseriesLength; ++i)

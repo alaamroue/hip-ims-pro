@@ -25,7 +25,7 @@ class COCLDevice;
 class COCLBuffer
 {
 public:
-	COCLBuffer( std::string, COCLProgram*, bool Read_Only = false, bool Exists_On_Host = true, cl_ulong Length_In_Bytes = NULL, bool Allocate_Now = false );
+	COCLBuffer( std::string, COCLProgram*, bool Read_Only = false, bool Exists_On_Host = true, cl_ulong Length_In_Bytes = NULL, bool Allocate_Now = false, CLog* log=nullptr);
 	~COCLBuffer();
 	std::string		getName()							{ return sName; }
 	cl_mem			getBuffer()							{ return clBuffer; }
@@ -45,6 +45,7 @@ public:
 	void			queueReadPartial( cl_ulong, size_t, void* = NULL );
 	void			queueWriteAll();
 	void			queueWritePartial( cl_ulong, size_t, void* = NULL );
+	CLog* logger;
 
 protected:
 	cl_uint			uiDeviceID;

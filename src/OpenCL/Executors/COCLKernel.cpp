@@ -37,6 +37,7 @@ COCLKernel::COCLKernel(
 	)
 {
 	this->program			= program;
+	this->logger = program->logger;
 	this->sName				= sKernelName;
 	this->bReady			= false;
 	this->bGroupSizeForced	= false;
@@ -158,13 +159,13 @@ bool COCLKernel::assignArguments(
 {
 	if (this->clKernel == NULL) return false;
 
-	pManager->log->writeLine("Assigning arguments for '" + this->sName + "':");
+	logger->writeLine("Assigning arguments for '" + this->sName + "':");
 
 	for (unsigned char i = 0; i < this->uiArgumentCount; i++)
 	{
 		if (aBuffers[i] == NULL)
 		{
-			pManager->log->writeLine(" " + std::to_string(i + 1) + ". NULL");
+			logger->writeLine(" " + std::to_string(i + 1) + ". NULL");
 		}
 		else if (this->assignArgument(i, aBuffers[i]) == false)
 		{
@@ -175,7 +176,7 @@ bool COCLKernel::assignArguments(
 			return false;
 		}
 		else {
-			pManager->log->writeLine(" " + std::to_string(i + 1) + ". " + aBuffers[i]->getName());
+			logger->writeLine(" " + std::to_string(i + 1) + ". " + aBuffers[i]->getName());
 		}
 	}
 
@@ -236,7 +237,7 @@ void COCLKernel::prepareKernel()
 		return;
 	}
 
-	pManager->log->writeLine("Kernel '" + sName + "' prepared for device #" + std::to_string(this->program->device->uiDeviceNo) + ".");
+	logger->writeLine("Kernel '" + sName + "' prepared for device #" + std::to_string(this->program->device->uiDeviceNo) + ".");
 
 	// Fetch the kernel details on workgroup sizes etc.
 	iErrorID = clGetKernelInfo(
@@ -320,11 +321,11 @@ void COCLKernel::prepareKernel()
 
 	this->arguments = new COCLBuffer * [this->uiArgumentCount];
 
-	pManager->log->writeLine("Kernel '" + sName + "' is defined:");
-	pManager->log->writeLine("  Private memory:   " + std::to_string(this->ulMemPrivate) + " bytes");
-	pManager->log->writeLine("  Local memory:     " + std::to_string(this->ulMemLocal) + " bytes");
-	pManager->log->writeLine("  Arguments:        " + std::to_string(this->uiArgumentCount));
-	pManager->log->writeLine("  Work-group size:  [ " + std::to_string(szRequiredWGSize[0]) + "," +
+	logger->writeLine("Kernel '" + sName + "' is defined:");
+	logger->writeLine("  Private memory:   " + std::to_string(this->ulMemPrivate) + " bytes");
+	logger->writeLine("  Local memory:     " + std::to_string(this->ulMemLocal) + " bytes");
+	logger->writeLine("  Arguments:        " + std::to_string(this->uiArgumentCount));
+	logger->writeLine("  Work-group size:  [ " + std::to_string(szRequiredWGSize[0]) + "," +
 		std::to_string(szRequiredWGSize[1]) + "," +
 		std::to_string(szRequiredWGSize[2]) + " ]");
 
@@ -349,7 +350,7 @@ void COCLKernel::setGlobalSize(
 	this->szGlobalSize[1] = static_cast<size_t>(Y);
 	this->szGlobalSize[2] = static_cast<size_t>(Z);
 
-	pManager->log->writeLine(
+	logger->writeLine(
 		"Global work size for '" + this->sName + "' set to [" +
 		std::to_string(this->szGlobalSize[0]) + "," +
 		std::to_string(this->szGlobalSize[1]) + "," +
@@ -386,7 +387,7 @@ void COCLKernel::setGroupSize(
 	this->szGroupSize[1] = static_cast<size_t>(Y);
 	this->szGroupSize[2] = static_cast<size_t>(Z);
 
-	pManager->log->writeLine(
+	logger->writeLine(
 		"Work-group size for '" + this->sName + "' set to [" +
 		std::to_string(this->szGroupSize[0]) + "," +
 		std::to_string(this->szGroupSize[1]) + "," +

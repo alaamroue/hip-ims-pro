@@ -47,6 +47,7 @@ public:
 	void			setGlobalSize( cl_ulong = 1, cl_ulong = 1, cl_ulong = 1 );
 	void			setGlobalOffset( cl_ulong = 0, cl_ulong = 0, cl_ulong = 0 );
 	void			setGroupSize( cl_ulong = 1, cl_ulong = 1, cl_ulong = 1 );
+	CLog* logger;
 
 protected:
 	void			prepareKernel();

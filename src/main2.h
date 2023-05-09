@@ -30,68 +30,11 @@
 #include <stdexcept>
 #include <thread>
 
-#include "model.h"
-
 // Base includes
-
-
-
-
-
-
 #include "common.h"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include "Platforms/windows_platform.h"
 
-// Basic functions and variables used throughout
-namespace model
-{
-int						loadConfiguration();
-int						commenceSimulation();
-int						closeConfiguration();
-void					doPause();
-int						doClose( int );
-
-// Data structures used in interop
-struct DomainData
-{
-	double			dResolution;
-	double			dWidth;
-	double			dHeight;
-	double			dCornerWest;
-	double			dCornerSouth;
-	unsigned long	ulCellCount;
-	unsigned long	ulRows;
-	unsigned long	ulCols;
-	unsigned long	ulBoundaryCells;
-	unsigned long	ulBoundaryOthers;
-};
-
-
-extern  bool			quietMode;
-extern  bool			forceAbort;
-extern  bool			gdalInitiated;
-extern	bool			disableScreen;
-extern	bool			disableConsole;
-extern  char*			codeDir;
-extern  char*			logFile;
-extern	CModel*			pManager;
-}
+//#include "model.h"
 
 // Variables in use throughput
-using	model::pManager;
+//using	model::pManager;

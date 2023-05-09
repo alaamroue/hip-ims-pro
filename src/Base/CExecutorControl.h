@@ -54,7 +54,7 @@ class CExecutorControl
 
 	public:
 
-		CExecutorControl( void );										
+		CExecutorControl(void);										
 		virtual ~CExecutorControl( void );								
 
 		// Public functions
@@ -66,7 +66,9 @@ class CExecutorControl
 
 		// Static functions
 		static CExecutorControl*	createExecutor( unsigned char );	// Create a new executor of the specified type
-		static CExecutorControl*	createFromConfig();	// Parse and configure the executor system
+		static CExecutorControl*	createFromConfig(CLog* log);	// Parse and configure the executor system
+		virtual void				logPlatforms(void)=0;						// Write platform details to the log
+		CLog* logger;
 		
 	protected:
 
