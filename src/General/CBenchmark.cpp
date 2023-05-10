@@ -49,36 +49,28 @@ double CBenchmark::getCurrentTime()
 	 *  Performance counters vary from one platform to
 	 *  another.
 	 */
-	#ifdef PLATFORM_WIN
-		BOOL bQueryState;
+	BOOL bQueryState;
 
-		LARGE_INTEGER liPerfCount, liPerfFreq;
-		double dPerfCount, dPerfFreq;
+	LARGE_INTEGER liPerfCount, liPerfFreq;
+	double dPerfCount, dPerfFreq;
 
-		// Trap errors (1=success)
-		bQueryState  = QueryPerformanceCounter( &liPerfCount );
-		bQueryState += QueryPerformanceFrequency( &liPerfFreq );
+	// Trap errors (1=success)
+	bQueryState  = QueryPerformanceCounter( &liPerfCount );
+	bQueryState += QueryPerformanceFrequency( &liPerfFreq );
 
-		if ( bQueryState < 2 )
-			model::doError(
-				"A high performance time counter cannot be obtained on this system.",
-				model::errorCodes::kLevelFatal
-			);
+	if ( bQueryState < 2 )
+		model::doError(
+			"A high performance time counter cannot be obtained on this system.",
+			model::errorCodes::kLevelFatal
+		);
 
-		// Deal with signed 64-bit ints
-		dPerfCount = (double)liPerfCount.QuadPart;
-		dPerfFreq  = (double)liPerfFreq.QuadPart;
+	// Deal with signed 64-bit ints
+	dPerfCount = (double)liPerfCount.QuadPart;
+	dPerfFreq  = (double)liPerfFreq.QuadPart;
 
-		// Adjust for seconds
-		return dPerfCount / dPerfFreq;
+	// Adjust for seconds
+	return dPerfCount / dPerfFreq;
 
-	#else
-
-		timespec sTimeNow;
-		clock_gettime( CLOCK_REALTIME, &sTimeNow );
-		return static_cast<double>( sTimeNow.tv_sec ) + static_cast<double>( sTimeNow.tv_nsec / 1000000000 );
-
-	#endif
 }
 
 /*

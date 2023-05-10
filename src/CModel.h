@@ -94,6 +94,8 @@ class CModel
 		void					setNonCachedWorkgroupSize(unsigned char);					// Set the work-group size
 		void					setNonCachedWorkgroupSize(unsigned char, unsigned char);	// Set the work-group size
 		CLog*					getLogger();												// Gets a pointer to the logger class
+		void					setSelectedDevice(unsigned int id);							// Select a gpu device to build the kernel on
+		unsigned int			getSelectedDevice();							// Select a gpu device to build the kernel on
 
 		// Public variables
 		CLog*					log;											// Handle for the log singular class
@@ -102,6 +104,7 @@ class CModel
 		bool					bFrictionEffects;														// Activate friction effects?
 		cl_ulong				ulCachedWorkgroupSizeX, ulCachedWorkgroupSizeY;
 		cl_ulong				ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
+		unsigned int			selectedDevice;
 
 	private:
 

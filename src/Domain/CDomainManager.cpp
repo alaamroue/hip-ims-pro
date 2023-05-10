@@ -41,10 +41,10 @@ CDomainManager::CDomainManager(void)
 */
 CDomainManager::~CDomainManager(void)
 {
+	this->logger->writeLine("The domain manager is being unloaded.");
 	for (unsigned int uiID = 0; uiID < domains.size(); ++uiID)
 		delete domains[uiID];
 
-	logger->writeLine("The domain manager has been unloaded.");
 }
 
 /*

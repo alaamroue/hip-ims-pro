@@ -121,7 +121,7 @@ CScheme* CScheme::createScheme( unsigned char ucType, CModel* cModel)
  *  Ask the executor to create a type of scheme with the defined
  *  flags.
  */
-//TODO: Alaa this isn't used and wouldn't work if used. Maybe do something about it?
+//TODO: Alaa:LOW this isn't used and wouldn't work if used. Maybe do something about it?
 CScheme* CScheme::createFromConfig()
 {
 	CScheme		*pScheme	 = NULL;

@@ -46,3 +46,5 @@ _debug*.log
 /tools/model-builder/main.js
 /ClassDiagram.cd
 /x64/Debug
+/x64/Release
+/dist

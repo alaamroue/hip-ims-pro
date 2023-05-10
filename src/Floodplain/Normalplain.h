@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include "colormod.h"
-#include <CL/cl.h>
+#include "../common.h"
 
 
 class Normalplain {

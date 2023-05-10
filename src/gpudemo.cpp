@@ -18,7 +18,7 @@
  *
  */
 // Includes
-#include "main2.h"
+#include "gpudemo.h"
 #include "CModel.h"
 #include "Datasets/CRasterDataset.h"
 #include "OpenCL/Executors/COCLDevice.h"
@@ -26,24 +26,20 @@
 #include "Domain/CDomain.h"
 #include "Schemes\CSchemeGodunov.h"
 
-// Globals
+
 CModel* pManager;
 int loadConfiguration();
 int commenceSimulation();
 int closeConfiguration();
 int doClose(int iCode);
 
-//CModel*					model::pManager;
-
 /*
  *  Application entry-point. 
  */
 int main()
 {
-
-	// Nasty function calls for Windows console stuff
-	system("color 17");
-	SetConsoleTitle("HiPIMS Simulation Engine");
+	//system("color 17");
+	//SetConsoleTitle("HiPIMS Simulation Engine");
 
 	int iReturnCode = loadConfiguration();
 	iReturnCode = commenceSimulation();
@@ -61,17 +57,18 @@ int main()
 int loadConfiguration()
 {
 	pManager	= new CModel();
+	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
-	pManager->setExecutorToDefaultGPU();											//Set Executor to a default GPU Config
-	pManager->setName("Name");														//Set Name
-	pManager->setDescription("The Description");									//Set Description
-	pManager->setSimulationLength(3600);											//Set Simulation Length
-	pManager->setOutputFrequency(3600);												//Set Output Frequency
-	pManager->setFloatPrecision(model::floatPrecision::kDouble);					//Set Precision
-	pManager->setCourantNumber(0.5);
-	pManager->setFrictionStatus(false);
-	pManager->setCachedWorkgroupSize(1, 1);
-	pManager->setNonCachedWorkgroupSize(1, 1);
+	pManager->setSelectedDevice(2);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
+	pManager->setName("Name");														// Set Name of Project
+	pManager->setDescription("The Description");									// Set Description of Project
+	pManager->setSimulationLength(3600*100.0);										// Set Simulation Length
+	pManager->setOutputFrequency(3600*100.0);										// Set Output Frequency
+	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
+	pManager->setCourantNumber(0.5);												// Set the Courant Number to be used (Godunov)
+	pManager->setFrictionStatus(false);												// Flag for activating friction
+	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
+	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
@@ -84,8 +81,6 @@ int loadConfiguration()
 	pScheme->prepareAll();
 
 	ourCartesianDomain->setScheme(pScheme);
-	pManager->log->writeLine("Numerical scheme reports is ready.");
-	pManager->log->writeLine("Progressing to load initial conditions.");
 	ourCartesianDomain->loadInitialConditions();
 
 	CDomainManager* pManagerDomains = pManager->getDomainSet();

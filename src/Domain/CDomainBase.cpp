@@ -46,7 +46,6 @@ CDomainBase::~CDomainBase(void)
 	for (unsigned int uiID = 0; uiID < links.size(); ++uiID)
 		delete links[uiID];
 
-	logger->writeLine("The domain base has been released.");
 }
 
 

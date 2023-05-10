@@ -19,7 +19,6 @@
 #include <algorithm>
 
 #include "../common.h"
-#include "../main2.h"
 #include "../Boundaries/CBoundaryMap.h"
 #include "../Boundaries/CBoundary.h"
 #include "../Domain/CDomainManager.h"
@@ -950,22 +949,12 @@ void	CSchemeGodunov::prepareSimulation()
 	bThreadTerminated = false;
 }
 
-#ifdef PLATFORM_WIN
 DWORD CSchemeGodunov::Threaded_runBatchLaunch(LPVOID param)
 {
 	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
 	pScheme->Threaded_runBatch();
 	return 0;
 }
-#endif
-#ifdef PLATFORM_UNIX
-void* CSchemeGodunov::Threaded_runBatchLaunch(void* param)
-{
-	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
-	pScheme->Threaded_runBatch();
-	return 0;
-}
-#endif
 
 /*
  *	Create a new thread to run this batch using
@@ -978,7 +967,6 @@ void CSchemeGodunov::runBatchThread()
 	this->bThreadRunning = true;
 	this->bThreadTerminated = false;
 
-	#ifdef PLATFORM_WIN
 	HANDLE hThread = CreateThread(
 		NULL,
 		0,
@@ -988,13 +976,6 @@ void CSchemeGodunov::runBatchThread()
 		NULL
 	);
 	CloseHandle(hThread);
-	#endif
-	#ifdef PLATFORM_UNIX
-	pthread_t tid;
-	int result = pthread_create(&tid, 0, CSchemeGodunov::Threaded_runBatchLaunch, this);
-	if (result == 0)
-		pthread_detach(tid);
-	#endif
 }
 
 /*

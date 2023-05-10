@@ -19,7 +19,6 @@
 
 // Includes
 #include "../common.h"
-#include "../main2.h"
 #include <sstream>
 
 /*
@@ -119,11 +118,7 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 	if (bTimestamp)
 	{
 		this->setColour(model::cli::colourTimestamp);
-#ifdef MPI_ON
-		ssLine << "[" << (this->iProcID + 1) << "/" << this->iProcCount << " " << std::string(caTimeBuffer) << "] ";
-#else
 		ssLine << "[" << std::string(caTimeBuffer) << "] ";
-#endif
 		std::cout << ssLine.str();
 	}
 
@@ -198,7 +193,7 @@ void CLog::writeHeader(void)
 
 	ssHeader << " Started:     " << ctime( &tNow );
 	ssHeader << " Log file:    " << sLogPath << std::endl;
-	ssHeader << " Platform:    " << model::env::platformName << std::endl;
+	ssHeader << " Platform:    " << "Windows" << std::endl;
 	ssHeader << "---------------------------------------------";
 
 	this->writeLine( ssHeader.str(), false, model::cli::colourHeader );
@@ -268,18 +263,12 @@ void CLog::setColour( unsigned short wColour )
 void CLog::resetColour()
 {
 	// This only runs for windows!
-	#ifdef PLATFORM_WIN
 	HANDLE	hOut		= GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetConsoleTextAttribute(		// Future text
 		hOut, 
 		FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN
 	);
-	#endif
-	#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-		this->setColour( model::cli::colourMain );
-	#endif
 }
 
 /*

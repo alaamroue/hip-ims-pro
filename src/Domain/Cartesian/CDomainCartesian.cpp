@@ -21,7 +21,6 @@
 #include <cstring>
 
 #include "../../common.h"
-#include "../../main2.h"
 #include "../../CModel.h"
 #include "../CDomainManager.h"
 #include "../CDomain.h"
@@ -44,7 +43,7 @@ CDomainCartesian::CDomainCartesian(CModel* cModel)
 {
 	this->logger = cModel->getLogger();
 	this->cExecutorControlOpenCL = cModel->getExecutor();
-	this->pDevice = cModel->getExecutor()->getDevice(1);       //TODO: Alaa why is it device 1, and wouldn't this cause problems? Maybe review the old code, I changed a lot in this.
+	this->pDevice = cModel->getExecutor()->getDevice();       //TODO: Alaa:HIGH why is it device 1, and wouldn't this cause problems? Maybe review the old code, I changed a lot in this.
 	// Default values will trigger errors on validation
 	this->dCellResolution			= std::numeric_limits<double>::quiet_NaN();
 	this->dRealDimensions[kAxisX]	= std::numeric_limits<double>::quiet_NaN();
@@ -125,6 +124,9 @@ bool CDomainCartesian::configureDomain()
  */
 bool	CDomainCartesian::loadInitialConditions()
 {
+	logger->writeLine("Numerical scheme reports is ready.");
+	logger->writeLine("Progressing to load initial conditions.");
+
 	bool							bSourceVelX			= false, 
 									bSourceVelY			= false, 
 									bSourceManning		= false;
@@ -248,7 +250,7 @@ bool	CDomainCartesian::loadInitialConditionSource( sDataSourceInfo pDataSource, 
 		pDataset.dOffsetX = 0.00;
 		pDataset.dOffsetY = 0.00;
 
-		//TODO: Alaa Rows vs Coloumns which is correct?
+		//TODO: Alaa:MEDIUM Rows vs Coloumns which is correct?
 		Normalplain np = Normalplain(pDataset.ulRows, pDataset.ulColumns);
 		np.SetBedElevationMountain();
 
@@ -737,7 +739,7 @@ void	CDomainCartesian::writeOutputs()
 		if ( uiTimeLocation != std::string::npos )
 			sFilename.replace( uiTimeLocation, 2, sTime );
 
-		//TODO: Alaa Write replacement
+		//TODO: Alaa:HIGH Write replacement
 		//
 		//CRasterDataset::domainToRaster(
 		//	this->pOutputs[i].cFormat,

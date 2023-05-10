@@ -19,31 +19,16 @@
 
 #pragma once
 
-//#include "../common.h"
-
-// Platform constant
-namespace model {
-namespace env {
-const std::string	platformCode	= "WIN";
-const std::string	platformName	= "Microsoft Windows";
-}
-}
-
-// Forward conditionals
-#define PLATFORM_WIN
-
 // Windows-specific includes
 #include <Windows.h>					// QueryPerformanceCounter etc
 
+
 // Windows-specific includes
-#define isnan _isnan
 #ifndef NAN
 #define NAN	  _Nan._Double
 #endif
 
-/*
- *  OS PORTABILITY CONSTANTS
- */
+
 #ifndef _CONSOLE
 namespace model {
 	namespace cli {

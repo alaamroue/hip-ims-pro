@@ -20,9 +20,9 @@
  *
  */
  
-#define DEBUG_OUTPUT
-#define DEBUG_CELLX 2
-#define DEBUG_CELLY 2
+//#define DEBUG_OUTPUT
+//#define DEBUG_CELLX 2
+//#define DEBUG_CELLY 2
 
 /*
  *  Reconstruct the cell data in a non-negative way (depth positivity preserving)

@@ -21,7 +21,6 @@
 #include <cmath>
 #include <math.h>
 #include "common.h"
-#include "main2.h"
 #include "OpenCL/Executors/CExecutorControlOpenCL.h"
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
@@ -70,6 +69,17 @@ CModel::~CModel(void)
 	if ( this->execController != NULL )
 		delete this->execController;
 	this->log->writeLine("The model engine is completely unloaded.");
+	this->log->writeDivide();
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
+	this->log->writeLine("                                                                  ", false);
 	delete this->log;
 }
 
@@ -331,13 +341,13 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 		cProgress[ i ] = ( i >= ( floor( 55.0f * dProgress ) - 1 ) ? '>' : '=' );
 
 	// String padding stuff
-	sprintf( cTimeLine,		" Simulation time:  %-15sLowest timestep: %15s", Util::secondsToTime( dCurrentTime ).c_str(), Util::secondsToTime( dSmallestTimestep ).c_str() );
-	sprintf( cCells,		"%I64u", ulCurrentCellsCalculated );
-	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, std::to_string( ulRate ).c_str() );
-	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
-	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", std::to_string( uiBatchSizeMin ).c_str() );
-	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
-	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
+	sprintf_s( cTimeLine,		70,	" Simulation time:  %-15sLowest timestep: %15s", Util::secondsToTime( dCurrentTime ).c_str(), Util::secondsToTime( dSmallestTimestep ).c_str() );
+	sprintf_s( cCells,			70,	"%I64u", ulCurrentCellsCalculated );
+	sprintf_s( cCellsLine,		70,	" Cells calculated: %-24s  Rate: %13s/s", cCells, std::to_string( ulRate ).c_str() );
+	sprintf_s( cTimeLine2,		70,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
+	sprintf_s( cBatchSizeLine,	70,	" Batch size:       %-16s                                 ", std::to_string( uiBatchSizeMin ).c_str() );
+	sprintf_s( cProgessNumber,	7,	"%.1f%%", dProgress * 100 );
+	sprintf_s( cProgressLine,	70, " [%-55s] %7s", cProgress, cProgessNumber );
 
 	this->log->writeDivide();																						// 1
 	this->log->writeLine( "                                                                  ", false, wColour );	// 2
@@ -367,8 +377,9 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 			sDeviceName = domains->getDomain(i)->getDevice()->getDeviceShortName();
 		}
 
-		sprintf(
+		sprintf_s(
 			cDomainLine,
+			70,
 			"| Domain #%-2s | %8s | %14s | %10s | %8s |",
 			std::to_string(i + 1).c_str(),
 			sDeviceName.c_str(),
@@ -1116,4 +1127,15 @@ void	CModel::setNonCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSi
 
 CLog* CModel::getLogger() {
 	return this->log;
+}
+
+
+void CModel::setSelectedDevice(unsigned int id) {
+	this->selectedDevice = id;
+	this->getExecutor()->selectDevice(id);
+}
+
+
+unsigned int CModel::getSelectedDevice() {
+	return this->selectedDevice;
 }

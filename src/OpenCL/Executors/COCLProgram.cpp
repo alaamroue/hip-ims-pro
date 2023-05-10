@@ -281,7 +281,7 @@ std::string COCLProgram::getCompileLog()
 	sLog = std::string( cBuildLog );
 	delete[] cBuildLog;
 
-	//TODO: Alaa, it works for now but porbably need to do it in a better way?
+	//TODO: Alaa:LOW, it works for now but porbably need to do it in a better way?
 	//boost::trim(sLog);
 	sLog.erase(sLog.find_last_not_of(" \n\r\t") + 1);
 	return sLog;

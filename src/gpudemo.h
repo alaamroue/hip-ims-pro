@@ -20,6 +20,7 @@
 
 // Includes
 //#include <vld.h>				// Memory leak detection
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -29,12 +30,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <thread>
+*/
 
 // Base includes
 #include "common.h"
 #include "Platforms/windows_platform.h"
-
-//#include "model.h"
-
-// Variables in use throughput
-//using	model::pManager;
