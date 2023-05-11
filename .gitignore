@@ -48,3 +48,6 @@ _debug*.log
 /x64/Debug
 /x64/Release
 /dist
+/1.log
+/_modelzz.log
+/open-vs.bat
