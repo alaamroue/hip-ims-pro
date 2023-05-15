@@ -21,9 +21,6 @@
 // Base includes
 #include "util.h"
 
-
-
-
 #include "Platforms/windows_platform.h"
 
 // Windows-specific includes

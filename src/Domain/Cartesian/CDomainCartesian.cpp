@@ -71,7 +71,7 @@ CDomainCartesian::~CDomainCartesian(void)
 /*
  *  Configure the domain using the XML file
  */
-bool CDomainCartesian::configureDomain()
+bool CDomainCartesian::configureDomain(double dOffsetX)
 {
 	
 	CRasterDataset	pDataset;
@@ -83,7 +83,7 @@ bool CDomainCartesian::configureDomain()
 	pDataset.uiBandCount = 1;
 	pDataset.dResolutionX = 100.0;
 	pDataset.dResolutionY = 100.00;
-	pDataset.dOffsetX = 0.00;
+	pDataset.dOffsetX = dOffsetX;
 	pDataset.dOffsetY = 0.00;
 
 	pDataset.logDetails();

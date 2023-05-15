@@ -920,7 +920,7 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBufferCellStates->queueWriteAll();
 	oclBufferCellStatesAlt->queueWriteAll();
 	oclBufferCellBed->queueWriteAll();
-	oclBufferCellManning->queueWriteAll();
+	oclBufferCellManning->queueWriteAll();					//It has a pointer to the Scheme's Values
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();

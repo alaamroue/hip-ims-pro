@@ -169,32 +169,17 @@ void CModel::logDetails()
  */
 bool CModel::runModel( void )
 {
-	this->log->writeLine( "Verifying the required data before model run..." );
-
-	if ( !this->domains || !this->domains->isSetReady() )
-	{
-		model::doError(
-			"The domain is not ready.",
-			model::errorCodes::kLevelModelStop
-		);
-		return false;
-	}
-	if ( !this->execController || !this->execController->isReady() )
-	{
-		model::doError(
-			"The executor is not ready.",
-			model::errorCodes::kLevelModelStop
-		);
-		return false;
-	}
-
-	this->log->writeLine( "Verification is complete." );
-
+	this->log->writeLine("Verifying the required data before model run...");
+	if (!this->domains || !this->domains->isSetReady()) { model::doError("The domain is not ready.", model::errorCodes::kLevelModelStop); return false; }
+	if (!this->execController || !this->execController->isReady()) { model::doError("The executor is not ready.", model::errorCodes::kLevelModelStop); return false; }
+	this->log->writeLine("Verification is complete.");
 	this->log->writeDivide();
-	this->log->writeLine( "Starting a new simulation..." );
+	this->log->writeLine("Starting a new simulation...");
+
 
 	this->runModelPrepare();
 	this->runModelMain();
+
 
 	return true;
 }
@@ -315,7 +300,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	double				dSmallestTimestep				   = 9999.0;
 
 	// Get the total number of cells calculated
-	for( unsigned int i = 0; i < domains->getDomainCount(); ++i )
+	for( unsigned int i = 0; i < domainCount; ++i )
 	{
 		if (domains->isDomainLocal(i))
 		{
@@ -364,7 +349,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	this->log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
 	this->log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
 	
-	for( unsigned int i = 0; i < domains->getDomainCount(); i++ )
+	for( unsigned int i = 0; i < domainCount; i++ )
 	{
 		char cDomainLine[70] = "                                                                    X";
 		CDomainBase::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
@@ -397,7 +382,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	this->pProgressCoords = Util::getCursorPosition();
 	if (this->dCurrentTime < this->dSimulationTime) 
 	{
-		this->pProgressCoords.sY = max(0, this->pProgressCoords.sY - (16 + (cl_int)domains->getDomainCount()));
+		this->pProgressCoords.sY = max(0, this->pProgressCoords.sY - (16 + (cl_int)domainCount));
 		Util::setCursorPosition(this->pProgressCoords);
 	}
 }
@@ -433,15 +418,32 @@ void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, v
 */
 void	CModel::runModelPrepare()
 {
-	// Allow external influences to interupt the simulation (i.e. UI windows)
+	domainCount = this->getDomainSet()->getDomainCount();
+
 	this->forcedAbort = false;
 
 	// Can't have timestep sync if we've only got one domain
 	if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-		this->getDomainSet()->getDomainCount() <= 1)
+		domainCount <= 1)
 		this->getDomainSet()->setSyncMethod(model::syncMethod::kSyncForecast);
 
-	this->runModelPrepareDomains();
+	for (unsigned int i = 0; i < domainCount; ++i){
+		if (!domains->isDomainLocal(i))
+			continue;
+
+		domains->getDomain(i)->getScheme()->prepareSimulation();
+		domains->getDomain(i)->setRollbackLimit();		// Auto calculate from links...
+
+		if (domainCount > 1)
+		{
+			this->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
+				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
+		}
+		else {
+			this->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
+				"overlapping.");
+		}
+	}
 
 	bSynchronised		= true;
 	bAllIdle			= true;
@@ -449,12 +451,7 @@ void	CModel::runModelPrepare()
 	dLastSyncTime		= -1.0;
 	dLastOutputTime		= 0.0;
 
-	// Global block until all domains are ready
-	// Don't use the global block function here as that's for async blocking during 
-	// the simulation
-#ifdef MPI_ON
-	this->getMPIManager()->blockOnComm();
-#endif
+
 }
 
 /*
@@ -462,7 +459,7 @@ void	CModel::runModelPrepare()
 */
 void	CModel::runModelPrepareDomains()
 {
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (!domains->isDomainLocal(i))
 			continue;
@@ -470,7 +467,7 @@ void	CModel::runModelPrepareDomains()
 		domains->getDomain(i)->getScheme()->prepareSimulation();
 		domains->getDomain(i)->setRollbackLimit();		// Auto calculate from links...
 
-		if (domains->getDomainCount() > 1)
+		if (domainCount > 1)
 		{
 			this->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
 				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
@@ -494,7 +491,7 @@ void	CModel::runModelDomainAssess(
 	bWaitOnLinks = false;
 
 	// Fetch all the data we need for each domain/scheme
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (!domains->isDomainLocal(i))
 		{
@@ -539,7 +536,7 @@ void	CModel::runModelDomainAssess(
 	// Are all the domains synced?
 	bSynchronised = true;
 	bAllIdle = true;
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (!bSyncReady[i]) bSynchronised = false;
 		if (!bIdle[i])		bAllIdle = false;
@@ -549,15 +546,12 @@ void	CModel::runModelDomainAssess(
 	// if we need to
 	if ( bSynchronised && bAllIdle )
 	{
-		for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+		for (unsigned int i = 0; i < domainCount; ++i)
 		{
 			if (domains->isDomainLocal(i))
 			{
 				if ( !domains->getDomainBase(i)->isLinkSetAtTime( dEarliestTime ) && dEarliestTime > 0.0 )
 				{
-#ifdef DEBUG_MPI
-					this->log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
-#endif
 					bSynchronised = false;
 					bWaitOnLinks = true;
 				}
@@ -571,22 +565,12 @@ void	CModel::runModelDomainAssess(
 		}
 	}
 
-	// Force this loop to continue without scheduling work until we've sent/received
-	// all our MPI messages 
-#ifdef MPI_ON
-	if ( this->getMPIManager()->isWaitingOnTransmission() ||
-		 this->getMPIManager()->isWaitingOnBlock() )
-	{
-		bAllIdle = false;
-	}
-#endif
-	
 	// If we're synchronising the timesteps we need all idle
 	if ( bAllIdle && !bWaitOnLinks )
 	{
 		double dMinTimestep = 0.0;
 		bool bIsSuspended = false;
-		for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+		for (unsigned int i = 0; i < domainCount; ++i)
 		{
 			// TODO: This needs to be changed for MPI...
 			if (!domains->isDomainLocal(i))
@@ -600,32 +584,9 @@ void	CModel::runModelDomainAssess(
 				bIsSuspended = true;
 		}
 
-		// Reduce across all MPI nodes if required
-#ifdef MPI_ON
-		if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
-		{
-			// Force a reduction in cases where we've just had to write outputs as our timestep would have been zero
-			if ( 
-					this->getMPIManager()->reduceTimeData( 
-						dMinTimestep, 
-						&this->dGlobalTimestep, 
-						this->dEarliestTime
-					) 
-				)
-			{
-#ifdef DEBUG_MPI
-				this->log->writeLine( "[DEBUG] New reduction has cancelled all idle state..." );
-#endif
-				bAllIdle = false;
-			}
-		}
-		
-		if ( this->getDomainSet()->getDomainCount() <= 1 )
-			dCurrentTime = dEarliestTime;
-#else
 		dGlobalTimestep = dMinTimestep;
 		dCurrentTime = dEarliestTime;
-#endif
+
 	}
 }
 
@@ -639,7 +600,7 @@ void	CModel::runModelDomainExchange()
 #endif
 
 	// Swap sync zones over
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)		// Source domain
+	for (unsigned int i = 0; i < domainCount; ++i)		// Source domain
 	{
 		if (domains->isDomainLocal(i))
 		{
@@ -666,10 +627,10 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 	
 	// Only bother with all this stuff if we actually need to synchronise,
 	// otherwise run free, for as long as possible (i.e. until outputs needed)
-	if (domains->getDomainCount() > 1 &&
+	if (domainCount > 1 &&
 		this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
 	{
-		for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+		for (unsigned int i = 0; i < domainCount; ++i)
 		{
 			// TODO: How to calculate this for remote domains etc?
 			if (domains->isDomainLocal(i))
@@ -720,7 +681,7 @@ void	CModel::runModelSync()
 	dLastSyncTime = this->dCurrentTime;
 
 	// TODO: Review if this is needed? Shouldn't earliest time get updated anyway?
-	if (domains->getDomainCount() <= 1)
+	if (domainCount <= 1)
 		this->dCurrentTime = dEarliestTime;
 
 	// Write outputs if possible
@@ -741,7 +702,7 @@ void	CModel::runModelSync()
 
 	// Let each domain know the goalposts have proverbially moved
 	// Read back domain data incase we need to rollback
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (domains->isDomainLocal(i))
 		{
@@ -752,13 +713,10 @@ void	CModel::runModelSync()
 			// Save the current state back to host memory, but only if necessary
 			// for either domain sync/rollbacks or to write outputs
 			if ( 
-					( domains->getDomainCount() > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
+					(domainCount > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
 					( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
 			   )
 			{
-#ifdef DEBUG_MPI
-				this->log->writeLine( "[DEBUG] Saving domain state for domain #" + std::to_string( i ) );
-#endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
 		}
@@ -781,7 +739,7 @@ void	CModel::runModelSync()
 */
 void	CModel::runModelBlockNode()
 {
-	for (unsigned int i = 0; i < domains->getDomainCount(); i++)
+	for (unsigned int i = 0; i < domainCount; i++)
 	{
 		if (domains->isDomainLocal(i))
 			domains->getDomain(i)->getDevice()->blockUntilFinished();
@@ -813,7 +771,7 @@ void	CModel::runModelOutputs()
 	this->writeOutputs();
 	dLastOutputTime = this->dCurrentTime;
 	
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (domains->isDomainLocal(i))
 			domains->getDomain(i)->getScheme()->forceTimeAdvance();
@@ -840,17 +798,6 @@ void	CModel::runModelMPI()
 */
 void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, bool * bIdle)
 {
-	// Normally we don't wait for all idle to schedule new work (only one device needs to be idle)
-	// but if we're waiting on MPI activity then we can't do anything
-#ifdef MPI_ON
-	if ( this->getMPIManager()->isWaitingOnBlock() )
-		return;
-	
-	// Synchronising timesteps so every iteration needs a collective operation
-	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-	     this->dEarliestTime != this->getMPIManager()->getLastCollectiveTime() )
-		return;
-#endif
 
 	// If we're synchronising the timestep we only progress from here
 	// if ALL our domains are idle
@@ -859,7 +806,7 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 		return;
 
 	// Keep running each domain until we're ready for synchronisation
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (!domains->isDomainLocal(i))
 			continue;
@@ -946,7 +893,7 @@ void	CModel::runModelRollback()
 	// Write the last full set of domain data back to the GPU
 	dEarliestTime = dLastSyncTime;
 	dCurrentTime = dLastSyncTime;
-	for (unsigned int i = 0; i < domains->getDomainCount(); i++)
+	for (unsigned int i = 0; i < domainCount; i++)
 	{
 		if (domains->isDomainLocal(i))
 			domains->getDomain(i)->getScheme()->rollbackSimulation(dLastSyncTime, dTargetTime);
@@ -963,7 +910,7 @@ void	CModel::runModelRollback()
 void	CModel::runModelCleanup()
 {
 	// Note these will not return until their threads have terminated
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	for (unsigned int i = 0; i < domainCount; ++i)
 	{
 		if (domains->isDomainLocal(i))
 			domains->getDomain(i)->getScheme()->cleanupSimulation();
@@ -975,8 +922,8 @@ void	CModel::runModelCleanup()
  */
 void	CModel::runModelMain()
 {
-	bool*							bSyncReady				= new bool[ domains->getDomainCount() ];
-	bool*							bIdle					= new bool[domains->getDomainCount()];
+	bool*							bSyncReady				= new bool[domainCount];
+	bool*							bIdle					= new bool[domainCount];
 	double							dCellRate				= 0.0;
 	CBenchmark::sPerformanceMetrics *sTotalMetrics;
 	CBenchmark						*pBenchmarkAll;
@@ -1053,7 +1000,7 @@ void	CModel::runModelMain()
 	// Get the total number of cells calculated
 	unsigned long long	ulCurrentCellsCalculated = 0;
 	double				dVolume = 0.0;
-	for( unsigned int i = 0; i < domains->getDomainCount(); ++i )
+	for( unsigned int i = 0; i < domainCount; ++i )
 	{
 		if (!domains->isDomainLocal(i))
 			continue;

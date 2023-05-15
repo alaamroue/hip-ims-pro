@@ -35,7 +35,7 @@ class CDomainLink
 {
 	public:
 
-		CDomainLink( CDomainBase*, CDomainBase* );													// Constructor
+		CDomainLink( CDomainBase*, CDomainBase*, CLog* logger );									// Constructor
 		~CDomainLink(void);																			// Destructor
 
 		// Public structures

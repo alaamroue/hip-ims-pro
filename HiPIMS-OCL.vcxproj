@@ -5,26 +5,44 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FA97D6E4-0814-4983-9252-EB9C2D5A4216}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>HiPIMS Simulator</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <Keyword>QtVS_v304</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v143</PlatformToolset>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -75,11 +93,15 @@
       </Message>
     </PreBuildEvent>
     <ClCompile>
-      <PreprocessorDefinitions>_CONSOLE;WIN32</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CONSOLE</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencl.lib;gdal_i.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call bin\win32\post-build-debug.bat "$(OutDir)"
@@ -97,13 +119,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>_CONSOLE;WIN32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Libraries\GDAL\include;C:\Libraries\Boost\boost;C:\Libraries\Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencl.lib;gdal_i.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\Win32;C:\Libraries\Boost\stage\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Message>Post-build file operations</Message>
@@ -114,6 +138,32 @@
       <Path>build\$(MSBuildProjectName).log</Path>
     </BuildLog>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include\;C:\Program Files (x86)\Visual Leak Detector\include\</AdditionalIncludeDirectories>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CONSOLE;WIN32</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <ConformanceMode>false</ConformanceMode>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include\</AdditionalIncludeDirectories>
+      <WarningLevel>Level1</WarningLevel>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\base\CExecutorControl.cpp" />
     <ClCompile Include="src\boundaries\CBoundary.cpp" />
@@ -122,27 +172,21 @@
     <ClCompile Include="src\boundaries\CBoundaryMap.cpp" />
     <ClCompile Include="src\boundaries\CBoundaryUniform.cpp" />
     <ClCompile Include="src\CModel.cpp" />
-    <ClCompile Include="src\datasets\CCSVDataset.cpp" />
-    <ClCompile Include="src\datasets\CRasterDataset.cpp" />
-    <ClCompile Include="src\datasets\CXMLDataset.cpp" />
-    <ClCompile Include="src\datasets\tinyxml\tinyxml2.cpp" />
+    <ClCompile Include="src\Datasets\CRasterDataset.cpp" />
     <ClCompile Include="src\domain\cartesian\CDomainCartesian.cpp" />
     <ClCompile Include="src\domain\CDomain.cpp" />
     <ClCompile Include="src\domain\CDomainBase.cpp" />
     <ClCompile Include="src\domain\CDomainManager.cpp" />
     <ClCompile Include="src\domain\links\CDomainLink.cpp" />
-    <ClCompile Include="src\domain\remote\CDomainRemote.cpp" />
+    <ClCompile Include="src\Floodplain\Normalplain.cpp" />
     <ClCompile Include="src\general\CBenchmark.cpp" />
     <ClCompile Include="src\general\CLog.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\mpi\CMPIManager.cpp" />
-    <ClCompile Include="src\mpi\CMPINode.cpp" />
+    <ClCompile Include="src\gpudemo.cpp" />
     <ClCompile Include="src\opencl\executors\CExecutorControlOpenCL.cpp" />
     <ClCompile Include="src\opencl\executors\COCLBuffer.cpp" />
     <ClCompile Include="src\opencl\executors\COCLDevice.cpp" />
     <ClCompile Include="src\opencl\executors\COCLKernel.cpp" />
     <ClCompile Include="src\opencl\executors\COCLProgram.cpp" />
-    <ClCompile Include="src\platforms\unix_platform.cpp" />
     <ClCompile Include="src\platforms\windows_platform.cpp" />
     <ClCompile Include="src\schemes\CScheme.cpp" />
     <ClCompile Include="src\schemes\CSchemeGodunov.cpp" />
@@ -157,24 +201,20 @@
     <ClInclude Include="src\boundaries\CBoundaryGridded.h" />
     <ClInclude Include="src\boundaries\CBoundaryMap.h" />
     <ClInclude Include="src\boundaries\CBoundaryUniform.h" />
-    <ClInclude Include="src\CLCode.h" />
     <ClInclude Include="src\CModel.h" />
     <ClInclude Include="src\common.h" />
-    <ClInclude Include="src\datasets\CCSVDataset.h" />
-    <ClInclude Include="src\datasets\CRasterDataset.h" />
-    <ClInclude Include="src\datasets\CXMLDataset.h" />
-    <ClInclude Include="src\datasets\tinyxml\tinyxml2.h" />
+    <ClInclude Include="src\Datasets\CRasterDataset.h" />
     <ClInclude Include="src\domain\cartesian\CDomainCartesian.h" />
     <ClInclude Include="src\domain\CDomain.h" />
     <ClInclude Include="src\domain\CDomainBase.h" />
     <ClInclude Include="src\domain\CDomainManager.h" />
     <ClInclude Include="src\domain\links\CDomainLink.h" />
-    <ClInclude Include="src\domain\remote\CDomainRemote.h" />
+    <ClInclude Include="src\Floodplain\colormod.h" />
+    <ClInclude Include="src\Floodplain\Normalplain.h" />
     <ClInclude Include="src\general\CBenchmark.h" />
     <ClInclude Include="src\general\CLog.h" />
-    <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\mpi\CMPIManager.h" />
-    <ClInclude Include="src\mpi\CMPINode.h" />
+    <ClInclude Include="src\gpudemo.h" />
+    <ClInclude Include="src\model.h" />
     <ClInclude Include="src\opencl\executors\CExecutorControlOpenCL.h" />
     <ClInclude Include="src\opencl\executors\COCLBuffer.h" />
     <ClInclude Include="src\opencl\executors\COCLDevice.h" />
@@ -182,7 +222,6 @@
     <ClInclude Include="src\opencl\executors\COCLProgram.h" />
     <ClInclude Include="src\opencl\opencl.h" />
     <ClInclude Include="src\platforms.h" />
-    <ClInclude Include="src\platforms\unix_platform.h" />
     <ClInclude Include="src\platforms\windows_platform.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\schemes\CScheme.h" />

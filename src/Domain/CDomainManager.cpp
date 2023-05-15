@@ -239,8 +239,7 @@ void	CDomainManager::generateLinks()
 			if (i != j && CDomainLink::canLink(domains[i], domains[j]))
 			{
 				// Make a new link...
-				CDomainLink* pNewLink = new CDomainLink(domains[i], domains[j]);
-				pNewLink->logger = logger;
+				CDomainLink* pNewLink = new CDomainLink(domains[i], domains[j], logger);
 				domains[i]->addLink(pNewLink);
 				domains[j]->addDependentLink(pNewLink);
 			}

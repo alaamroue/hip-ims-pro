@@ -70,6 +70,11 @@ bool COCLProgram::compileProgram(
 	this->sCompileParameters += " -cl-mad-enable";
 #endif
 
+	// TODO: Alaa Check the effect of these one, 14% inc speed
+	// Allows optimizations for floating-point arithmetic
+	// Requires that the global work-size be a multiple of the work-group size
+	//this->sCompileParameters += " -cl-fast-relaxed-math";
+	//this->sCompileParameters += " -cl-uniform-work-group-size";
 	// This might not be a good idea...
 	//this->sCompileParameters += " -cl-denorms-are-zero";
 

@@ -105,6 +105,7 @@ class CModel
 		cl_ulong				ulCachedWorkgroupSizeX, ulCachedWorkgroupSizeY;
 		cl_ulong				ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
 		unsigned int			selectedDevice;
+		unsigned int			domainCount;
 
 	private:
 

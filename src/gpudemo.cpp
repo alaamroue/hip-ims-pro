@@ -20,10 +20,10 @@
 // Includes
 #include "gpudemo.h"
 #include "CModel.h"
-#include "Datasets/CRasterDataset.h"
-#include "OpenCL/Executors/COCLDevice.h"
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
+#include "Domain/Cartesian/CDomainCartesian.h"
+#include "OpenCL/Executors/COCLDevice.h"
 #include "Schemes\CSchemeGodunov.h"
 
 
@@ -62,8 +62,8 @@ int loadConfiguration()
 	pManager->setSelectedDevice(2);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
 	pManager->setName("Name");														// Set Name of Project
 	pManager->setDescription("The Description");									// Set Description of Project
-	pManager->setSimulationLength(3600*100.0);										// Set Simulation Length
-	pManager->setOutputFrequency(3600*100.0);										// Set Output Frequency
+	pManager->setSimulationLength(3600*1000.0);										// Set Simulation Length
+	pManager->setOutputFrequency(3600*1000.0);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
 	pManager->setCourantNumber(0.5);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
@@ -72,23 +72,29 @@ int loadConfiguration()
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
-	ourCartesianDomain->configureDomain();
-
-
-
+	ourCartesianDomain->configureDomain(0.00);
 	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
-
 	ourCartesianDomain->setScheme(pScheme);
 	ourCartesianDomain->loadInitialConditions();
 
-	CDomainManager* pManagerDomains = pManager->getDomainSet();
+	CDomainCartesian* ourCartesianDomain2 = new CDomainCartesian(pManager);				//Creeate a new Domain
+	ourCartesianDomain2->configureDomain(10.00);
+	CSchemeGodunov* pScheme2 = new CSchemeGodunov(pManager);
+	pScheme2->setDomain(ourCartesianDomain2);
+	pScheme2->prepareAll();
+	ourCartesianDomain2->setScheme(pScheme2);
+	ourCartesianDomain2->loadInitialConditions();
 
+	CDomainManager* pManagerDomains = pManager->getDomainSet();
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
+	ourCartesianDomain2->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking
 	pManagerDomains->domains.push_back(ourCartesianDomain);
+	pManagerDomains->domains.push_back(ourCartesianDomain2);
+
 	pManagerDomains->logDomainMultiOrSingle();
 	pManagerDomains->generateLinks();
 	pManagerDomains->logDetails();
@@ -103,28 +109,18 @@ int loadConfiguration()
  */
 int commenceSimulation()
 {
-	if ( !pManager ) 
-		return doClose(
-			model::appReturnCodes::kAppInitFailure	
-		);
+	if ( !pManager ) return doClose(model::appReturnCodes::kAppInitFailure	);
 
-	// ---
-	//  MODEL RUN
-	// ---
-	if ( !pManager->runModel() )
-	{
-		model::doError(
-			"Simulation start failed.",
-			model::errorCodes::kLevelModelStop
-		);
-		return doClose( 
-			model::appReturnCodes::kAppFatal 
-		);
-	}
 
-	// Allow safe deletion 
+
+
+	if (!pManager->runModel())
+	{model::doError("Simulation start failed.", model::errorCodes::kLevelModelStop); return doClose(model::appReturnCodes::kAppFatal);}
+
+
+
+
 	pManager->runModelCleanup();
-
 	return model::appReturnCodes::kAppSuccess;
 }
 
@@ -143,7 +139,6 @@ int closeConfiguration()
  */
 int doClose( int iCode )
 {
-	CRasterDataset::cleanupAll();
 	delete pManager;
 	std::getchar();
 

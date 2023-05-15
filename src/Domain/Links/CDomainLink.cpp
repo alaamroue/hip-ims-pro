@@ -31,8 +31,9 @@ using std::max;
 /*
  *  Constructor
  */
-CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
+CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource, CLog* logger)
 {
+	this->logger = logger;
 	this->uiTargetDomainID = pTarget->getID();
 	this->uiSourceDomainID = pSource->getID();
 
