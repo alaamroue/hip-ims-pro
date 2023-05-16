@@ -644,25 +644,19 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 		dEarliestSyncProposal = (floor(dLastSyncTime / dOutputFrequency) + 1) * dOutputFrequency;
 	}
 
-	// Reduce across all MPI nodes if required
-#ifdef MPI_ON
-	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
-	{
-		if ( this->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
-		{
-#ifdef DEBUG_MPI
-			this->log->writeLine( "Invoked MPI to reduce target time with " + std::to_string( dEarliestSyncProposal ) );
-#endif
-			bAllIdle = false;
-		}
-	} else {
-		dTargetTime = dEarliestSyncProposal;
-	}
-#else
 	// Work scheduler within numerical schemes should identify whether this has changed
 	// and update the buffer if required only...
 	dTargetTime = dEarliestSyncProposal;
-#endif
+
+}
+
+/*
+*  Sets a new Target Time to go to before stopping
+*/
+void	CModel::setModelUpdateTarget(double newTarget)
+{
+	dTargetTime = newTarget;
+
 }
 
 /*
@@ -689,7 +683,7 @@ void	CModel::runModelSync()
 		
 	// Calculate a new target time to aim for
 	this->runModelUpdateTarget( dCurrentTime );
-
+	this->setModelUpdateTarget(3600.00 * 10);
 	// ---
 	// TODO: In MPI implementation, we need to invoke a reduce operation here to identify the lowest
 	// sync proposal across all domains in the Comm...
@@ -725,6 +719,61 @@ void	CModel::runModelSync()
 	// Let devices finish
 	this->runModelBlockNode();
 	
+	// Exchange domain data
+	this->runModelDomainExchange();
+
+	// Wait for all nodes and devices
+	// TODO: This should become global across all nodes 
+	this->runModelBlockNode();
+	//this->runModelBlockGlobal();
+}
+
+/*
+*  Synchronise the whole model across all domains at a point in time
+*/
+void	CModel::runModelSyncUntil(double nextTime)
+{
+	if (bRollbackRequired ||
+		!bSynchronised ||
+		!bAllIdle)
+		return;
+
+	// No rollback required, thus we know the simulation time can now be increased
+	// to match the target we'd defined
+	this->dCurrentTime = dEarliestTime;
+	dLastSyncTime = this->dCurrentTime;
+
+	// TODO: Review if this is needed? Shouldn't earliest time get updated anyway?
+	if (domainCount <= 1)
+		this->dCurrentTime = dEarliestTime;
+
+	this->runModelOutputs();
+
+	this->setModelUpdateTarget(nextTime);
+
+	for (unsigned int i = 0; i < domainCount; ++i)
+	{
+		if (domains->isDomainLocal(i))
+		{
+			// Update with the new target time
+			// Can no longer do this here - may have to wait for MPI to return with the value
+			//domains->getDomain(i)->getScheme()->setTargetTime(dTargetTime);
+
+			// Save the current state back to host memory, but only if necessary
+			// for either domain sync/rollbacks or to write outputs
+			if (
+				(domainCount > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast) ||
+				(fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime)
+				)
+			{
+				domains->getDomain(i)->getScheme()->saveCurrentState();
+			}
+		}
+	}
+
+	// Let devices finish
+	this->runModelBlockNode();
+
 	// Exchange domain data
 	this->runModelDomainExchange();
 
@@ -814,14 +863,7 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 		// Progress until the target time is reached...
 		// Either we're not ready to sync, or we were still synced from the last run
 		if (!bSynchronised && bIdle[i])
-		{
-#ifdef MPI_ON
-			// TODO: Review this - shouldn't be needed!
-			if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-			     domains->getDomain(i)->getScheme()->getCurrentTime() != this->getMPIManager()->getLastCollectiveTime() )
-				continue;
-#endif
-				
+		{	
 			// Set the timestep if we're synchronising them
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
@@ -951,11 +993,6 @@ void	CModel::runModelMain()
 			bSyncReady,
 			bIdle
 		);
-
-		// Exchange data over MPI
-#ifdef MPI_ON
-		this->runModelMPI();
-#endif
 		
 		// Perform a rollback if required
 		this->runModelRollback();

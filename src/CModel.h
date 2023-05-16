@@ -62,6 +62,7 @@ class CModel
 		void					runModelDomainExchange(void);					// Exchange domain data
 		void					runModelUpdateTarget(double);					// Calculate a new target time
 		void					runModelSync(void);								// Synchronise domain and timestep data
+		void					runModelSyncUntil(double);						// Synchronise domain until selected point in time
 		void					runModelOutputs(void);							// Process outputs
 		void					runModelMPI(void);								// Process MPI queue etc.
 		void					runModelSchedule( CBenchmark::sPerformanceMetrics *, bool * );	// Schedule work
@@ -96,6 +97,7 @@ class CModel
 		CLog*					getLogger();												// Gets a pointer to the logger class
 		void					setSelectedDevice(unsigned int id);							// Select a gpu device to build the kernel on
 		unsigned int			getSelectedDevice();							// Select a gpu device to build the kernel on
+		void					setModelUpdateTarget(double newTarget);			//Set a target time for the simulation to run to
 
 		// Public variables
 		CLog*					log;											// Handle for the log singular class

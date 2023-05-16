@@ -1423,9 +1423,7 @@ bool	CSchemeGodunov::isSimulationSyncReady(double dExpectedTargetTime)
 	else {
 		if (dExpectedTargetTime - dCurrentTime > 1E-5)
 		{
-			#ifdef DEBUG_MPI
 			logger->writeLine("Expected target: " + std::to_string(dExpectedTargetTime) + " Current time: " + std::to_string(dCurrentTime));
-			#endif
 			return false;
 		}
 	}
@@ -1586,9 +1584,6 @@ void CSchemeGodunov::setTargetTime(double dTime)
 	if (dTime == this->dTargetTime)
 		return;
 
-	#ifdef DEBUG_MPI
-	logger->writeLine("[DEBUG] Received request to set target to " + std::to_string(dTime));
-#endif
 	this->dTargetTime = dTime;
 	//this->dLastSyncTime = this->dCurrentTime;
 	this->bUpdateTargetTime = true;

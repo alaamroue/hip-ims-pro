@@ -32,7 +32,7 @@
  */
 CDomainManager::CDomainManager(void)
 {
-	this->ucSyncMethod = model::syncMethod::kSyncForecast;
+	this->ucSyncMethod = model::syncMethod::kSyncTimestep;
 	this->uiSyncSpareIterations = 3;
 }
 
