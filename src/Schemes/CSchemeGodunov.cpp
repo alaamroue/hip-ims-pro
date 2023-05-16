@@ -1219,76 +1219,33 @@ void	CSchemeGodunov::runSimulation(double dTargetTime, double dRealTime)
 	if (this->dTargetTime != dTargetTime)
 		setTargetTime(dTargetTime);
 
-	// No target time? Can't run anything yet then, need to calculate one
-	if (dTargetTime <= 0.0)
-		return;
-
-	// If we've already hit our sync time but the other domains haven't, don't bother scheduling any work
-	if (this->dCurrentTime > dTargetTime + 1E-5)
-	{
-		// TODO: Consider downloading the data at this point?
-		// but need to accommodate for rollbacks... difficult...
-
-		// This is bad. But it might happen...
-		model::doError(
-			"Simulation has exceeded target time",
-			model::errorCodes::kLevelWarning
-		);
-		logger->writeLine(
-			"Current time:   " + std::to_string(dCurrentTime) +
-			", Target time:  " + std::to_string(dTargetTime)
-		);
-		logger->writeLine(
-			"Last sync point: " + std::to_string(dLastSyncTime)
-		);
-		return;
-	}
-
 	// If we've hit our target time, download the data we need for any dependent
 	// domain links (or in timestep sync, hit the iteration limit)
-	if (this->syncMethod == model::syncMethod::kSyncForecast &&
-		dTargetTime - this->dCurrentTime <= 1E-5)
-		bDownloadLinks = true;
-	if (this->syncMethod == model::syncMethod::kSyncTimestep &&
-		(this->uiIterationsSinceSync >= pDomain->getRollbackLimit() ||
-			dTargetTime - this->dCurrentTime <= 1E-5))
+	bDownloadLinks = true;
+	if (dTargetTime - this->dCurrentTime <= 0)
 		bDownloadLinks = true;
 
-	// Calculate a new batch size
-	if (this->bAutomaticQueue &&
-		!this->bDebugOutput &&
-		dRealTime > 1E-5 &&
-		this->syncMethod != model::syncMethod::kSyncTimestep)
-	{
+	if (dRealTime > 1E-5) {
 		// We're aiming for a seconds worth of work to be carried out
 		double dBatchDuration = dRealTime - dBatchStartedTime;
 		unsigned int uiOldQueueAdditionSize = this->uiQueueAdditionSize;
 
-		if (this->domainCount > 1) {
-			this->uiQueueAdditionSize = static_cast<unsigned int>((dTargetTime - dCurrentTime) / (dBatchTimesteps / static_cast<double>(uiBatchSuccessful)) + 1.0);
-		}
-		else {
-			this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3, static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
-		}
 
+		this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3,static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
+		
 		// Stop silly jumps in the queue addition size
 		if (this->uiQueueAdditionSize > uiOldQueueAdditionSize * 2 &&
 			this->uiQueueAdditionSize > 40)
 			this->uiQueueAdditionSize = min(static_cast<unsigned int>(this->uiBatchRate * 3), uiOldQueueAdditionSize * 2);
 
-		// Don't allow the batch size to exceed the work we can schedule without requiring a
-		// rollback of the domain state.
-		if (this->uiQueueAdditionSize > pDomain->getRollbackLimit() - this->uiIterationsSinceSync)
-			this->uiQueueAdditionSize = pDomain->getRollbackLimit() - this->uiIterationsSinceSync;
-
 		// Can't have zero queue addition size
 		if (this->uiQueueAdditionSize < 1)
 			this->uiQueueAdditionSize = 1;
 	}
+		dBatchStartedTime = dRealTime;
+		this->bRunning = true;
+		this->runBatchThread();
 
-	dBatchStartedTime = dRealTime;
-	this->bRunning = true;
-	this->runBatchThread();
 }
 
 /*

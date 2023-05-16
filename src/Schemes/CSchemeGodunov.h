@@ -91,7 +91,7 @@ class CSchemeGodunov : public CScheme
 		virtual void		importLinkZoneData();									// Load in data
 		virtual void		prepareSimulation();									// Set everything up to start running for this domain
 		virtual void		readKeyStatistics();									// Fetch the key details back to the right places in memory
-		virtual void		runSimulation( double, double );						// Run this simulation until the specified time
+		virtual void		runSimulation( double, double);						// Run this simulation until the specified time
 		virtual void		cleanupSimulation();									// Dispose of transient data and clean-up this domain
 		virtual void		saveCurrentState();										// Save current cell states
 		virtual void		forceTimeAdvance();										// Force time advance (when synced will stall)

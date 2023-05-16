@@ -23,8 +23,10 @@
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
 #include "Domain/Cartesian/CDomainCartesian.h"
+#include "Datasets/CRasterDataset.h"
 #include "OpenCL/Executors/COCLDevice.h"
 #include "Schemes\CSchemeGodunov.h"
+#include "Floodplain/Normalplain.h"
 
 
 CModel* pManager;
@@ -56,11 +58,15 @@ int main()
  */
 int loadConfiguration()
 {
+
+	Normalplain* np = new Normalplain(100, 100);
+	np->SetBedElevationMountain();
+
 	pManager	= new CModel();
-	double SyncTime = 3600.00*100;
+	double SyncTime = 36000.0;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
-	pManager->setSelectedDevice(2);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
+	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
 	pManager->setName("Name");														// Set Name of Project
 	pManager->setDescription("The Description");									// Set Description of Project
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
@@ -73,33 +79,70 @@ int loadConfiguration()
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
-	ourCartesianDomain->configureDomain(0.00);
+
+
+	CRasterDataset	pDataset;
+
+	pDataset.setLogger(pManager->log);
+	pDataset.bAvailable = true;
+	pDataset.ulRows = np->getSizeX();
+	pDataset.ulColumns = np->getSizeY();
+	pDataset.uiBandCount = 1;
+	pDataset.dResolutionX = 10.0;
+	pDataset.dResolutionY = 10.00;
+	pDataset.dOffsetX = 0.00;
+	pDataset.dOffsetY = 0.00;
+
+	pDataset.logDetails();
+
+	ourCartesianDomain->setProjectionCode(0);					// Unknown
+	ourCartesianDomain->setUnits("m");
+	ourCartesianDomain->setCellResolution(pDataset.dResolutionX);
+	ourCartesianDomain->setRealDimensions(pDataset.dResolutionX * pDataset.ulColumns, pDataset.dResolutionY * pDataset.ulRows);
+	ourCartesianDomain->setRealOffset(pDataset.dOffsetX, pDataset.dOffsetY);
+	ourCartesianDomain->setRealExtent(
+		pDataset.dOffsetY + pDataset.dResolutionY * pDataset.ulRows,
+		pDataset.dOffsetX + pDataset.dResolutionX * pDataset.ulColumns,
+		pDataset.dOffsetY,
+		pDataset.dOffsetX
+	);
+
+
+	ourCartesianDomain->configureDomain();
 	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
 	ourCartesianDomain->setScheme(pScheme);
-	ourCartesianDomain->loadInitialConditions();
 
-	CDomainCartesian* ourCartesianDomain2 = new CDomainCartesian(pManager);				//Creeate a new Domain
-	ourCartesianDomain2->configureDomain(10.00);
-	CSchemeGodunov* pScheme2 = new CSchemeGodunov(pManager);
-	pScheme2->setDomain(ourCartesianDomain2);
-	pScheme2->prepareAll();
-	ourCartesianDomain2->setScheme(pScheme2);
-	ourCartesianDomain2->loadInitialConditions();
+
+	unsigned long ulCellID;
+	unsigned char	ucRounding = 4;			// decimal places
+	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
+		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
+			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);
+			//Elevations
+			ourCartesianDomain->handleInputData(ulCellID, np->getBedElevation(ulCellID), model::rasterDatasets::dataValues::kBedElevation, ucRounding);
+			//Manning Coefficient
+			ourCartesianDomain->handleInputData(ulCellID, np->getManning(ulCellID), model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
+			//Depth
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
+			//VelocityX
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
+			//VelocityY
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
+		}
+	}
+
+
+
 
 	CDomainManager* pManagerDomains = pManager->getDomainSet();
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
-	ourCartesianDomain2->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking
 	pManagerDomains->domains.push_back(ourCartesianDomain);
-	pManagerDomains->domains.push_back(ourCartesianDomain2);
 
-	pManagerDomains->logDomainMultiOrSingle();
-	pManagerDomains->generateLinks();
 	pManagerDomains->logDetails();
-	pManagerDomains->checkDomainLinks();
 
 	pManager->log->writeLine("The computational engine is now ready.");
 	return model::appReturnCodes::kAppSuccess;
@@ -110,18 +153,15 @@ int loadConfiguration()
  */
 int commenceSimulation()
 {
-	if ( !pManager ) return doClose(model::appReturnCodes::kAppInitFailure	);
 
 
-
-
-	if (!pManager->runModel())
-	{model::doError("Simulation start failed.", model::errorCodes::kLevelModelStop); return doClose(model::appReturnCodes::kAppFatal);}
-
+	pManager->runModelPrepare();
+	pManager->runModelMain();
 
 
 
 	pManager->runModelCleanup();
+
 	return model::appReturnCodes::kAppSuccess;
 }
 

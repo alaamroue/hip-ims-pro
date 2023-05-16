@@ -67,6 +67,7 @@ class CDomain : public CDomainBase
 		virtual		void			logDetails() = 0;												// Log details about the domain
 		virtual		void			updateCellStatistics() = 0;										// Update the total number of cells calculation
 		virtual		void			writeOutputs() = 0;												// Write output files to disk
+		virtual		void			readDomain() = 0;												// Read Domain From Gpu
 		void						createStoreBuffers( void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
 		void						initialiseMemory();												// Populate cells with default values
 		void						handleInputData( unsigned long, double, unsigned char, unsigned char );	// Handle input data for varying state/static cell variables 

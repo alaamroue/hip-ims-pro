@@ -119,7 +119,7 @@ class CScheme
 		virtual void		importLinkZoneData() = 0;												// Read back synchronisation zone data
 		virtual void		prepareSimulation() = 0;												// Set everything up to start running for this domain
 		virtual void		readKeyStatistics() = 0;												// Fetch the key statistics back to the right places in memory
-		virtual void		runSimulation( double, double ) = 0;									// Run this simulation until the specified time
+		virtual void		runSimulation( double, double) = 0;									// Run this simulation until the specified time
 		virtual void		cleanupSimulation() = 0;												// Dispose of transient data and clean-up this domain
 		virtual void		rollbackSimulation( double, double ) = 0;								// Roll back cell states to the last successful round
 		virtual void		saveCurrentState() = 0;													// Save current cell states

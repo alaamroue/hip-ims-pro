@@ -71,35 +71,9 @@ CDomainCartesian::~CDomainCartesian(void)
 /*
  *  Configure the domain using the XML file
  */
-bool CDomainCartesian::configureDomain(double dOffsetX)
+bool CDomainCartesian::configureDomain()
 {
-	
-	CRasterDataset	pDataset;
 
-	pDataset.setLogger(logger);
-	pDataset.bAvailable = true;
-	pDataset.ulColumns = 100;
-	pDataset.ulRows = 100;
-	pDataset.uiBandCount = 1;
-	pDataset.dResolutionX = 100.0;
-	pDataset.dResolutionY = 100.00;
-	pDataset.dOffsetX = dOffsetX;
-	pDataset.dOffsetY = 0.00;
-
-	pDataset.logDetails();
-			
-	this->setProjectionCode(0);					// Unknown
-	this->setUnits("m");
-	this->setCellResolution(pDataset.dResolutionX);
-	this->setRealDimensions(pDataset.dResolutionX * pDataset.ulColumns, pDataset.dResolutionY * pDataset.ulRows);
-	this->setRealOffset(pDataset.dOffsetX, pDataset.dOffsetY);
-	this->setRealExtent(
-		pDataset.dOffsetY + pDataset.dResolutionY * pDataset.ulRows,
-		pDataset.dOffsetX + pDataset.dResolutionX * pDataset.ulColumns,
-		pDataset.dOffsetY,
-		pDataset.dOffsetX
-	);
-	
 	//Set Up Boundry
 	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(this->getBoundaries()->pDomain);
 	pNewBoundary->logger = logger;
@@ -108,9 +82,10 @@ bool CDomainCartesian::configureDomain(double dOffsetX)
 	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[pNewBoundary->size];
 	for (int i = 0; i < pNewBoundary->size; i++){
-		pNewBoundary->pTimeseries[i].dTime = i*10;
+		pNewBoundary->pTimeseries[i].dTime = i*100000;
 		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
+
 	pNewBoundary->setVariablesBasedonData();
 
 	this->getBoundaries()->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
@@ -749,6 +724,34 @@ void	CDomainCartesian::writeOutputs()
 		//);
 	}
 }
+
+
+void	CDomainCartesian::readDomain()
+{
+	unsigned long	ulCellID;
+	double value;
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+
+	Normalplain* np = new Normalplain(this->getCols(), this->getRows());
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX);
+			//value = this->getBedElevation(ulCellID);
+			//value = this->getBedElevation(ulCellID);
+			np->setBedElevation(ulCellID, value);
+		}
+	}
+
+	np->outputShape();
+
+}
+
 
 /*
  *	Fetch summary information for this domain

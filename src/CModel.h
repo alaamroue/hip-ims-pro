@@ -65,12 +65,13 @@ class CModel
 		void					runModelSyncUntil(double);						// Synchronise domain until selected point in time
 		void					runModelOutputs(void);							// Process outputs
 		void					runModelMPI(void);								// Process MPI queue etc.
-		void					runModelSchedule( CBenchmark::sPerformanceMetrics *, bool * );	// Schedule work
+		void					runModelSchedule(bool * );	// Schedule work
 		void					runModelUI( CBenchmark::sPerformanceMetrics * );// Update progress data etc.
 		void					runModelRollback(void);							// Rollback simulation
 		void					runModelBlockGlobal(void);						// Block all domains until all are done
 		void					runModelBlockNode(void);						// Block further processing on this node only
 		void					runModelCleanup(void);							// Clean up after a simulation completes/aborts
+		void					runNext(double);								// Run simulation until a certain time is hit
 
 		void					logDetails();									// Spit some info out to the log
 		double					getSimulationLength();							// Get total length of simulation
