@@ -32,7 +32,6 @@ using std::max;
 CRasterDataset::CRasterDataset()
 {
 	this->bAvailable = false;
-	this->gdDataset	 = NULL;
 }
 
 /*
@@ -40,8 +39,7 @@ CRasterDataset::CRasterDataset()
  */
 CRasterDataset::~CRasterDataset(void)
 {
-	if ( this->gdDataset != NULL )
-		GDALClose( this->gdDataset );
+
 }
 
 /*
@@ -49,7 +47,7 @@ CRasterDataset::~CRasterDataset(void)
  */
 void	CRasterDataset::registerAll()
 {
-	GDALAllRegister();
+
 }
 
 /*
@@ -57,14 +55,7 @@ void	CRasterDataset::registerAll()
  */
 void	CRasterDataset::cleanupAll()
 {
-	try
-	{
-		VSICleanupFileManager();
-		CPLFinderClean();
-		CPLFreeConfig();
-		GDALDestroyDriverManager();
-	}
-	catch (std::exception e) {}
+
 }
 
 /*
@@ -72,26 +63,8 @@ void	CRasterDataset::cleanupAll()
  */
 bool	CRasterDataset::openFileRead( std::string sFilename )
 {
-	GDALDataset		*gdDataset;
 
-	pManager->log->writeLine( "Invoking GDAL to open dataset." );
-	gdDataset = static_cast<GDALDataset*>( GDALOpen( sFilename.c_str(), GA_ReadOnly ) );
-	pManager->log->writeLine( "Handle on dataset established." );
 
-	if ( gdDataset == NULL )
-	{
-		model::doError(
-			"Unable to open raster dataset",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	pManager->log->writeLine( "Opened GDAL raster dataset from file." );
-
-	this->gdDataset		= gdDataset;
-	this->bAvailable	= true;
-	this->readMetadata();
 	return true;
 }
 
@@ -105,187 +78,6 @@ bool	CRasterDataset::domainToRaster(
 			unsigned char		ucValue
 		)
 {
-	// Get the driver and check it's capable of writing
-	GDALDriver*		pDriver;
-	GDALDataset*	pDataset;
-	GDALRasterBand*	pBand;
-	char**			czDriverMetadata;
-	char**			czOptions;
-	double			adfGeoTransform[6]		= { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-	double			dResolution;
-	double*			dRow;
-	double			dDepth;
-	double			dVelocityX, dVelocityY;
-	unsigned long	ulCellID;
-	std::string		sValueName;
-
-	CRasterDataset::getValueDetails( ucValue, &sValueName );
-	pManager->log->writeLine( "Writing " + sValueName + " to output raster file..." );
-
-	pDriver = GetGDALDriverManager()->GetDriverByName( cDriver );
-
-	if ( pDriver == NULL )
-	{
-		model::doError(
-			"Unable to obtain driver for output.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	czDriverMetadata = pDriver->GetMetadata();
-	if ( CSLFetchBoolean( czDriverMetadata, GDAL_DCAP_CREATE, false ) == 0 )
-	{
-		model::doError(
-			"GDAL format driver does not support file creation.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Create and set metadata
-	czOptions = NULL;
-	pDataset = pDriver->Create(  sFilename.c_str(),			// Filename
-								 pDomain->getCols(),		// X size
-								 pDomain->getRows(),		// Y size
-								 1,							// Bands
-								 GDT_Float64,				// Data format
-								 czOptions );				// Options
-								 
-	if ( pDataset == NULL )
-	{
-		model::doError(
-			"Could not create output raster file.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	pDomain->getRealOffset( &adfGeoTransform[0], &adfGeoTransform[3] );
-	pDomain->getCellResolution( &dResolution );
-
-	adfGeoTransform[3] += dResolution * pDomain->getRows();	// TL offset instead of BL
-	adfGeoTransform[1]  = +dResolution;
-	adfGeoTransform[5]  = -dResolution;						// Y resolution has to be negative
-
-	pDataset->SetGeoTransform( adfGeoTransform );
-
-	// Write data (bottom to top for rows)
-	pBand	= pDataset->GetRasterBand( 1 );
-	pBand->SetNoDataValue( -9999.0 );
-
-	dRow	= new double[ pDomain->getCols() ];
-	for( unsigned long iRow = 0; iRow < pDomain->getRows(); ++iRow )
-	{
-		for( unsigned long iCol = 0; iCol < pDomain->getCols(); ++iCol )
-		{
-			ulCellID = pDomain->getCellID( iCol, iRow );
-
-			std::cout << pDomain->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
-
-			dRow[iCol] = -9999.0;
-
-			switch( ucValue )
-			{
-			case model::rasterDatasets::dataValues::kMaxFSL:
-				dRow[ iCol ] = pDomain->getStateValue( 
-					ulCellID,
-					model::domainValueIndices::kValueMaxFreeSurfaceLevel
-				);
-				if ( dRow[ iCol ] < pDomain->getBedElevation( ulCellID ) + 1E-8 ) 
-					dRow[ iCol ] = pBand->GetNoDataValue();
-				if (pDomain->getBedElevation(ulCellID) > 9999.0)
-					dRow[iCol] = pBand->GetNoDataValue();
-				break;
-			case model::rasterDatasets::dataValues::kFreeSurfaceLevel:
-				dRow[ iCol ] = pDomain->getStateValue( 
-					ulCellID,
-					model::domainValueIndices::kValueFreeSurfaceLevel
-				);
-				if ( dRow[ iCol ] < pDomain->getBedElevation( ulCellID ) + 1E-8 ) 
-					dRow[ iCol ] = pBand->GetNoDataValue();
-				if (pDomain->getBedElevation(ulCellID) > 9999.0)
-					dRow[iCol] = pBand->GetNoDataValue();
-				break;
-			case model::rasterDatasets::dataValues::kMaxDepth:
-				dRow[ iCol ] = max( 0.0, pDomain->getStateValue( ulCellID, 
-									model::domainValueIndices::kValueMaxFreeSurfaceLevel ) - 
-									pDomain->getBedElevation( ulCellID ) );
-				if ( dRow[ iCol ] < 1E-8 || dRow[iCol] <= -9990.0 || dRow[iCol] >= 9999.0 ) 
-					dRow[ iCol ] = pBand->GetNoDataValue();
-				break;
-			case model::rasterDatasets::dataValues::kDepth:
-				dRow[ iCol ] = max( 0.0, pDomain->getStateValue( ulCellID, 
-									model::domainValueIndices::kValueFreeSurfaceLevel ) - 
-									pDomain->getBedElevation( ulCellID ) );
-				if ( dRow[ iCol ] < 1E-8 ) 
-					dRow[ iCol ] = pBand->GetNoDataValue();
-				break;
-			case model::rasterDatasets::dataValues::kDischargeX:
-				dRow[ iCol ] = pDomain->getStateValue( 
-					ulCellID,
-					model::domainValueIndices::kValueDischargeX
-				) * dResolution;
-				break;
-			case model::rasterDatasets::dataValues::kDischargeY:
-				dRow[ iCol ] = pDomain->getStateValue( 
-					ulCellID,
-					model::domainValueIndices::kValueDischargeY
-				) * dResolution;
-				break;
-			case model::rasterDatasets::dataValues::kVelocityX:
-				dDepth		 = pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueFreeSurfaceLevel ) - 
-							   pDomain->getBedElevation( ulCellID );
-				dRow[ iCol ] = ( dDepth > 1E-8 ?
-							   ( pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueDischargeX ) / 
-									dDepth ) :
-							   ( pBand->GetNoDataValue() ) );
-				break;
-			case model::rasterDatasets::dataValues::kVelocityY:
-				dDepth		 = pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueFreeSurfaceLevel ) - 
-							   pDomain->getBedElevation( ulCellID );
-				dRow[ iCol ] = ( dDepth > 1E-8 ?
-							   ( pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueDischargeY ) / 
-									dDepth ) :
-							   ( pBand->GetNoDataValue() ) );
-				break;
-			case model::rasterDatasets::dataValues::kFroudeNumber:
-				dDepth		 = pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueFreeSurfaceLevel ) - 
-							   pDomain->getBedElevation( ulCellID );
-				dVelocityY	 = pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueDischargeY ) / 
-									dDepth;
-				dVelocityX	 = pDomain->getStateValue( ulCellID,
-									model::domainValueIndices::kValueDischargeX ) / 
-									dDepth;
-				dRow[ iCol ] = ( dDepth > 1E-8 ?
-							   ( sqrt( dVelocityX*dVelocityX + dVelocityY*dVelocityY ) / sqrt( 9.81 * dDepth ) ) :
-							   ( pBand->GetNoDataValue() ) );
-				break;
-			}
-		}
-
-		pBand->RasterIO( GF_Write,							// Flag
-						 0,									// X offset
-						 pDomain->getRows() - iRow - 1,		// Y offset
-						 pDomain->getCols(),				// X size
-						 1,									// Y size
-						 dRow,								// Memory
-						 pDomain->getCols(),				// X buffer size
-						 1,									// Y buffer size
-						 GDT_Float64,						// Data type
-						 0,									// Pixel space
-						 0 );								// Line space
-	}
-	delete [] dRow;
-	
-	GDALClose( (GDALDatasetH)pDataset );
-	
 	return true;
 }
 
@@ -294,41 +86,6 @@ bool	CRasterDataset::domainToRaster(
  */
 void	CRasterDataset::readMetadata()
 {
-	double			adfGeoTransform[6];
-	GDALDriver*		gdDriver;
-
-	if ( !this->bAvailable ) return;
-
-	gdDriver		= this->gdDataset->GetDriver();
-	
-	this->cDriverDescription	= const_cast<char*>( gdDriver->GetDescription() );
-	this->cDriverLongName		= const_cast<char*>( gdDriver->GetMetadataItem( GDAL_DMD_LONGNAME ) );
-	this->ulColumns				= this->gdDataset->GetRasterXSize();
-	this->ulRows				= this->gdDataset->GetRasterYSize();
-	this->uiBandCount			= this->gdDataset->GetRasterCount();
-
-	if ( this->gdDataset->GetGeoTransform( adfGeoTransform ) == CE_None )
-	{
-
-		this->dResolutionX		= fabs( adfGeoTransform[1] );
-		this->dResolutionY		= fabs( adfGeoTransform[5] );
-		this->dOffsetX			= adfGeoTransform[0];
-		this->dOffsetY			= adfGeoTransform[3] - this->dResolutionY * this->ulRows;
-
-	} else {
-
-		model::doError(
-			"No georeferencing data was found in the dataset.",
-			model::errorCodes::kLevelWarning
-		);
-
-		// Assumed cell resolution, not good!
-		this->dOffsetX			= 0.0;
-		this->dOffsetY			= 0.0;
-		this->dResolutionX		= 1.0;
-		this->dResolutionY		= 1.0;
-
-	}
 
 	// TODO: Spatial reference systems (EPSG codes etc.) once needed by CDomain
 }
@@ -377,52 +134,6 @@ bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain )
  */
 bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian* pDomain )
 {
-	GDALRasterBand*	pBand;
-	std::string		sValueName	= "unknown";
-	unsigned char	ucDataIndex	= 0;
-	unsigned char	ucRounding	= 4;			// decimal places
-
-	if ( !this->bAvailable ) return false;
-	if ( !this->isDomainCompatible( pDomain ) ) return false;
-
-	CRasterDataset::getValueDetails( ucValue, &sValueName );
-	pManager->log->writeLine( "Loading " + sValueName + " from raster dataset." );
-
-	pBand = this->gdDataset->GetRasterBand( 1 );
-
-	double*			dScanLine;
-	double			dValue;
-	unsigned long	ulCellID;
-	for( unsigned long iRow = 0; iRow < this->ulRows; iRow++ )
-	{
-		dScanLine = (double*) CPLMalloc(sizeof( double ) * this->ulColumns );
-		pBand->RasterIO( GF_Read,				// Flag
-						 0,						// X offset
-						 iRow,					// Y offset
-						 this->ulColumns,		// X read size
-						 1,						// Y read size
-						 dScanLine,				// Target heap
-						 this->ulColumns,		// X buffer size
-						 1,						// Y buffer size
-						 GDT_Float64,			// Data type
-						 0,						// Pixel space
-						 0 );					// Line space
-
-		for( unsigned long iCol = 0; iCol < this->ulColumns; iCol++ )
-		{
-			dValue		= dScanLine[ iCol ];
-			ulCellID	= pDomain->getCellID( iCol, this->ulRows - iRow - 1 );		// Scan lines start in the top left
-
-			pDomain->handleInputData(
-				ulCellID,
-				dValue,
-				ucValue,
-				ucRounding
-			);
-		}
-
-		CPLFree( dScanLine );
-	}
 
 	return true;
 }
@@ -475,37 +186,8 @@ CBoundaryGridded::SBoundaryGridTransform* CRasterDataset::createTransformationFo
  */
 double*		CRasterDataset::createArrayForBoundary( CBoundaryGridded::SBoundaryGridTransform *sTransform )
 {
-	double* dReturn = new double[ sTransform->uiColumns * sTransform->uiRows ]; 
-	GDALRasterBand *pBand = this->gdDataset->GetRasterBand(1);
 
-	double*			dScanLine;
-	for (unsigned long iRow = 0; iRow < sTransform->uiRows; iRow++)
-	{
-		dScanLine = (double*)CPLMalloc(sizeof(double)* sTransform->uiColumns);
-		pBand->RasterIO(
-			GF_Read,						// Flag
-			sTransform->ulBaseWest,			// X offset
-			( this->ulRows - sTransform->ulBaseSouth - 1 ) - iRow,	// Y offset
-			sTransform->uiColumns,			// X read size
-			1,								// Y read size
-			dScanLine,						// Target heap
-			sTransform->uiColumns,			// X buffer size
-			1,								// Y buffer size
-			GDT_Float64,					// Data type
-			0,								// Pixel space
-			0								// Line space
-		);
-
-		memcpy(
-			&dReturn[ iRow * sTransform->uiColumns ],
-			dScanLine,
-			sizeof( double ) * sTransform->uiColumns
-		);
-
-		CPLFree(dScanLine);
-	}
-
-	return dReturn;
+	return nullptr;
 }
 
 /*
