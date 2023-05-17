@@ -180,6 +180,9 @@ bool	CRasterDataset::domainToRaster(
 		for( unsigned long iCol = 0; iCol < pDomain->getCols(); ++iCol )
 		{
 			ulCellID = pDomain->getCellID( iCol, iRow );
+
+			std::cout << pDomain->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+
 			dRow[iCol] = -9999.0;
 
 			switch( ucValue )

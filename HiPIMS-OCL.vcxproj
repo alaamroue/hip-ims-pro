@@ -14,12 +14,13 @@
     <ProjectGuid>{FA97D6E4-0814-4983-9252-EB9C2D5A4216}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>HiPIMS Simulator</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -76,10 +77,12 @@
     </PreBuildEvent>
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;WIN32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Libraries\Boost\boost;C:\Libraries\Boost;C:\Libraries\GDAL\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencl.lib;gdal_i.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencl.lib;gdal_i.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Libraries\GDAL\bin;C:\Libraries\Boost\stage\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call bin\win32\post-build-debug.bat "$(OutDir)"
@@ -115,6 +118,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Normalplain.cpp" />
     <ClCompile Include="src\base\CExecutorControl.cpp" />
     <ClCompile Include="src\boundaries\CBoundary.cpp" />
     <ClCompile Include="src\boundaries\CBoundaryCell.cpp" />
@@ -151,6 +155,7 @@
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Normalplain.h" />
     <ClInclude Include="src\base\CExecutorControl.h" />
     <ClInclude Include="src\boundaries\CBoundary.h" />
     <ClInclude Include="src\boundaries\CBoundaryCell.h" />

@@ -39,3 +39,6 @@ _debug*.log
 # Exceptions
 !tools/**/*.exe
 !tools/**/*.dll
+/.qtc_clangd
+/.vs/HiPIMS-OCL
+/x64
