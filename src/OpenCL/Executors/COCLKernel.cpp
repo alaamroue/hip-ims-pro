@@ -94,7 +94,7 @@ void COCLKernel::scheduleExecution()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Kernel queue failed for device #" + toString( this->uiDeviceID ) + ". Error " + toString( iErrorID ) + ".\n" 
+			"Kernel queue failed for device #" + std::to_string( this->uiDeviceID ) + ". Error " + toString( iErrorID ) + ".\n"
 			+ "  " + sName,
 			model::errorCodes::kLevelModelStop
 		);
@@ -115,7 +115,7 @@ void COCLKernel::scheduleExecution()
 			// The model cannot continue in this case, odd though it is...
 			// Shouldn't ever really happen, but you never know
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + std::to_string( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;
@@ -143,7 +143,7 @@ void COCLKernel::scheduleExecutionAndFlush()
 		// The model cannot continue in this case, odd though it is...
 		// Shouldn't ever really happen, but you never know
 		model::doError(
-			"Failed flushing commands to device #" + toString( this->uiDeviceID ) + ".",
+			"Failed flushing commands to device #" + std::to_string( this->uiDeviceID ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return;
@@ -225,7 +225,7 @@ void COCLKernel::prepareKernel()
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not prepare the kernel to run on device #" + toString( this->program->device->uiDeviceNo ) + ".",
+			"Could not prepare the kernel to run on device #" + std::to_string( this->program->device->uiDeviceNo ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
                 model::doError(
@@ -235,7 +235,7 @@ void COCLKernel::prepareKernel()
 		return;
 	}
 
-	pManager->log->writeLine( "Kernel '" + sName + "' prepared for device #" + toString( this->program->device->uiDeviceNo ) + "." );
+	pManager->log->writeLine( "Kernel '" + sName + "' prepared for device #" + std::to_string( this->program->device->uiDeviceNo ) + "." );
 
 	// Fetch the kernel details on workgroup sizes etc.
 	iErrorID = clGetKernelInfo(

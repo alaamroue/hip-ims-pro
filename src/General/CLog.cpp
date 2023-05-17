@@ -379,7 +379,7 @@ void CLog::resetColour()
 void CLog::writeDebugFile( char** cContents, unsigned int uiSegmentCount )
 {
 	std::ofstream ofsDebug;
-	std::string sFilePath = this->getDir() + "_debug" + toString( this->uiDebugFileID ) + ".log";
+	std::string sFilePath = this->getDir() + "_debug" + std::to_string( this->uiDebugFileID ) + ".log";
 
 	try 
 	{

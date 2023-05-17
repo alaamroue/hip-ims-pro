@@ -64,7 +64,7 @@ COCLDevice::~COCLDevice(void)
 	delete[] this->clDeviceOpenCLVersion;
 	delete[] this->clDeviceOpenCLDriver;
 
-	pManager->log->writeLine( "An OpenCL device has been released (#" + toString(this->uiDeviceNo) + ")." );
+	pManager->log->writeLine( "An OpenCL device has been released (#" + std::to_string(this->uiDeviceNo) + ")." );
 }
 
 /*
@@ -222,23 +222,23 @@ void COCLDevice::logDevice()
 						 ", " << this->clDeviceMaxWorkItemSizes[1] << 
 						 ", " << this->clDeviceMaxWorkItemSizes[2] << "]";
 
-	pLog->writeLine( "#" + toString( this->uiDeviceNo ) + sDeviceType, true, wColour );
+	pLog->writeLine( "#" + std::to_string( this->uiDeviceNo ) + sDeviceType, true, wColour );
 
 	pLog->writeLine( "  Suitability:       " + (std::string)( this->clDeviceAvailable ? "Available" : "Unavailable" ) + ", " + (std::string)( this->clDeviceCompilerAvailable ? "Compiler found" : "No compiler available" ), true, wColour );
 	pLog->writeLine( "  Processor type:    " + std::string( this->clDeviceName ), true, wColour );
 	pLog->writeLine( "  Vendor:            " + std::string( this->clDeviceVendor ), true, wColour );
 	pLog->writeLine( "  OpenCL driver:     " + std::string( this->clDeviceOpenCLDriver ), true, wColour );
-	pLog->writeLine( "  Compute units:     " + toString( this->clDeviceComputeUnits ), true, wColour );
+	pLog->writeLine( "  Compute units:     " + std::to_string( this->clDeviceComputeUnits ), true, wColour );
 	pLog->writeLine( "  Profile:           " + (std::string)( std::string( this->clDeviceProfile ).compare( "FULL_PROFILE" ) == 0 ? "Full" : "Embedded" ), true, wColour );
-	pLog->writeLine( "  Clock speed:       " + toString( this->clDeviceClockFrequency) + " MHz", true, wColour );
-	pLog->writeLine( "  Memory:            " + toString( (unsigned int)(this->clDeviceGlobalMemSize / 1024 / 1024) ) + " Mb", true, wColour );
+	pLog->writeLine( "  Clock speed:       " + std::to_string( this->clDeviceClockFrequency) + " MHz", true, wColour );
+	pLog->writeLine( "  Memory:            " + std::to_string( (unsigned int)(this->clDeviceGlobalMemSize / 1024 / 1024) ) + " Mb", true, wColour );
 	pLog->writeLine( "  OpenCL C:          " + std::string( this->clDeviceOpenCLVersion ), true, wColour );
-	pLog->writeLine( "  Max global size:   " + toString( this->clDeviceGlobalSize ), true, wColour );
-	pLog->writeLine( "  Max group items:   " + toString( this->clDeviceMaxWorkGroupSize ), true, wColour );
+	pLog->writeLine( "  Max global size:   " + std::to_string( this->clDeviceGlobalSize ), true, wColour );
+	pLog->writeLine( "  Max group items:   " + std::to_string( this->clDeviceMaxWorkGroupSize ), true, wColour );
 	pLog->writeLine( "  Max group:         " + ssGroupDimensions.str(), true, wColour );
-	pLog->writeLine( "  Max constant args: " + toString( this->clDeviceMaxConstants ), true, wColour );
-	pLog->writeLine( "  Max allocation:    " + toString( this->clDeviceMaxMemAlloc / 1024 / 1024 ) + "MB", true, wColour );
-	pLog->writeLine( "  Max argument size: " + toString( this->clDeviceMaxParamSize / 1024 ) + "kB", true, wColour );
+	pLog->writeLine( "  Max constant args: " + std::to_string( this->clDeviceMaxConstants ), true, wColour );
+	pLog->writeLine( "  Max allocation:    " + std::to_string( this->clDeviceMaxMemAlloc / 1024 / 1024 ) + "MB", true, wColour );
+	pLog->writeLine( "  Max argument size: " + std::to_string( this->clDeviceMaxParamSize / 1024 ) + "kB", true, wColour );
 	pLog->writeLine( "  Double precision:  " + sDoubleSupport, true, wColour );
 
 	pLog->writeDivide();
@@ -505,7 +505,7 @@ bool COCLDevice::isBusy()
 	if (iQueryStatus != CL_SUCCESS)
 		return true;
 
-	pManager->log->writeLine("Exec status for device #" + toString(uiDeviceNo)+" is " + toString(iStatus));
+	pManager->log->writeLine("Exec status for device #" + std::to_string(uiDeviceNo)+" is " + std::to_string(iStatus));
 	if (iStatus == CL_COMPLETE)
 	{
 		return false;
@@ -527,7 +527,7 @@ std::string		COCLDevice::getDeviceShortName( void )
 	if ( this->clDeviceType & CL_DEVICE_TYPE_GPU )			sName = "GPU ";
 	if ( this->clDeviceType & CL_DEVICE_TYPE_ACCELERATOR )	sName = "APU ";
 
-	sName += toString( this->uiDeviceNo );
+	sName += std::to_string( this->uiDeviceNo );
 
 	return sName;
 }

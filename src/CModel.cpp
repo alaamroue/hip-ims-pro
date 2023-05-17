@@ -393,9 +393,9 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 #ifdef PLATFORM_UNIX
 	sprintf( cCells,		"%llu", ulCurrentCellsCalculated );
 #endif
-	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, toString( ulRate ).c_str() );
+	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, std::to_string( ulRate ).c_str() );
 	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
-	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", toString( uiBatchSizeMin ).c_str() );
+	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", std::to_string( uiBatchSizeMin ).c_str() );
 	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
@@ -438,11 +438,11 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 		sprintf(
 			cDomainLine,
 			"| Domain #%-2s | %8s | %14s | %10s | %8s |",
-			toString(i + 1).c_str(),
+			std::to_string(i + 1).c_str(),
 			sDeviceName.c_str(),
 			Util::secondsToTime(pProgress.dBatchTimesteps).c_str(),
-			toString(pProgress.uiBatchSuccessful).c_str(),
-			toString(pProgress.uiBatchSkipped).c_str()
+			std::to_string(pProgress.uiBatchSuccessful).c_str(),
+			std::to_string(pProgress.uiBatchSkipped).c_str()
 		);
 
 		pManager->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
@@ -535,10 +535,10 @@ void	CModel::runModelPrepareDomains()
 
 		if (domains->getDomainCount() > 1)
 		{
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " has rollback limit of " +
-				toString(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
+			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
+				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
 		} else {
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " is not constrained by " +
+			pManager->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
 				"overlapping.");
 		}
 	}
@@ -753,7 +753,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 		if ( pManager->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
 		{
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "Invoked MPI to reduce target time with " + toString( dEarliestSyncProposal ) );
+			pManager->log->writeLine( "Invoked MPI to reduce target time with " + std::to_string( dEarliestSyncProposal ) );
 #endif
 			bAllIdle = false;
 		}
@@ -820,7 +820,7 @@ void	CModel::runModelSync()
 			   )
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + toString( i ) );
+				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + std::to_string( i ) );
 #endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
@@ -942,10 +942,10 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
 				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//pManager->log->writeLine( "Global timestep: " + toString( dGlobalTimestep ) + " Current time: " + toString( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
+			//pManager->log->writeLine( "Global timestep: " + std::to_string( dGlobalTimestep ) + " Current time: " + std::to_string( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
 
 			// Run a batch
-			//pManager->log->writeLine("[DEBUG] Running scheme to " + toString(dTargetTime));
+			//pManager->log->writeLine("[DEBUG] Running scheme to " + std::to_string(dTargetTime));
 			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 		}
 	}
@@ -1127,8 +1127,8 @@ void	CModel::runModelMain()
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
 	pManager->log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
-	//pManager->log->writeLine( "Calculation rate:    " + toString( floor(dCellRate) ) + " cells/sec" );
-	//pManager->log->writeLine( "Final volume:        " + toString( static_cast<int>( dVolume ) ) + "m3" );
+	//pManager->log->writeLine( "Calculation rate:    " + std::to_string( floor(dCellRate) ) + " cells/sec" );
+	//pManager->log->writeLine( "Final volume:        " + std::to_string( static_cast<int>( dVolume ) ) + "m3" );
 	pManager->log->writeDivide();
 
 	delete   pBenchmarkAll;
