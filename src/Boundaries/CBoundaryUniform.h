@@ -34,6 +34,15 @@ public:
 	virtual void					applyBoundary(COCLBuffer*);
 	virtual void					streamBoundary(double);
 	virtual void					cleanBoundary();
+	void							setValue(unsigned char a)			{ ucValue = a; };
+	struct sTimeseriesUniform
+	{
+		cl_double		dTime;
+		cl_double		dComponent;	
+	};
+
+
+	sTimeseriesUniform*				pTimeseries;
 
 protected:
 
@@ -51,13 +60,7 @@ protected:
 		cl_double		TimeseriesLength;
 		cl_uint			Definition;
 	};
-	struct sTimeseriesUniform
-	{
-		cl_double		dTime;
-		cl_double		dComponent;	
-	};
 
-	void							setValue(unsigned char a)			{ ucValue = a; };
 	void							importTimeseries(CCSVDataset*);
 
 	unsigned char					ucValue;
@@ -66,7 +69,6 @@ protected:
 	double							dTimeseriesLength;
 	double							dTimeseriesInterval;
 
-	sTimeseriesUniform*				pTimeseries;
 	unsigned int					uiTimeseriesLength;
 
 	COCLBuffer*						pBufferTimeseries;

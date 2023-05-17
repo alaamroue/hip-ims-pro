@@ -94,12 +94,12 @@ public:
 	std::string						getName()							{ return sName; };
 
 	static int			uiInstances;
+	std::string			sName;
 
 protected:	
 
 	CDomain*			pDomain;
 	COCLKernel*			oclKernel;
-	std::string			sName;
 
 	/*
 	unsigned int		iType;

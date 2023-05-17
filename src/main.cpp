@@ -119,14 +119,25 @@ int model::loadConfiguration()
 
 	pManager->log->writeLine("Progressing to load boundary conditions.");
 	CBoundaryMap* ourBoundryMap = ourCartesianDomain->getBoundaries();
-	CBoundary* pNewBoundary = NULL;
+	//CBoundary* pNewBoundary = NULL;
 	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryCell(ourBoundryMap->pDomain));
-	pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(ourBoundryMap->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(ourBoundryMap->pDomain));
 	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(ourBoundryMap->pDomain));
 
-	pNewBoundary->setupFromConfig(pTimeSeriesElement, sSourceDir);
+	//Set Up Boundry
+	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(ourBoundryMap->pDomain);
+	pNewBoundary->sName = std::string("TimeSeriesName");
+	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
+	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[10];
+	for (int i = 0; i < 5; i++) {
+		pNewBoundary->pTimeseries[i].dTime = i * 100000;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5;
+	}
+
+	pNewBoundary->setVariablesBasedonData();
 
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
+
 	pManager->log->writeLine("Loaded new boundary condition '" + pNewBoundary->getName() + "'.");
 
 
