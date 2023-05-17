@@ -24,7 +24,6 @@
 #include "COCLDevice.h"
 #include "../../Datasets/CXMLDataset.h"
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor
@@ -41,7 +40,7 @@ CExecutorControlOpenCL::CExecutorControlOpenCL(void)
 
 /*
  *  Setup the executor using parameters specified in the configuration file
- */
+
 void CExecutorControlOpenCL::setupFromConfig( XMLElement* pXNode )
 {
 	XMLElement*		pParameter			= pXNode->FirstChildElement();
@@ -80,7 +79,7 @@ void CExecutorControlOpenCL::setupFromConfig( XMLElement* pXNode )
 	this->setDeviceFilter( uiDeviceFilter );
 	if ( !this->createDevices() ) return;
 }
-
+ */
 /*
  *  Destructor
  */

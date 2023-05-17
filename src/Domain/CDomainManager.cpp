@@ -52,7 +52,7 @@ CDomainManager::~CDomainManager(void)
 
 /*
  *  Set up the domain manager using the configuration file
- */
+
 bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 {
 	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
@@ -99,72 +99,9 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 		}
 	}
 
-	// TODO: Ditch <parameter> for the domainSet?
-	/*
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
 
-		if ( strcmp( cParameterName, "overlapcellcount" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid simulation length given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				// TODO: Use this value to split domains automatically etc.
-			}
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
 
-		pParameter = pParameter->NextSiblingElement( "parameter" );
-	}
-	*/
 
-	/*
-	
-	XMLElement*		pXData;
-
-	// Device number(s) are now declared as part of the domain to allow for
-	// split workloads etc.
-	char			*cDomainDevice		= NULL;
-	Util::toLowercase( &cDomainDevice, pXDomain->Attribute( "deviceNumber" ) );
-
-	// TODO: For now we're only working with 1 device. If we need more than one device,
-	// the domain manager must handle splitting...
-	// TODO: Device selection/assignment should take place in the domain manager class.
-
-	// Validate the device number
-	if ( cDomainDevice == NULL )
-	{
-	// Select a device automatically
-	model::doError(
-	"Skeleton domain has no device number.",
-	model::errorCodes::kLevelModelStop
-	);
-	} else {
-	if ( CXMLDataset::isValidUnsignedInt( std::string(cDomainDevice) ) )
-	{
-	// TODO: Fix this...
-	//pDevice = pManager->getExecutor()->getDevice( boost::lexical_cast<unsigned int>(cDomainDevice) );
-	} else {
-	model::doError(
-	"The domain device specified is invalid.",
-	model::errorCodes::kLevelWarning
-	);
-	}
-	}
-	
-	*/
 
 	// From here on we're more concerned with the actual domains
 	XMLElement*		pXDomain			= pXNode->FirstChildElement( "domain" );
@@ -237,12 +174,6 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 		pManager->log->writeLine( "This is a MULTI-DOMAIN model, and possibly multi-device." );
 	}
 
-#ifdef MPI_ON
-	pManager->log->writeLine("Waiting for all nodes to finish loading domain data...");
-	pManager->getMPIManager()->blockOnComm();
-	pManager->log->writeLine("Proceeding to exchange domain data across MPI...");
-	pManager->getMPIManager()->exchangeDomains();
-#endif
 
 	// Generate links
 	this->generateLinks();
@@ -269,7 +200,7 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 
 	return true;
 }
-
+*/
 /*
  *  Add a new domain to the set
  */
@@ -490,7 +421,7 @@ void	CDomainManager::logDetails()
 			toString(pSummary.ulColCount).c_str(),
 			(pSummary.ucFloatPrecision == model::floatPrecision::kSingle ? std::string("32bit") : std::string("64bit")).c_str(),
 			toString(this->getDomainBase(i)->getLinkCount()).c_str(),
-			toString(resolutionShort).c_str()
+			resolutionShort.c_str()
 		);
 
 		pManager->log->writeLine(std::string(cDomainLine), false, wColour);	// 13

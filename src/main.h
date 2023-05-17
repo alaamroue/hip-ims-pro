@@ -96,14 +96,7 @@ struct DomainData
 };
 
 
-extern  bool			quietMode;
 extern  bool			forceAbort;
-extern  bool			gdalInitiated;
-extern	bool			disableScreen;
-extern	bool			disableConsole;
-extern	char*			workingDir;
-extern  char*			codeDir;
-extern  char*			configFile;
 extern  char*			logFile;
 extern	CModel*			pManager;
 }

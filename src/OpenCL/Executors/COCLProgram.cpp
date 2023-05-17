@@ -18,9 +18,6 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/algorithm/string.hpp>
 #include "../../common.h"
 #include "COCLProgram.h"
 #include "COCLKernel.h"
@@ -284,7 +281,7 @@ std::string COCLProgram::getCompileLog()
 	sLog = std::string( cBuildLog );
 	delete[] cBuildLog;
 
-	boost::trim(sLog);
+	sLog.erase(sLog.find_last_not_of(" \n\r\t") + 1);
 	return sLog;
 }
 

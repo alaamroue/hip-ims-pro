@@ -17,8 +17,6 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "../common.h"
 #include "CBoundaryMap.h"
@@ -100,7 +98,7 @@ unsigned int CBoundaryMap::getBoundaryCount()
 
 /*
  *  Parse everything under the <boundaryConditions> element
- */
+
 bool	CBoundaryMap::setupFromConfig( XMLElement *pConfiguration )
 {
 	XMLElement					*pBoundariesElement,		// <boundaryConditions>
@@ -208,7 +206,7 @@ bool	CBoundaryMap::setupFromConfig( XMLElement *pConfiguration )
 
 	return true;
 }
-
+ */
 /*
 *  Adjust cell bed elevations as necessary etc. around the boundaries
 */

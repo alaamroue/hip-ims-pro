@@ -61,11 +61,11 @@ class CExecutorControl
 		bool						isReady( void );					// Is the executor ready?
 		void						setDeviceFilter( unsigned int );	// Filter to specific types of device
 		unsigned int				getDeviceFilter();					// Fetch back the current device filter
-		virtual void				setupFromConfig( XMLElement* ) = 0;	// Set up the executor
+		//virtual void				setupFromConfig( XMLElement* ) = 0;	// Set up the executor
 
 		// Static functions
 		static CExecutorControl*	createExecutor( unsigned char );	// Create a new executor of the specified type
-		static CExecutorControl*	createFromConfig( XMLElement* );	// Parse and configure the executor system
+		//static CExecutorControl*	createFromConfig( XMLElement* );	// Parse and configure the executor system
 		
 	protected:
 

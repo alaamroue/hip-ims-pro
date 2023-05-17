@@ -61,7 +61,7 @@ CModel::CModel(void)
 
 /*
  *  Setup the simulation using parameters specified in the configuration file
- */
+
 void CModel::setupFromConfig( XMLElement* pXNode )
 {
 	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
@@ -131,7 +131,7 @@ void CModel::setupFromConfig( XMLElement* pXNode )
 		pParameter = pParameter->NextSiblingElement( "parameter" );
 	}
 }
-
+ */
 /*
  *  Destructor
  */
@@ -203,8 +203,8 @@ void CModel::logDetails()
 	this->log->writeDivide();
 	this->log->writeLine( "SIMULATION CONFIGURATION", true, wColour );
 	this->log->writeLine( "  Name:               " + this->sModelName, true, wColour );
-	this->log->writeLine( "  Start time:         " + std::string( Util::fromTimestamp( this->ulRealTimeStart, "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
-	this->log->writeLine( "  End time:           " + std::string( Util::fromTimestamp( this->ulRealTimeStart + static_cast<unsigned long>( std::ceil( this->dSimulationTime ) ), "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
+	//this->log->writeLine( "  Start time:         " + std::string( Util::fromTimestamp( this->ulRealTimeStart, "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
+	//this->log->writeLine( "  End time:           " + std::string( Util::fromTimestamp( this->ulRealTimeStart + static_cast<unsigned long>( std::ceil( this->dSimulationTime ) ), "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
 	this->log->writeLine( "  Simulation length:  " + Util::secondsToTime( this->dSimulationTime ), true, wColour );
 	this->log->writeLine( "  Output frequency:   " + Util::secondsToTime( this->dOutputFrequency ), true, wColour );
 	this->log->writeLine( "  Floating-point:     " + (std::string)( this->getFloatPrecision() == model::floatPrecision::kDouble ? "Double-precision" : "Single-precision" ), true, wColour );
@@ -288,12 +288,12 @@ void	CModel::setOutputFrequency( double dFrequency )
 
 /*
  *  Sets the real world start time
- */
+
 void	CModel::setRealStart( char* cTime, char* cFormat )
 {
 	this->ulRealTimeStart = Util::toTimestamp( cTime, cFormat );
 }
-
+ */
 /*
  *  Fetch the real world start time
  */

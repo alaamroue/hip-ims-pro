@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
 #include "../common.h"
 #include "CDomain.h"

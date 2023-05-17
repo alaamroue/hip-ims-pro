@@ -23,9 +23,6 @@
 #include <math.h>
 #include <cmath>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "common.h"
 
 namespace Util 
@@ -163,7 +160,7 @@ namespace Util
 
 	/*
 	 *	Timestamp conversion routines - from string to timestamp (1970-base)
-	 */
+	
 	unsigned long toTimestamp( const char * cTime, const char * cFormat )
 	{
 		boost::local_time::local_time_input_facet *pFacet;
@@ -187,10 +184,10 @@ namespace Util
 		boost::posix_time::ptime time_t_epoch(boost::gregorian::date(1970, 1, 1));
 		return (ldt.utc_time() - time_t_epoch).total_seconds();
 	}
-
+	 */
 	/*
 	 *	Timestamp conversion routines - from timestamp to time string
-	 */
+
 	const char * fromTimestamp(unsigned long ulTimestamp, const char * cFormat)
 	{
 		boost::posix_time::time_facet *pFacet;
@@ -216,7 +213,7 @@ namespace Util
 
 		return cNewString;
 	}
-
+		 */
 	/*
 	 *	Check if a file exists -- strictly speaking if it's accessible
 	 */

@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <cmath>
 #include <stdlib.h>

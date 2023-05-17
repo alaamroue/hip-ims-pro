@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -32,7 +31,6 @@ using std::max;
 CRasterDataset::CRasterDataset()
 {
 	this->bAvailable = false;
-	this->gdDataset	 = NULL;
 }
 
 /*
@@ -40,8 +38,7 @@ CRasterDataset::CRasterDataset()
  */
 CRasterDataset::~CRasterDataset(void)
 {
-	if ( this->gdDataset != NULL )
-		GDALClose( this->gdDataset );
+
 }
 
 /*
@@ -49,7 +46,6 @@ CRasterDataset::~CRasterDataset(void)
  */
 void	CRasterDataset::registerAll()
 {
-	GDALAllRegister();
 }
 
 /*
@@ -57,19 +53,12 @@ void	CRasterDataset::registerAll()
  */
 void	CRasterDataset::cleanupAll()
 {
-	try
-	{
-		VSICleanupFileManager();
-		CPLFinderClean();
-		CPLFreeConfig();
-		GDALDestroyDriverManager();
-	}
-	catch (std::exception e) {}
+
 }
 
 /*
  *  Open a file as the underlying dataset
- */
+
 bool	CRasterDataset::openFileRead( std::string sFilename )
 {
 	GDALDataset		*gdDataset;
@@ -94,10 +83,10 @@ bool	CRasterDataset::openFileRead( std::string sFilename )
 	this->readMetadata();
 	return true;
 }
-
+ */
 /*
  *  Open a file for output
- */
+
 bool	CRasterDataset::domainToRaster( 
 			const char*			cDriver, 
 			std::string			sFilename,
@@ -285,10 +274,10 @@ bool	CRasterDataset::domainToRaster(
 	
 	return true;
 }
-
+ */
 /*
  *  Read in metadata about the layer (e.g. resolution data)
- */
+ 
 void	CRasterDataset::readMetadata()
 {
 	double			adfGeoTransform[6];
@@ -329,7 +318,7 @@ void	CRasterDataset::readMetadata()
 
 	// TODO: Spatial reference systems (EPSG codes etc.) once needed by CDomain
 }
-
+*/
 /*
  *  Write details to the log file
  */
@@ -371,7 +360,7 @@ bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain )
 
 /*
  *  Apply some data to the domain from this raster's first band
- */
+
 bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian* pDomain )
 {
 	GDALRasterBand*	pBand;
@@ -423,7 +412,7 @@ bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian*
 
 	return true;
 }
-
+ */
 /*
  *  Is the domain the right dimension etc. to apply data from this raster?
  */
@@ -469,7 +458,7 @@ CBoundaryGridded::SBoundaryGridTransform* CRasterDataset::createTransformationFo
 
 /*
  *	Create an array for use as a boundary condition
- */
+
 double*		CRasterDataset::createArrayForBoundary( CBoundaryGridded::SBoundaryGridTransform *sTransform )
 {
 	double* dReturn = new double[ sTransform->uiColumns * sTransform->uiRows ]; 
@@ -504,7 +493,7 @@ double*		CRasterDataset::createArrayForBoundary( CBoundaryGridded::SBoundaryGrid
 
 	return dReturn;
 }
-
+ */
 /*
  *  Get some details for a data source type, like a full name we can use in the log
  */

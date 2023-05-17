@@ -28,7 +28,7 @@ public:
 	CBoundaryUniform( CDomain* = NULL );
 	~CBoundaryUniform();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string);
+	//virtual bool					setupFromConfig(XMLElement*, std::string);
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 													COCLBuffer*, COCLBuffer*, COCLBuffer*);
 	virtual void					applyBoundary(COCLBuffer*);
@@ -43,6 +43,10 @@ public:
 
 
 	sTimeseriesUniform*				pTimeseries;
+	double							dTotalVolume;
+	double							dTimeseriesLength;
+	double							dTimeseriesInterval;
+	unsigned int					uiTimeseriesLength;
 
 protected:
 
@@ -65,11 +69,7 @@ protected:
 
 	unsigned char					ucValue;
 
-	double							dTotalVolume;
-	double							dTimeseriesLength;
-	double							dTimeseriesInterval;
 
-	unsigned int					uiTimeseriesLength;
 
 	COCLBuffer*						pBufferTimeseries;
 	COCLBuffer*						pBufferConfiguration;

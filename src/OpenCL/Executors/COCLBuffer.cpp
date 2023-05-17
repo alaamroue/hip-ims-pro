@@ -18,7 +18,6 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
 
 #include "../../common.h"
 #include "../opencl.h"
@@ -293,7 +292,7 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 			+ this->sName + " (" + toString( iReturn ) + ")\n"
 			+ "  Offset: " + toString( ulOffset ) 
 			+ "  Size: " + toString( ulSize ) 
-			+ "  Pointer: " + toString( pMemBlock )
+			+ "  Pointer: " + toString(reinterpret_cast<uintptr_t>(pMemBlock) )
 			+ "  Buf size: " + toString( this->ulSize ),
 			model::errorCodes::kLevelModelStop
 		);

@@ -84,7 +84,7 @@ public:
 	CBoundary( CDomain* = NULL );
 	~CBoundary();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string) = 0;
+	//virtual bool					setupFromConfig(XMLElement*, std::string) = 0;
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 												    COCLBuffer*, COCLBuffer*, COCLBuffer*) = 0;
 	virtual void					applyBoundary(COCLBuffer*) = 0;

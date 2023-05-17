@@ -77,9 +77,10 @@
     </PreBuildEvent>
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;WIN32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opencl.lib;gdal_i.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
@@ -158,7 +159,6 @@
     <ClInclude Include="src\boundaries\CBoundaryGridded.h" />
     <ClInclude Include="src\boundaries\CBoundaryMap.h" />
     <ClInclude Include="src\boundaries\CBoundaryUniform.h" />
-    <ClInclude Include="src\CLCode.h" />
     <ClInclude Include="src\CModel.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\datasets\CCSVDataset.h" />

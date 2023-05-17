@@ -64,7 +64,7 @@ CDomainCartesian::~CDomainCartesian(void)
 
 /*
  *  Configure the domain using the XML file
- */
+
 bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 {
 	XMLElement* pXData;
@@ -104,7 +104,7 @@ bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 
 			CRasterDataset	pDataset;
 			pManager->log->writeLine( "Attempting to read domain structure data." );
-			pDataset.openFileRead( std::string( cSourceDir ) + std::string( cSourceFile ) );
+			//pDataset.openFileRead( std::string( cSourceDir ) + std::string( cSourceFile ) );
 			pManager->log->writeLine( "Successfully opened domain dataset for structure data." );
 			pDataset.logDetails();
 			
@@ -115,8 +115,8 @@ bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 	}
 
 	pManager->log->writeLine( "Progressing to load boundary conditions." );
-	if ( !this->getBoundaries()->setupFromConfig( pXDomain ) )
-		return false;
+	//if ( !this->getBoundaries()->setupFromConfig( pXDomain ) )
+	//	return false;
 
 	pXScheme = pXDomain->FirstChildElement( "scheme" );
 	if ( pXScheme == NULL )
@@ -145,20 +145,20 @@ bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 		}
 	}
 
-	pManager->log->writeLine( "Progressing to load initial conditions." );
-	if ( !this->loadInitialConditions( pXData ) )
-		return false;
+	//pManager->log->writeLine( "Progressing to load initial conditions." );
+	//if ( !this->loadInitialConditions( pXData ) )
+	//	return false;
 
-	pManager->log->writeLine( "Progressing to load output file definitions." );
-	if ( !this->loadOutputDefinitions( pXData ) )
-		return false;
+	//pManager->log->writeLine( "Progressing to load output file definitions." );
+	//if ( !this->loadOutputDefinitions( pXData ) )
+	//	return false;
 
 	return true;
 }
-
+ */
 /*
  *  Load all the initial conditions and data from rasters or constant definitions
- */
+
 bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 {
 	bool							bSourceVelX			= false, 
@@ -280,7 +280,7 @@ bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 
 	return true;
 }
-
+ */
 /*
  *  Load the output definitions for what should be written to disk
  */
@@ -339,7 +339,7 @@ bool	CDomainCartesian::loadOutputDefinitions( XMLElement* pXData )
 
 /*
  *  Read a data source raster or constant using the pre-parsed data held in the structure
- */
+
 bool	CDomainCartesian::loadInitialConditionSource( sDataSourceInfo pDataSource, char* cDataDir )
 {
 	if ( strcmp( pDataSource.cSourceType, "raster" ) == 0 )
@@ -407,7 +407,7 @@ bool	CDomainCartesian::loadInitialConditionSource( sDataSourceInfo pDataSource, 
 
 	return true;
 }
-
+ */
 /*
  *  Does the domain contain all of the required data yet?
  */
@@ -818,12 +818,7 @@ void	CDomainCartesian::writeOutputs()
 		if ( uiTimeLocation != std::string::npos )
 			sFilename.replace( uiTimeLocation, 2, sTime );
 
-		CRasterDataset::domainToRaster(
-			this->pOutputs[i].cFormat,
-			sFilename,
-			this,
-			this->pOutputs[i].ucValue
-		);
+		//CRasterDataset::domainToRaster(this->pOutputs[i].cFormat,sFilename,this,this->pOutputs[i].ucValue);
 	}
 }
 

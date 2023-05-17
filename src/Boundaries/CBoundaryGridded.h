@@ -28,7 +28,7 @@ public:
 	CBoundaryGridded(CDomain* = NULL);
 	~CBoundaryGridded();
 
-	virtual bool					setupFromConfig(XMLElement*, std::string);
+	//virtual bool					setupFromConfig(XMLElement*, std::string);
 	virtual void					prepareBoundary(COCLDevice*, COCLProgram*, COCLBuffer*, COCLBuffer*,
 													COCLBuffer*, COCLBuffer*, COCLBuffer*);
 	virtual void					applyBoundary(COCLBuffer*);

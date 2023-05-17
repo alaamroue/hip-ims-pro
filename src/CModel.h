@@ -48,7 +48,7 @@ class CModel
 		CModel(void);															// Constructor
 		~CModel(void);															// Destructor
 
-		void					setupFromConfig( XMLElement* );					// Setup the simulation
+		//void					setupFromConfig( XMLElement* );					// Setup the simulation
 		bool					setExecutor(CExecutorControl*);					// Sets the type of executor to use for the model
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
 		CDomainManager*			getDomainSet(void);								// Gets the domain set
@@ -75,7 +75,7 @@ class CModel
 		double					getSimulationLength();							// Get total length of simulation
 		void					setSimulationLength( double );					// Set total length of simulation
 		unsigned long			getRealStart();									// Get the real world start time (relative to epoch)
-		void					setRealStart( char*, char* = NULL );			// Set the real world start time
+		//void					setRealStart( char*, char* = NULL );			// Set the real world start time
 		double					getOutputFrequency();							// Get the output frequency
 		void					setOutputFrequency( double );					// Set the output frequency
 		void					setFloatPrecision( unsigned char );				// Set floating point precision

@@ -38,7 +38,7 @@ public:
 	CCSVDataset( std::string sCSVFilename );
 	~CCSVDataset();
 
-	bool													readFile();
+	//bool													readFile();
 	std::vector<std::vector<std::string>>::const_iterator	begin()				{ return vContents.begin(); }
 	std::vector<std::vector<std::string>>::const_iterator	end()				{ return vContents.end(); }
 	unsigned int											getLength()			{ return vContents.size() - 1; }

@@ -46,7 +46,6 @@ int _tmain(int argc, char* argv[])
 	model::logFile		= new char[50];
 	model::forceAbort	= false;
 
-	std::strcpy( model::configFile, "configuration.xml" );
 	std::strcpy( model::logFile,    "_model.log" );
 
 
@@ -134,7 +133,10 @@ int model::loadConfiguration()
 		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 
-	pNewBoundary->setVariablesBasedonData();
+	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
+	pNewBoundary->uiTimeseriesLength = 5;
+	pNewBoundary->dTimeseriesLength = pNewBoundary->pTimeseries[5 - 1].dTime;
+	pNewBoundary->dTotalVolume = 0.0;
 
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
@@ -261,16 +263,11 @@ int model::doClose( int iCode )
 {
 	CRasterDataset::cleanupAll();
 	delete pManager;
-	delete [] model::workingDir;
 	delete [] model::logFile;			// TODO: Fix me...
-	delete [] model::configFile;
-	delete [] model::codeDir;
 	model::doPause();
 
 	pManager			= NULL;
-	model::workingDir	= NULL;
 	model::logFile		= NULL;
-	model::configFile	= NULL;
 
 	return iCode;
 }
@@ -306,7 +303,7 @@ void model::doError( std::string sError, unsigned char cError )
 
 /*
  *  Discovers the full path of the current working directory.
- */
+
 void model::storeWorkingEnv()
 {
 	if ( model::workingDir != NULL )
@@ -326,3 +323,4 @@ void model::storeWorkingEnv()
 	model::workingDir = new char[ _MAX_PATH ];
 	std::strcpy( model::workingDir, cPath );
 }
+ */

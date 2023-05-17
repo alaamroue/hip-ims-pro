@@ -16,7 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
 #include "../common.h"
 #include "../Boundaries/CBoundaryMap.h"
@@ -65,7 +64,7 @@ CScheme::~CScheme(void)
 
 /*
  *  Read in settings from the XML configuration file for this scheme
- */
+
 void	CScheme::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
 {
 	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
@@ -104,14 +103,14 @@ void	CScheme::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
 					model::errorCodes::kLevelWarning
 				);
 			} else {
-				this->setQueueSize( boost::lexical_cast<unsigned int>( cParameterValue ) );
+				this->setQueueSize((unsigned int) cParameterValue);
 			}
 		}
 
 		pParameter = pParameter->NextSiblingElement("parameter");
 	}
 }
-
+ */
 /*
  *  Ask the executor to create a type of scheme with the defined
  *  flags.

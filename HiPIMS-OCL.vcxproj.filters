@@ -119,9 +119,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\CLCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\CModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>

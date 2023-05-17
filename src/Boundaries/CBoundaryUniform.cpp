@@ -17,7 +17,6 @@
 *
 */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryUniform.h"
@@ -51,7 +50,7 @@ CBoundaryUniform::~CBoundaryUniform()
 
 /*
 *	Configure this boundary and load in any related files
-*/
+
 bool CBoundaryUniform::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
 {
 	char *cBoundaryType, *cBoundaryName, *cBoundarySource, *cBoundaryValue;
@@ -97,10 +96,10 @@ bool CBoundaryUniform::setupFromConfig(XMLElement* pElement, std::string sBounda
 
 	return true;
 }
-
+*/
 /*
 *	Import timeseries data from a CSV file
-*/
+
 void CBoundaryUniform::importTimeseries(CCSVDataset *pCSV)
 {
 	unsigned int uiIndex = 0;
@@ -173,18 +172,9 @@ void CBoundaryUniform::importTimeseries(CCSVDataset *pCSV)
 	// Calculate the amount of mass in the timeseries
 	this->dTotalVolume = 0.0;
 
-	// TODO: Fix me... need to calculate volume but need to know number of cells in the domain
-	/*
-	for (unsigned int i = 0; i < this->uiTimeseriesLength - 1; ++i)
-	{
-		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
-			( (pTimeseries[i + 1].dVolumeComponent + pTimeseries[i].dVolumeComponent) / 3600 / 1000 * NUMBER_OF_CELLS ) / 2;
-		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
-			(pTimeseries[i + 1].dDischargeComponentY + pTimeseries[i].dDischargeComponentY) / 2;
-	}
-	*/
-}
 
+}
+*/
 void CBoundaryUniform::prepareBoundary(
 		COCLDevice* pDevice,
 		COCLProgram* pProgram,

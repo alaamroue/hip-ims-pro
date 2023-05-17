@@ -62,7 +62,7 @@ CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType )
 
 /*
  *  Create and configure an executor using an XML configuration node
- */
+
 CExecutorControl*	CExecutorControl::createFromConfig( XMLElement* pXNode )
 {
 	CExecutorControl*	pExecutor		= NULL;
@@ -96,7 +96,7 @@ CExecutorControl*	CExecutorControl::createFromConfig( XMLElement* pXNode )
 
 	return pExecutor;
 }
-
+ */
 /*
  *  Is this executor ready to run models?
  */

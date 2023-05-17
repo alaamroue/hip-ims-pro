@@ -21,15 +21,13 @@
 #include "../common.h"
 #include "../main.h"
 #include <sstream>
-#include <boost/algorithm/string_regex.hpp>
-#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor
  */
 CLog::CLog(void)
 {
-	this->setDir();
+	//this->setDir();
 	this->setPath();
 	this->openFile();
 	this->writeHeader();
@@ -224,14 +222,10 @@ void CLog::writeHeader(void)
 {
 	std::stringstream		ssHeader;
 
-	boost::cmatch		regmatchRevision;
-	const boost::regex	regexRevision( "\\$Revision\\:\\ ([0-9]+)\\ \\$" );
 
 	time_t tNow;
 	time( &tNow );
 	localtime( &tNow );
-
-	boost::regex_match( model::appRevision.c_str(), regmatchRevision, regexRevision );
 
 	ssHeader << "---------------------------------------------" << std::endl;
 	ssHeader << " " << model::appName << std::endl;
@@ -241,7 +235,6 @@ void CLog::writeHeader(void)
 	ssHeader << " " << model::appUnit << std::endl;
 	ssHeader << " " << model::appOrganisation << std::endl;
 	ssHeader << std::endl << " Contact:     " << model::appContact << std::endl;
-	ssHeader << " Source:      SVN Revision " << std::string( regmatchRevision[1] ) << std::endl;
 	ssHeader << "---------------------------------------------" << std::endl;
 
 	std::string sLogPath = this->getPath();
@@ -263,7 +256,7 @@ void CLog::writeHeader(void)
  */
 void CLog::setPath()
 {
-	std::string sPath = std::string( model::workingDir ) + "/" + std::string( model::logFile );
+	std::string sPath = std::string( "/" + std::string( model::logFile ));
 	char*		cPath = new char[ sPath.length() + 1 ];
 
 	std::strcpy( cPath, sPath.c_str() );
@@ -295,7 +288,7 @@ std::string CLog::getPath()
 
 /*
  *  Set the log directory to the default
- */
+
 void CLog::setDir()
 {
 	std::string sDir = std::string( model::workingDir ) + "/";
@@ -306,16 +299,16 @@ void CLog::setDir()
 	this->setDir( cDir, sDir.length() );
 	delete[] cDir;
 }
-
+ */
 /*
  *  Set the log directory to the given value
- */
+
 void CLog::setDir( char* sDir, size_t stLength )
 {
 	this->logDir = new char[ stLength + 1 ];
 	std::strcpy( this->logDir, sDir );
 }
-
+ */
 /*
  *  Return the directory back
  */

@@ -23,10 +23,6 @@
 #include <stdio.h>
 #include <fstream>
 
-namespace model {
-	extern char* codeDir;
-	extern char* workingDir;
-}
 
 inline std::string getOCLResourceFilename( std::string sID )
 {

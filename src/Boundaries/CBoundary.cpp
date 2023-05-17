@@ -17,7 +17,6 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundary.h"
@@ -34,7 +33,7 @@ int CBoundary::uiInstances = 0;
  */
 CBoundary::CBoundary( CDomain* pDomain )
 {
-	sName = "Boundary_" + toString( ++CBoundary::uiInstances );
+	sName = "Boundary_" + std::to_string( ++CBoundary::uiInstances );
 	this->pDomain = pDomain;
 }
 

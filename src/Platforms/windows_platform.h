@@ -37,7 +37,7 @@ const std::string	platformName	= "Microsoft Windows";
 #include <Windows.h>					// QueryPerformanceCounter etc
 
 // Windows-specific includes
-#define isnan _isnan
+//#define isnan _isnan
 #ifndef NAN
 #define NAN	  _Nan._Double
 #endif

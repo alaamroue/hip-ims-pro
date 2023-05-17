@@ -18,7 +18,6 @@
  */
 #include <vector>
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryGridded.h"
@@ -64,7 +63,7 @@ CBoundaryGridded::~CBoundaryGridded()
 
 /*
 *	Configure this boundary and load in any related files
-*/
+
 bool CBoundaryGridded::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
 {
 	char *cBoundaryType, *cBoundaryName, *cBoundaryMask, *cBoundaryInterval, *cBoundaryValue;
@@ -156,7 +155,7 @@ bool CBoundaryGridded::setupFromConfig(XMLElement* pElement, std::string sBounda
 
 	return true;
 }
-
+*/
 void CBoundaryGridded::prepareBoundary(
 	COCLDevice* pDevice,
 	COCLProgram* pProgram,

@@ -16,9 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -109,7 +106,7 @@ CSchemeGodunov::~CSchemeGodunov(void)
 
 /*
  *  Read in settings from the XML configuration file for this scheme
- */
+
 void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
 {
 	// Call the base class function which handles a couple of things
@@ -134,7 +131,7 @@ void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceCha
 					model::errorCodes::kLevelWarning
 				);
 			} else {
-				this->setCourantNumber( boost::lexical_cast<double>( cParameterValue ) );
+				this->setCourantNumber(std::strtod(cParameterValue,nullptr)  );
 			}
 		}
 		else if ( strcmp( cParameterName, "drythreshold" ) == 0 )
@@ -146,7 +143,7 @@ void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceCha
 					model::errorCodes::kLevelWarning
 				);
 			} else {
-				this->setDryThreshold( boost::lexical_cast<double>( cParameterValue ) );
+				this->setDryThreshold(std::strtod(cParameterValue, nullptr));
 			}
 		}
 		else if ( strcmp( cParameterName, "timestepmode" ) == 0 )
@@ -177,7 +174,7 @@ void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceCha
 					model::errorCodes::kLevelWarning
 				);
 			} else {
-				this->setTimestep( boost::lexical_cast<double>( cParameterValue ) );
+				this->setTimestep(std::strtod(cParameterValue, nullptr));
 			}
 		}
 		else if ( strcmp( cParameterName, "timestepreductiondivisions" ) == 0 )
@@ -189,7 +186,7 @@ void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceCha
 					model::errorCodes::kLevelWarning
 				);
 			} else {
-				this->setReductionWavefronts( boost::lexical_cast<unsigned int>( cParameterValue ) );
+				this->setReductionWavefronts(std::strtoul(cParameterValue, nullptr, 10));
 			}
 		}
 		else if ( strcmp( cParameterName, "frictioneffects" ) == 0 )
@@ -336,7 +333,7 @@ void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceCha
 		pParameter = pParameter->NextSiblingElement("parameter");
 	}
 }
-
+*/
 /*
  *  Log the details and properties of this scheme instance.
  */

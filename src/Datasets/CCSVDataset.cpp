@@ -16,8 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "../common.h"
 #include "CCSVDataset.h"
@@ -43,7 +41,7 @@ CCSVDataset::~CCSVDataset()
 
 /*
  *  Read the CSV file using Boost's tokenizer stuff
- */
+
 bool CCSVDataset::readFile()
 {
 	typedef boost::tokenizer<boost::escaped_list_separator<char>>	Tokenizer;
@@ -83,3 +81,4 @@ bool CCSVDataset::readFile()
 
 	return true;
 }
+ */

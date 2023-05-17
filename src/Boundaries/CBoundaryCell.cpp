@@ -17,7 +17,6 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryCell.h"
@@ -57,7 +56,7 @@ CBoundaryCell::~CBoundaryCell()
 
 /*
  *	Configure this boundary and load in any related files
- */
+
 bool CBoundaryCell::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
 {
 	char *cBoundaryType, *cBoundaryName, *cBoundarySource, *cBoundaryDepth, *cBoundaryDischarge, *cBoundaryMap;
@@ -147,10 +146,10 @@ bool CBoundaryCell::setupFromConfig(XMLElement* pElement, std::string sBoundaryS
 
 	return true;
 }
-
+ */
 /*
  *	Import timeseries data from a CSV file
- */
+
 void CBoundaryCell::importTimeseries(CCSVDataset *pCSV)
 {
 	unsigned int uiIndex = 0;
@@ -226,10 +225,11 @@ void CBoundaryCell::importTimeseries(CCSVDataset *pCSV)
 			(pTimeseries[i + 1].dDischargeComponentY + pTimeseries[i].dDischargeComponentY) / 2;
 	}
 }
+ */
 
 /*
  *	Import cell map data from a CSV file
- */
+
 void CBoundaryCell::importMap(CCSVDataset *pCSV)
 {
 	unsigned int uiIndex = 0;
@@ -294,7 +294,7 @@ void CBoundaryCell::importMap(CCSVDataset *pCSV)
 
 	this->uiRelationCount = uiIndex;
 }
-
+ */
 void CBoundaryCell::prepareBoundary(
 			COCLDevice* pDevice, 
 			COCLProgram* pProgram,

@@ -17,7 +17,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
 #include "../common.h"
@@ -75,7 +74,7 @@ CSchemeMUSCLHancock::~CSchemeMUSCLHancock(void)
 
 /*
  *  Read in settings from the XML configuration file for this scheme
- */
+
 void	CSchemeMUSCLHancock::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
 {
 	// Call the base class function which handles most of the settings
@@ -148,7 +147,7 @@ void	CSchemeMUSCLHancock::setupFromConfig( XMLElement* pXScheme, bool bInheritan
 		pParameter = pParameter->NextSiblingElement("parameter");
 	}
 }
-
+ */
 /*
  *  Run all preparation steps
  */

@@ -25,7 +25,7 @@
 
 //#define DEBUG_MPI 1
 
-#define toString(s) boost::lexical_cast<std::string>(s)
+#define toString(s) std::to_string(s)
 
 // Windows-specific includes
 #ifdef PLATFORM_WIN
@@ -76,8 +76,6 @@ namespace floatPrecision{
 }
 
 extern	CModel*			pManager;
-extern  char*			configFile;
-extern  char*			codeDir;
 void					doError( std::string, unsigned char );
 }
 

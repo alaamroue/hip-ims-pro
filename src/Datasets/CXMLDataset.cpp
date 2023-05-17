@@ -16,9 +16,6 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
 #include <vector>
 
 #include "../common.h"
@@ -111,7 +108,7 @@ unsigned int	CXMLDataset::getFileLength(void)
 
 /*
  *  Parse this document as a configuration file for the model
- */
+
 bool	CXMLDataset::parseAsConfigFile(void)
 {
 	if ( this->bError ) return false;
@@ -138,10 +135,10 @@ bool	CXMLDataset::parseAsConfigFile(void)
 
 	return true;
 }
-
+ */
 /*
  *  Parse everything under the <execution> element
- */
+
 bool	CXMLDataset::parseExecution( XMLElement *pConfiguration )
 {
 	XMLElement					*pTopElement, *pExecutorElement;
@@ -177,7 +174,7 @@ bool	CXMLDataset::parseExecution( XMLElement *pConfiguration )
 
 	return true;
 }
-
+ */
 /*
  *  Parse the core aspects under the <domain> element to dimension the domain
  */
@@ -198,15 +195,15 @@ bool	CXMLDataset::parseDomain( XMLElement *pSimulation )
 		return false;
 	}
 
-	if ( !pManager->getDomainSet()->setupFromConfig( pDomainSetElement ) )
-		return false;
+	//if ( !pManager->getDomainSet()->setupFromConfig( pDomainSetElement ) )
+	//	return false;
 
 	return true;
 }
 
 /*
  *  Parse everything under the <simulation> element
- */
+
 bool	CXMLDataset::parseSimulation( XMLElement *pConfiguration )
 {
 	XMLElement					*pSimElement;
@@ -232,7 +229,7 @@ bool	CXMLDataset::parseSimulation( XMLElement *pConfiguration )
 
 	return true;
 }
-
+ */
 /*
  *  Parse everything under the <metadata> element
  */
@@ -274,7 +271,7 @@ bool	CXMLDataset::isValidUnsignedInt( char *cValue )
 
 /*
  *  Is a string representing an unsigned int valid for attempted casting?
- */
+
 bool	CXMLDataset::isValidUnsignedInt( std::string sValue )
 {
 	// TODO: Improve regex to catch more errors
@@ -283,10 +280,10 @@ bool	CXMLDataset::isValidUnsignedInt( std::string sValue )
 		boost::regex( "([0-9]+)" )
 	);
 }
-
+ */
 /*
  *  Is a string representing an int valid for attempted casting?
- */
+
 bool	CXMLDataset::isValidInt( char *cValue )
 {
 	// TODO: Improve regex to catch more errors
@@ -295,10 +292,10 @@ bool	CXMLDataset::isValidInt( char *cValue )
 		boost::regex( "([\\-0-9]+)" )
 	);
 }
-
+ */
 /*
  *  Is a string representing a float valid for attempted casting?
- */
+
 bool	CXMLDataset::isValidFloat( char *cValue )
 {
 	// TODO: Improve regex to catch more errors
@@ -307,3 +304,4 @@ bool	CXMLDataset::isValidFloat( char *cValue )
 		boost::regex( "([\\.0-9-]+)" )
 	);
 }
+ */

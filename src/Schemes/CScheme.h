@@ -48,7 +48,7 @@ class CScheme
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
 		static CScheme*		createFromConfig( XMLElement* );										// Parse and configure a scheme class
 
-		virtual void		setupFromConfig( XMLElement*, bool = false );							// Set up the scheme
+		//virtual void		setupFromConfig( XMLElement*, bool = false );							// Set up the scheme
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
 		virtual void		logDetails() = 0;														// Write some details about the scheme

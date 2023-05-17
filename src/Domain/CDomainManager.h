@@ -53,7 +53,7 @@ class CDomainManager
 		// ...
 
 		// Public functions
-		bool					setupFromConfig( XMLElement* );										// Set up the domain set
+		//bool					setupFromConfig( XMLElement* );										// Set up the domain set
 		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
