@@ -20,8 +20,6 @@
 #ifndef HIPIMS_DATASETS_CRASTERDATASET_H_
 #define HIPIMS_DATASETS_CRASTERDATASET_H_
 
-#include <gdal_priv.h>
-#include <cpl_conv.h>
 #include "../Domain/CDomain.h"
 #include "../Domain/Cartesian/CDomainCartesian.h"
 #include "../Boundaries/CBoundaryGridded.h"
@@ -84,7 +82,6 @@ class CRasterDataset
 		bool			isDomainCompatible( CDomainCartesian* );											// Is the domain compatible (i.e. row/column count, etc.) with this raster?
 
 		// Private variables
-		GDALDataset*	gdDataset;																			// Pointer to the dataset
 		bool			bAvailable;																			// Raster successfully open and available?
 		double			dResolutionX;																		// Cell resolution in X-direction
 		double			dResolutionY;																		// Cell resolution in Y-direction

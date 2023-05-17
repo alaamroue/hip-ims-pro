@@ -27,41 +27,7 @@
 #include "../OpenCL/Executors/COCLKernel.h"
 #include "../OpenCL/Executors/COCLBuffer.h"
 
-namespace model {
 
-// Model scheme types
-namespace schemeTypes{ enum schemeTypes {
-	kGodunov							= 0,	// Godunov (first-order)
-	kMUSCLHancock						= 1,	// MUSCL-Hancock (second-order)
-	kInertialSimplification				= 2		// Inertial simplification
-}; }
-
-// Riemann solver types
-namespace solverTypes{ enum solverTypes {
-	kHLLC								= 0		// HLLC approximate
-}; }
-
-// Queue mode
-namespace queueMode{ enum queueMode {
-	kAuto								= 0,	// Automatic
-	kFixed								= 1		// Fixed
-}; }
-
-// Timestep mode
-namespace timestepMode{ enum timestepMode {
-	kCFL								= 0,	// CFL constrained
-	kFixed								= 1		// Fixed
-}; }
-
-// Timestep mode
-namespace syncMethod {
-	enum syncMethod {
-		kSyncTimestep = 0,						// Timestep synchronised
-		kSyncForecast = 1						// Timesteps forecast
-	};
-}
-
-}
 
 /*
  *  SCHEME CLASS

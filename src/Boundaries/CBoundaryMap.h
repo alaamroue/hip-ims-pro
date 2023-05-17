@@ -51,14 +51,13 @@ public:
 
 	unsigned int					getBoundaryCount();
 	void							applyDomainModifications();
+	CDomain*						pDomain;
+	typedef unordered_map<std::string, CBoundary*> mapBoundaries_t;
+	mapBoundaries_t					mapBoundaries;
 
 private:	
 	
-	typedef unordered_map<std::string, CBoundary*> mapBoundaries_t;
-
-	CDomain*						pDomain;
 	unsigned char					ucBoundaryTreatment[4];
-	mapBoundaries_t					mapBoundaries;
 
 };
 

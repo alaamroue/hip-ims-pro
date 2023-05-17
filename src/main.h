@@ -95,63 +95,6 @@ struct DomainData
 	unsigned long	ulBoundaryOthers;
 };
 
-// Externally callable functions for DLL compiles for the windows GUI
-#ifdef _WINDLL
-typedef void ( _stdcall * fnNotifyLog )( LPCSTR lpcLine, WORD wColour );
-typedef void ( _stdcall * fnNotifyProgress )( double dProgress );
-typedef void ( _stdcall * fnNotifyComplete )( __int32 iExitCode );
-typedef void (__stdcall * fnLoadTopography) 
-(
-	void*			bedElevations,
-	void*			stateData,
-	unsigned char	ucFloatSize,
-	unsigned long	ulCellsX,
-	unsigned long	ulCellsY,
-	double			dResolutionX,
-	double			dResolutionY,
-	double			dMinFSL,			// TODO: This is a bit daft. Move statistics stuff elsewhere.
-	double			dMaxFSL,
-	double			dMinTopo,
-	double			dMaxTopo
-);
-
-extern "C" _declspec(dllexport) bool __stdcall SimulationLoad( 
-	fnNotifyLog,			// Log callback
-	fnNotifyProgress,		// Progress callback
-	fnNotifyComplete,		// Completion callback
-	fnLoadTopography,		// Topography callback for the renderer
-	LPCSTR,					// Working directory
-	LPCSTR,					// Configuration path
-	LPCSTR					// Log file path
-);
-extern "C" _declspec(dllexport) bool __stdcall SimulationLaunch( 
-	void
-);
-extern "C" _declspec(dllexport) bool __stdcall SimulationClose( 
-	void
-);
-extern "C" _declspec(dllexport) bool __stdcall SimulationAbort( 
-	void 
-);
-extern "C" _declspec(dllexport) BSTR __stdcall GetDeviceName( 
-	unsigned int
-);
-extern "C" _declspec(dllexport) unsigned int __stdcall GetDeviceCount( 
-	void
-);
-extern "C" _declspec(dllexport) unsigned int __stdcall GetDeviceCurrent( 
-	void
-);
-extern "C" _declspec(dllexport) DomainData __stdcall GetDomainInfo(
-	unsigned int
-);
-
-extern fnNotifyLog		fCallbackLog;
-extern fnNotifyProgress	fCallbackProgress;
-extern fnNotifyComplete	fCallbackComplete;
-extern fnLoadTopography	fSendTopography;
-static HINSTANCE		hdlDLL;
-#endif
 
 extern  bool			quietMode;
 extern  bool			forceAbort;

@@ -71,11 +71,11 @@ class CDomainManager
 		bool					isSetReady();														// Is the set of domains ready?
 		void					logDetails();														// Spit out some information
 		void					generateLinks();													// Generate domain link records
+		std::vector<CDomainBase*> domains;															// Vector of all the domains we hold
 
 	protected:
 
 		// Private variables
-		std::vector<CDomainBase*> domains;															// Vector of all the domains we hold
 		unsigned char			ucSyncMethod;														// Method of domain synchronisation
 		unsigned int			uiSyncSpareIterations;												// Aim for # spare iterations when synchronising
 

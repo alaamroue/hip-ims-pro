@@ -202,25 +202,14 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 
 			// Is the domain located on this node?
 			unsigned int uiDeviceAdjust = 1;
-#ifdef MPI_ON
-			if ( !pManager->getMPIManager()->getNode()->isDeviceOnNode(boost::lexical_cast<unsigned int>(cDomainDevice)) )
-			{
-				// Domain lives somewhere else, so we only need a skeleton data structure
-				pManager->log->writeLine("Creating a new skeleton domain for a remote node.");
-				pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureRemote);
-			} else {
-				// Adjust device number to be a local ID rather than across the whole MPI COMM
-				uiDeviceAdjust = pManager->getMPIManager()->getNode()->getDeviceBaseID();
-#endif
+
 				// Domain resides on this node
 				pManager->log->writeLine("Creating a new Cartesian-structured domain.");
 				pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
 				pManager->log->writeLine("Local device IDs are relative to #" + toString(uiDeviceAdjust) + "." );
 				pManager->log->writeLine("Assigning domain to device #" + toString(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1) + "."  );
 				static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1));
-#ifdef MPI_ON
-			}
-#endif
+
 
 			if (!pDomainNew->configureDomain(pXDomain))
 				return false;

@@ -134,12 +134,7 @@ bool	CXMLDataset::parseAsConfigFile(void)
 	pManager->log->writeLine( "Reading configuration: simulation settings..." );
 	if ( !this->parseSimulation( pConfiguration ) ) return false;
 
-	// TODO: Can this be moved to CModel?
-	#ifdef _WINDLL
-	for( unsigned int i = 0; i < pManager->getDomainSet()->getDomainCount(); ++i )
-		if (pManager->getDomainSet()->isDomainLocal(i) )
-			pManager->getDomainSet()->getDomain(i)->sendAllToRenderer();
-	#endif
+
 
 	return true;
 }
