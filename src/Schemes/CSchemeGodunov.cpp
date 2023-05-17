@@ -511,7 +511,7 @@ bool CSchemeGodunov::prepare1OConstants()
 		oclModel->registerConstant( "TIMESTEP_DYNAMIC",	"1" );
 		oclModel->removeConstant( "TIMESTEP_FIXED" );
 	} else {
-		oclModel->registerConstant( "TIMESTEP_FIXED",	toString(this->dTimestep) );
+		oclModel->registerConstant( "TIMESTEP_FIXED", std::to_string(this->dTimestep) );
 		oclModel->removeConstant( "TIMESTEP_DYNAMIC" );
 	}
 
