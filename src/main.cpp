@@ -112,13 +112,14 @@ int model::loadConfiguration()
 
 	ourCartesianDomain->setProjectionCode(0);					// Unknown
 	ourCartesianDomain->setUnits("m");
-	ourCartesianDomain->setCellResolution(10);
-	ourCartesianDomain->setRealDimensions(10 * 100, 10 * 100);
-	ourCartesianDomain->setRealOffset(0, 0);
-	ourCartesianDomain->setRealExtent(0 + 10 * 100, 0 + 10 * 100,0,0);
+	ourCartesianDomain->setCellResolution(10.0);
+	ourCartesianDomain->setRealDimensions(10.0 * 100, 10.0 * 100);
+	ourCartesianDomain->setRealOffset(0.0, 0.0);
+	ourCartesianDomain->setRealExtent(0 + 10.0 * 100.0, 0.0 + 10 * 100,0.0,0.0);
 
 
 	pManager->log->writeLine("Progressing to load boundary conditions.");
+
 	CBoundaryMap* ourBoundryMap = ourCartesianDomain->getBoundaries();
 	//CBoundary* pNewBoundary = NULL;
 	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryCell(ourBoundryMap->pDomain));
@@ -129,15 +130,15 @@ int model::loadConfiguration()
 	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(ourBoundryMap->pDomain);
 	pNewBoundary->sName = std::string("TimeSeriesName");
 	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
-	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[10];
-	for (int i = 0; i < 5; i++) {
-		pNewBoundary->pTimeseries[i].dTime = i * 100000;
+	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[2];
+	for (int i = 0; i < 2; i++) {
+		pNewBoundary->pTimeseries[i].dTime = i * 3600000;
 		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
-	pNewBoundary->uiTimeseriesLength = 5;
-	pNewBoundary->dTimeseriesLength = pNewBoundary->pTimeseries[5 - 1].dTime;
+	pNewBoundary->uiTimeseriesLength = 2;
+	pNewBoundary->dTimeseriesLength = pNewBoundary->pTimeseries[2 - 1].dTime;
 	pNewBoundary->dTotalVolume = 0.0;
 
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
@@ -163,7 +164,7 @@ int model::loadConfiguration()
 			//Elevations
 			ourCartesianDomain->handleInputData(ulCellID, sqrt(iCol* iCol+ iRow* iRow)/10, model::rasterDatasets::dataValues::kBedElevation, ucRounding);
 			//Manning Coefficient
-			ourCartesianDomain->handleInputData(ulCellID, 0.028, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0286, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
 			//Depth
 			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
 			//VelocityX

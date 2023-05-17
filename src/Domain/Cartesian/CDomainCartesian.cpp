@@ -31,6 +31,7 @@
 #include "../../OpenCL/Executors/CExecutorControlOpenCL.h"
 #include "../../Boundaries/CBoundaryMap.h"
 #include "../../MPI/CMPIManager.h"
+#include "../../Normalplain.h"
 #include "CDomainCartesian.h"
 
 /*
@@ -802,12 +803,28 @@ void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, uns
  */
 void	CDomainCartesian::writeOutputs()
 {
-	// Read the data back first...
-	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+
 	pDevice->blockUntilFinished();
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
+
+	unsigned long	ulCellID;
+	float value;
+	Normalplain* np = new Normalplain(this->getCols(), this->getRows());
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+			//value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+			//value = this->getBedElevation(ulCellID);
+			//value = this->getBedElevation(ulCellID);
+			//value = this->getBedElevation(ulCellID);
+			np->setBedElevation(ulCellID, value);
+		}
+	}
+	np->outputShape();
 
 
 }

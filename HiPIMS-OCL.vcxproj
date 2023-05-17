@@ -117,6 +117,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Normalplain.cpp" />
     <ClCompile Include="src\base\CExecutorControl.cpp" />
     <ClCompile Include="src\boundaries\CBoundary.cpp" />
     <ClCompile Include="src\boundaries\CBoundaryCell.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Normalplain.h" />
     <ClInclude Include="src\base\CExecutorControl.h" />
     <ClInclude Include="src\boundaries\CBoundary.h" />
     <ClInclude Include="src\boundaries\CBoundaryCell.h" />

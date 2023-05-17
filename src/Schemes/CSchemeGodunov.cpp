@@ -60,10 +60,10 @@ CSchemeGodunov::CSchemeGodunov()
 	this->ucConfiguration				= model::schemeConfigurations::godunovType::kCacheNone;
 	this->ucCacheConstraints			= model::cacheConstraints::godunovType::kCacheActualSize;
 
-	this->ulCachedWorkgroupSizeX		= 0;
-	this->ulCachedWorkgroupSizeY		= 0;
-	this->ulNonCachedWorkgroupSizeX		= 0;
-	this->ulNonCachedWorkgroupSizeY		= 0;
+	this->ulCachedWorkgroupSizeX		= 8;
+	this->ulCachedWorkgroupSizeY		= 8;
+	this->ulNonCachedWorkgroupSizeX		= 8;
+	this->ulNonCachedWorkgroupSizeY		= 8;
 
 	this->dBoundaryTimeSeries			= NULL;
 	this->fBoundaryTimeSeries			= NULL;

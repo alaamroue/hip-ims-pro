@@ -47,7 +47,7 @@ CScheme::CScheme()
 	this->dCourantNumber		= 0.5;
 	this->dTimestep				= 0.001;
 	this->bDynamicTimestep		= true;
-	this->bFrictionEffects		= true;
+	this->bFrictionEffects		= false;
 	this->dTargetTime			= 0.0;
 	this->uiBatchSkipped		= 0;
 	this->uiBatchSuccessful		= 0;

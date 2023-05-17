@@ -1,14 +1,13 @@
 
+#define FRICTION_IN_FLUX_KERNEL 1
 #define DOMAIN_CELLCOUNT 10000
 #define QUITE_SMALL 0.000000
 #define VERY_SMALL 0.000000
-#define GTS_DIM2 32
-#define REQD_WG_SIZE_FULL_TS __attribute__((reqd_work_group_size(32, 32, 1)))
+#define GTS_DIM2 8
+#define REQD_WG_SIZE_FULL_TS __attribute__((reqd_work_group_size(8, 8, 1)))
 #define REQD_WG_SIZE_LINE __attribute__((reqd_work_group_size(512, 1, 1)))
-#define FRICTION_ENABLED 1
-#define GTS_DIM1 32
+#define GTS_DIM1 8
 #define TIMESTEP_DYNAMIC 1
-#define FRICTION_IN_FLUX_KERNEL 1
 #define TIMESTEP_WORKERS 512
 #define TIMESTEP_GROUPSIZE 512
 #define SCHEME_ENDTIME 360000.000000
