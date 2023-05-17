@@ -153,78 +153,7 @@ bool CBoundaryCell::setupFromConfig(XMLElement* pElement, std::string sBoundaryS
  */
 void CBoundaryCell::importTimeseries(CCSVDataset *pCSV)
 {
-	unsigned int uiIndex = 0;
-	bool bInvalidEntries = false;
-	bool bProcessedHeaders = false;
 
-	if (!pCSV->isReady())
-		return;
-
-	this->pTimeseries = new sTimeseriesCell[pCSV->getLength()];
-
-	for (vector<vector<std::string>>::const_iterator it = pCSV->begin();
-		it != pCSV->end();
-		it++)
-	{
-		// TODO: Check if there are headers first... first time should be zero
-		if (uiIndex == 0 && !bProcessedHeaders)
-		{
-			bProcessedHeaders = true;
-			continue;
-		}
-
-		if (it->size() == 4)
-		{
-			try
-			{
-				this->pTimeseries[uiIndex].dTime				= boost::lexical_cast<cl_double>((*it)[0]);
-				this->pTimeseries[uiIndex].dDepthComponent		= boost::lexical_cast<cl_double>((*it)[1]);
-				this->pTimeseries[uiIndex].dDischargeComponentX = boost::lexical_cast<cl_double>((*it)[2]);
-				this->pTimeseries[uiIndex].dDischargeComponentY = boost::lexical_cast<cl_double>((*it)[3]);
-			}
-			catch (boost::bad_lexical_cast)
-			{
-				bInvalidEntries = true;
-			}
-		}
-		else {
-			bInvalidEntries = true;
-		}
-
-		uiIndex++;
-	}
-
-	if (bInvalidEntries)
-	{
-		model::doError(
-			"Some CSV entries were not valid for a boundary timeseries.",
-			model::errorCodes::kLevelWarning
-		);
-	}
-
-	// Need at least two entries
-	if (uiIndex < 2)
-	{
-		model::doError(
-			"A boundary timeseries is too short.",
-			model::errorCodes::kLevelWarning
-		);
-		return;
-	}
-
-	this->dTimeseriesInterval = pTimeseries[1].dTime - pTimeseries[0].dTime;
-	this->uiTimeseriesLength = uiIndex;
-	this->dTimeseriesLength = pTimeseries[uiIndex - 1].dTime;
-
-	this->dTotalVolume = 0.0;
-
-	for (unsigned int i = 0; i < this->uiTimeseriesLength - 1; ++i)
-	{
-		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
-			(pTimeseries[i + 1].dDischargeComponentX + pTimeseries[i].dDischargeComponentX) / 2;
-		this->dTotalVolume += (pTimeseries[i + 1].dTime - pTimeseries[i].dTime) *
-			(pTimeseries[i + 1].dDischargeComponentY + pTimeseries[i].dDischargeComponentY) / 2;
-	}
 }
 
 /*
@@ -232,67 +161,7 @@ void CBoundaryCell::importTimeseries(CCSVDataset *pCSV)
  */
 void CBoundaryCell::importMap(CCSVDataset *pCSV)
 {
-	unsigned int uiIndex = 0;
-	bool bInvalidEntries = false;
-	bool bProcessedHeaders = false;
 
-	if (!pCSV->isReady())
-		return;
-
-	this->pRelations = new sRelationCell[pCSV->getLength()];
-	this->uiRelationCount = 0;
-
-	for (vector<vector<std::string>>::const_iterator it = pCSV->begin();
-		it != pCSV->end();
-		it++)
-	{
-		// TODO: Check if there are headers first... first time should be zero
-		if (uiIndex == 0 && !bProcessedHeaders)
-		{
-			bProcessedHeaders = true;
-			continue;
-		}
-
-		if (it->size() == 2)
-		{
-			try
-			{
-				this->pRelations[uiIndex].uiCellX = boost::lexical_cast<unsigned int>((*it)[0]);
-				this->pRelations[uiIndex].uiCellY = boost::lexical_cast<unsigned int>((*it)[1]);
-				uiIndex++;
-			}
-			catch (boost::bad_lexical_cast)
-			{
-				bInvalidEntries = true;
-			}
-		} else if (it->size() == 3) {
-			try
-			{
-				if ((*it)[2] == this->getName())
-				{
-					this->pRelations[uiIndex].uiCellX = boost::lexical_cast<unsigned int>((*it)[0]);
-					this->pRelations[uiIndex].uiCellY = boost::lexical_cast<unsigned int>((*it)[1]);
-					uiIndex++;
-				}
-			}
-			catch (boost::bad_lexical_cast)
-			{
-				bInvalidEntries = true;
-			}
-		} else {
-			bInvalidEntries = true;
-		}
-	}
-
-	if (bInvalidEntries)
-	{
-		model::doError(
-			"Some CSV entries were not valid for a boundary map file.",
-			model::errorCodes::kLevelWarning
-		);
-	}
-
-	this->uiRelationCount = uiIndex;
 }
 
 void CBoundaryCell::prepareBoundary(

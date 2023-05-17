@@ -193,28 +193,8 @@ namespace Util
 	 */
 	const char * fromTimestamp(unsigned long ulTimestamp, const char * cFormat)
 	{
-		boost::posix_time::time_facet *pFacet;
-		std::stringstream ssTime;
-		ssTime.str("");
 
-		if (cFormat != NULL)
-		{
-			pFacet = new boost::posix_time::time_facet(cFormat);
-		}
-		else {
-			pFacet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M");
-		}
-
-		ssTime.imbue(std::locale(std::locale::classic(), pFacet));
-
-		boost::posix_time::ptime time_t_epoch = boost::posix_time::from_time_t(ulTimestamp);
-
-		ssTime << time_t_epoch;
-
-		char* cNewString;
-		Util::toNewString( &cNewString, ssTime.str().c_str() );
-
-		return cNewString;
+		return nullptr;
 	}
 
 	/*

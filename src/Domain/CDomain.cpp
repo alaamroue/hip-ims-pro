@@ -91,24 +91,7 @@ bool CDomain::configureDomain( XMLElement* pXDomain )
 	// the domain manager must handle splitting...
 	// TODO: Device selection/assignment should take place in the domain manager class.
 
-	/*
-	// Validate the device number
-	if ( cDomainDevice == NULL )
-	{
-		// Select a device automatically
-		pDevice = pManager->getExecutor()->getDevice();
-	} else {
-		if ( CXMLDataset::isValidUnsignedInt( std::string(cDomainDevice) ) )
-		{
-			pDevice = pManager->getExecutor()->getDevice( boost::lexical_cast<unsigned int>(cDomainDevice) );
-		} else {
-			model::doError(
-				"The domain device specified is invalid.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-	}
-	*/
+
 
 	if ( pDevice == NULL )
 	{

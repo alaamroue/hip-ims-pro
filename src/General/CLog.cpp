@@ -224,14 +224,11 @@ void CLog::writeHeader(void)
 {
 	std::stringstream		ssHeader;
 
-	boost::cmatch		regmatchRevision;
-	const boost::regex	regexRevision( "\\$Revision\\:\\ ([0-9]+)\\ \\$" );
 
 	time_t tNow;
 	time( &tNow );
 	localtime( &tNow );
 
-	boost::regex_match( model::appRevision.c_str(), regmatchRevision, regexRevision );
 
 	ssHeader << "---------------------------------------------" << std::endl;
 	ssHeader << " " << model::appName << std::endl;
@@ -241,7 +238,6 @@ void CLog::writeHeader(void)
 	ssHeader << " " << model::appUnit << std::endl;
 	ssHeader << " " << model::appOrganisation << std::endl;
 	ssHeader << std::endl << " Contact:     " << model::appContact << std::endl;
-	ssHeader << " Source:      SVN Revision " << std::string( regmatchRevision[1] ) << std::endl;
 	ssHeader << "---------------------------------------------" << std::endl;
 
 	std::string sLogPath = this->getPath();
