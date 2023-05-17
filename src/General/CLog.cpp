@@ -49,7 +49,6 @@ CLog::CLog(void)
 CLog::~CLog(void)
 {
 	this->closeFile();
-	delete[] this->logDir;
 	delete[] this->logPath;
 }
 
@@ -311,12 +310,12 @@ void CLog::setDir( char* sDir, size_t stLength )
  */
 /*
  *  Return the directory back
- */
+
 std::string CLog::getDir()
 {
 	return this->logDir;
 }
-
+ */
 /*
  *  Write a line to divide up the output, purely superficial
  */
@@ -376,7 +375,7 @@ void CLog::resetColour()
 void CLog::writeDebugFile( char** cContents, unsigned int uiSegmentCount )
 {
 	std::ofstream ofsDebug;
-	std::string sFilePath = this->getDir() + "_debug" + toString( this->uiDebugFileID ) + ".log";
+	std::string sFilePath = toString( this->uiDebugFileID ) + ".log";
 
 	try 
 	{

@@ -69,8 +69,10 @@ int model::loadConfiguration()
 
 	pManager->log->writeLine("Reading configuration: execution settings...");
 
-	CExecutorControl* pExecutor = CExecutorControl::createExecutor(model::executorTypes::executorTypeOpenCL);
+	CExecutorControlOpenCL* pExecutor = new CExecutorControlOpenCL();
+	pExecutor->logPlatforms();
 	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);
+	if (!pExecutor->createDevices()) return false;									//Creates Device
 	pManager->setExecutor(pExecutor);
 
 
@@ -82,9 +84,9 @@ int model::loadConfiguration()
 
 	pManager->log->writeLine("Reading configuration: simulation settings...");
 
-	pManager->setSimulationLength(3600.0);
+	pManager->setSimulationLength(360000.0);
 	//pManager->setRealStart(cParameterValue, cParameterFormat);
-	pManager->setOutputFrequency(3600.0/2);
+	pManager->setOutputFrequency(360000.0 /2);
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);
 
 

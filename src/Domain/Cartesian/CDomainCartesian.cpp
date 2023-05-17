@@ -808,18 +808,8 @@ void	CDomainCartesian::writeOutputs()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	for( unsigned int i = 0; i < this->pOutputs.size(); ++i )
-	{
-		// Replaces %t with the time in the filename, if required
-		// TODO: Allow for decimal output filenames
-		std::string sFilename		= this->pOutputs[i].sTarget;
-		std::string sTime			= toString( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
-		unsigned int uiTimeLocation = sFilename.find( "%t" );
-		if ( uiTimeLocation != std::string::npos )
-			sFilename.replace( uiTimeLocation, 2, sTime );
 
-		//CRasterDataset::domainToRaster(this->pOutputs[i].cFormat,sFilename,this,this->pOutputs[i].ucValue);
-	}
+
 }
 
 /*

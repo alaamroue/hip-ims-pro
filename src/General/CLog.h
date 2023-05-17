@@ -62,13 +62,13 @@ class CLog
 		//void		setDir();								// Set the directory to default
 		//void		setDir( char*, size_t );				// Set the directory to given string
 		std::string	getPath();								// Returns the path
-		std::string getDir();								// Returns the directory
+		//std::string getDir();								// Returns the directory
 		
 	private:
 
 		// Private variables
 		char*			logPath;							// Full path to the log file
-		char*			logDir;								// Directory for log files
+		//char*			logDir;								// Directory for log files
 		std::ofstream	logStream;							// Handle for the log file stream
 		unsigned int	uiDebugFileID;						// Incremental tracking for debug files output
 		unsigned int	uiLineCount;						// Number of lines written
