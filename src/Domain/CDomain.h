@@ -93,6 +93,7 @@ class CDomain : public CDomainBase
 		#ifdef _WINDLL
 		virtual void				sendAllToRenderer() {};											// Allows the renderer to read off the bed elevations
 		#endif
+		CScheme*			pScheme;																// Scheme we are running for this particular domain
 
 	protected:
 
@@ -115,7 +116,6 @@ class CDomain : public CDomainBase
 		cl_double			dMaxDepth;
 
 		CBoundaryMap*		pBoundaries;															// Boundary map (management)
-		CScheme*			pScheme;																// Scheme we are running for this particular domain
 		COCLDevice*			pDevice;																// Device responsible for running this domain
 
 		// Private functions

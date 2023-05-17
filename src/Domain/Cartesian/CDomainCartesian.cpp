@@ -809,6 +809,20 @@ void	CDomainCartesian::writeOutputs()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
+
+	unsigned long	ulCellID;
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow)
+	{
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol)
+		{
+			ulCellID = this->getCellID(iCol, iRow);
+			std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+		}
+	}
+
+
+
+
 	for( unsigned int i = 0; i < this->pOutputs.size(); ++i )
 	{
 		// Replaces %t with the time in the filename, if required

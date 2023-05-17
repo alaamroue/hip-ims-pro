@@ -30,6 +30,7 @@
 #include "Domain/CDomainManager.h"
 #include "Domain/CDomain.h"
 #include "Boundaries/CBoundaryMap.h"
+#include "Schemes\CSchemeGodunov.h"
 
 // Globals
 CModel*					model::pManager;
@@ -43,42 +44,20 @@ bool					model::forceAbort;
 bool					model::gdalInitiated;
 bool					model::disableScreen;
 bool					model::disableConsole;
-#ifdef _WINDLL
-model::fnNotifyLog		model::fCallbackLog;
-model::fnNotifyProgress	model::fCallbackProgress;
-model::fnNotifyComplete	model::fCallbackComplete;
-model::fnLoadTopography model::fSendTopography;
-#endif
 
-#ifdef _CONSOLE
-
-#ifdef PLATFORM_WIN
 /*
  *  Application entry-point. 
  */
 int _tmain(int argc, char* argv[])
 {
 	// Default configurations
-	model::workingDir   = NULL;
 	model::configFile	= new char[50];
 	model::logFile		= new char[50];
-	model::codeDir		= NULL;
-	model::quietMode	= false;
 	model::forceAbort	= false;
-	model::gdalInitiated = true;
-	model::disableScreen = true;
-	model::disableConsole = false;
 
-	std::strcpy( model::configFile, "configuration.xml" );
 	std::strcpy( model::logFile,    "_model.log" );
 
-	// Nasty function calls for Windows console stuff
-	system("color 17");
-	SetConsoleTitle("HiPIMS Simulation Engine");
-
 	model::storeWorkingEnv();
-	model::parseArguments( argc, argv );
-	CRasterDataset::registerAll();
 
 	int iReturnCode = model::loadConfiguration();
 	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
@@ -89,329 +68,135 @@ int _tmain(int argc, char* argv[])
 
 	return iReturnCode;
 }
-#endif
-#ifdef PLATFORM_UNIX
-/*
- *  Application entry-point. 
- */
-int main(int argc, char* argv[])
-{
-	// Do this first as we might need to disable NCurses
-	model::configFile	= new char[50];
-	model::logFile		= new char[50];
-	std::strcpy( model::configFile, "configuration.xml" );
-	std::strcpy( model::logFile,    "_model.log" );
-	model::quietMode	= false;
-	model::forceAbort	= false;
-	model::disableScreen = false;
-	model::disableConsole = false;
 
-#ifdef MPI_ON
-	int iProvidedThreadSupport;
-	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &iProvidedThreadSupport);
-#endif
-
-	model::storeWorkingEnv();
-	model::parseArguments( argc, argv );
-
-	// Seg fault handler
-	//signal(SIGSEGV, segFaultHandler);  
-
-	// NCurses
-	if ( !model::disableScreen )
-	{
-		initscr();
-		scrollok(stdscr, TRUE);
-		idlok(stdscr, TRUE);
-
-		if ( has_colors() && can_change_color() )
-		{
-			start_color();
-
-			// Assign some colours for UNIX systems
-			init_pair(1, COLOR_WHITE, COLOR_BLACK);
-			init_pair(2, COLOR_RED, COLOR_BLACK);
-			init_pair(3, COLOR_CYAN, COLOR_BLACK);
-			init_pair(4, COLOR_WHITE, COLOR_BLACK);
-			init_pair(5, COLOR_YELLOW, COLOR_BLACK);
-		}
-	}
-
-	CRasterDataset::registerAll();
-
-	int iReturnCode = model::loadConfiguration();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) 
-		return iReturnCode;
-	iReturnCode = model::commenceSimulation();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) 
-		return iReturnCode;
-	iReturnCode = model::closeConfiguration();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) 
-		return iReturnCode;
-
-#ifdef MPI_ON
-	MPI_Finalize();
-#endif
-
-	return iReturnCode;
-}
-#endif
-
-#endif
-#ifdef _WINDLL
-
-/*
- *  DLL entry-point used to store the handle
- */
-BOOL WINAPI DllMain(
-	_In_ HINSTANCE	hinstDLL,
-	_In_ DWORD		fdwReason,
-	_In_ LPVOID		lpvReserved
-	)
-{
-	model::hdlDLL = hinstDLL;
-	model::gdalInitiated = false;
-	return true;
-}
-
-/*
- *  DLL entry point for loading a config file
- */
-bool __stdcall model::SimulationLoad(
-		fnNotifyLog				callbackFnLog,
-		fnNotifyProgress		callbackFnProgress,
-		fnNotifyComplete		callbackFnComplete,
-		model::fnLoadTopography	callbackFnLoadTopography,
-		LPCSTR					cWorkingDir,
-		LPCSTR					cConfigFile,
-		LPCSTR					cLogFile
-	)
-{
-	// Store callback function pointers to be used
-	model::fCallbackLog		 = callbackFnLog;
-	model::fCallbackProgress = callbackFnProgress;
-	model::fCallbackComplete = callbackFnComplete;
-	model::fSendTopography   = callbackFnLoadTopography;
-
-
-	// Specified configuration stuff
-	if ( cWorkingDir != NULL )
-	{
-		model::workingDir	= new char[ std::strlen( cWorkingDir ) + 1 ];
-		std::strcpy( model::workingDir, cWorkingDir );
-	} else {
-		model::workingDir = NULL;
-	}
-
-	if ( cConfigFile != NULL )
-	{
-		model::configFile	= new char[ std::strlen( cConfigFile ) + 1 ];
-		std::strcpy( model::configFile, cConfigFile );
-	} else {
-		model::configFile = NULL;
-	}
-
-	if ( cLogFile != NULL )
-	{
-		model::logFile	= new char[ std::strlen( cLogFile ) + 1 ];
-		std::strcpy( model::logFile, cLogFile );
-	} else {
-		model::logFile = NULL;
-	}
-
-	model::quietMode	= true;
-	model::forceAbort	= false;
-	model::disableScreen = true;
-	model::disableConsole = false;
-
-	// Do we need to get some environment data and defaults etc?
-	model::storeWorkingEnv();
-
-	if ( !gdalInitiated )
-	{
-		CRasterDataset::registerAll();
-		gdalInitiated = true;
-	}
-
-	__int32 iReturnCode = model::loadConfiguration();
-
-	return iReturnCode == 0;
-}
-
-/*
- *  DLL entry point for simulation
- */
-bool __stdcall model::SimulationLaunch(
-		void
-	)
-{
-	__int32 iReturnCode = model::commenceSimulation();
-	
-	model::fCallbackComplete(
-		iReturnCode
-	);
-
-	return iReturnCode == 0;
-}
-
-/*
- *  DLL entry point for closing down a configuration
- */
-bool __stdcall model::SimulationClose(
-		void
-	)
-{
-	return model::closeConfiguration() == 0;
-}
-
-/*
- *  Abort an ongoing simulation
- */
-bool __stdcall model::SimulationAbort( void )
-{
-	model::forceAbort = true;
-	return true; 
-}
-
-/*
- *  Fetch the name of a device on the system
- */
-BSTR __stdcall model::GetDeviceName( unsigned int uiDeviceID )
-{
-	std::string	 sDeviceName = "Invalid configuration";
-
-	if ( pManager != NULL )
-	{
-
-		// Device IDs start at 1
-		COCLDevice*	pDevice = pManager->getExecutor()->getDevice( uiDeviceID + 1 );
-
-		// Get the name
-		sDeviceName  = "[" + toString( uiDeviceID + 1 ) + "] " + std::string( pDevice->clDeviceName );
-
-		// Append the type
-		if( pDevice->clDeviceType & CL_DEVICE_TYPE_CPU )
-			sDeviceName += " (CPU)"; 
-		if( pDevice->clDeviceType & CL_DEVICE_TYPE_GPU )
-			sDeviceName += " (GPU)"; 
-		if( pDevice->clDeviceType & CL_DEVICE_TYPE_ACCELERATOR )
-			sDeviceName += " (APU)"; 
-
-	}
-
-	std::wstring wDeviceName = std::wstring( sDeviceName.begin(), sDeviceName.end() );
-
-	return ::SysAllocString( wDeviceName.c_str() );
-}
-
-/*
- *  Fetch the number of devices available
- */
-unsigned int __stdcall model::GetDeviceCount( void )
-{
-	if ( pManager == NULL )
-		return 0;
-	return pManager->getExecutor()->getDeviceCount();
-}
-
-/*
- *  Fetch the current device assigned
- */
-unsigned int __stdcall model::GetDeviceCurrent( void )
-{
-	if ( pManager == NULL )
-		return 1;
-	return pManager->getExecutor()->getDeviceCurrent();
-}
-
-/*
-*  Fetch information about a domain
-*/
-model::DomainData __stdcall model::GetDomainInfo(unsigned int uiDomainID)
-{
-	model::DomainData info;
-
-	if (pManager != NULL &&
-		pManager->getDomainSet() != NULL &&
-		uiDomainID > 0 &&
-		pManager->getDomainSet()->getDomainCount() >= uiDomainID)
-	{
-		CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(pManager->getDomainSet()->getDomain(uiDomainID - 1));
-
-		pDomain->getCellResolution(&info.dResolution);
-		pDomain->getRealOffset(&info.dCornerSouth, &info.dCornerWest);
-		pDomain->getRealDimensions(&info.dWidth, &info.dHeight);
-
-		info.ulCellCount = pDomain->getCellCount();
-		info.ulRows = pDomain->getRows();;
-		info.ulCols = pDomain->getCols();
-
-		// TODO: Populate these...
-		info.ulBoundaryCells = NULL;
-		info.ulBoundaryOthers = NULL;
-	}
-	else {
-		info.dResolution = -1.0;
-		info.ulCellCount = 0;
-		info.dCornerSouth = 0.0;
-		info.dCornerWest = 0.0;
-		info.ulRows = 0;
-		info.ulCols = 0;
-		info.dWidth = 0.0;
-		info.dHeight = 0.0;
-		info.ulBoundaryCells = 0;
-		info.ulBoundaryOthers = 0;
-	}
-
-	return info;
-}
-
-
-// --- End of DLL functions
-#endif
 
 /*
  *  Load the specified model config file and probe for devices etc.
  */
 int model::loadConfiguration()
 {
-	pManager	= new CModel();
+	pManager = new CModel();
 
-	// ---
-	//  MPI
-	// ---
-#ifdef MPI_ON
-	if (pManager->getMPIManager() != NULL)
-	{
-		pManager->getMPIManager()->logDetails();
-		pManager->getMPIManager()->exchangeConfiguration( pConfigFile );
-	}
-#endif
+	pManager->log->writeLine("Reading configuration: execution settings...");
 
-	// ---
-	//  CONFIG FILE
-	// ---
-	if (model::configFile != NULL && pManager->getMPIManager() == NULL)
-	{
-		boost::filesystem::path pConfigPath(model::configFile);
-		boost::filesystem::path pConfigDir = pConfigPath.parent_path();
-		pConfigFile = new CXMLDataset( std::string( model::configFile ) );
-		chdir(boost::filesystem::canonical(pConfigDir).string().c_str());
-	}
-	else if (model::configFile == NULL) {
-		pConfigFile = new CXMLDataset( "" );
+	CExecutorControlOpenCL* pExecutor = new CExecutorControlOpenCL();
+	pExecutor->logPlatforms();
+	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);
+	if (!pExecutor->createDevices()) return false;									//Creates Device
+	pManager->setExecutor(pExecutor);
+
+
+	pManager->log->writeLine("Reading configuration: model metadata...");
+
+	pManager->setName(std::string("Name"));
+	pManager->setDescription(std::string("Desc"));
+
+
+	pManager->log->writeLine("Reading configuration: simulation settings...");
+
+	pManager->setSimulationLength(360000.0);
+	//pManager->setRealStart(cParameterValue, cParameterFormat);
+	pManager->setOutputFrequency(360000.0/2);
+	pManager->setFloatPrecision(model::floatPrecision::kDouble);
+
+
+	pManager->log->writeLine("Reading configuration: domain data...");
+
+	CDomainManager* pManagerDomainManager = pManager->getDomainSet();
+	//pManagerDomainManager->setSyncMethod(model::syncMethod::kSyncTimestep);
+	//pManagerDomainManager->setSyncMethod(model::syncMethod::kSyncForecast);
+	//pManagerDomainManager->setSyncBatchSpares(10);
+
+
+	CDomainBase* ourNewDomain;
+	unsigned int uiDeviceAdjust = 1;
+	// Domain resides on this node
+	pManager->log->writeLine("Creating a new Cartesian-structured domain.");
+
+
+	ourNewDomain = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
+	CDomainCartesian* ourCartesianDomain = (CDomainCartesian*)ourNewDomain;
+	ourCartesianDomain->setDevice(pManager->getExecutor()->getDevice(1 - uiDeviceAdjust + 1));
+
+	pManager->log->writeLine("Dimensioning domain from raster dataset.");
+
+	ourCartesianDomain->setProjectionCode(0);					// Unknown
+	ourCartesianDomain->setUnits("m");
+	ourCartesianDomain->setCellResolution(10.0);
+	ourCartesianDomain->setRealDimensions(10.0 * 100, 10.0 * 100);
+	ourCartesianDomain->setRealOffset(0.0, 0.0);
+	ourCartesianDomain->setRealExtent(0 + 10.0 * 100.0, 0.0 + 10 * 100, 0.0, 0.0);
+
+
+	pManager->log->writeLine("Progressing to load boundary conditions.");
+
+	CBoundaryMap* ourBoundryMap = ourCartesianDomain->getBoundaries();
+	//CBoundary* pNewBoundary = NULL;
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryCell(ourBoundryMap->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(ourBoundryMap->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(ourBoundryMap->pDomain));
+
+	ourCartesianDomain->pScheme = new CSchemeGodunov();
+	ourCartesianDomain->pScheme->setDomain(ourCartesianDomain);
+	ourCartesianDomain->pScheme->prepareAll();
+	ourCartesianDomain->setScheme(ourCartesianDomain->pScheme);
+
+	pManager->log->writeLine("Progressing to load initial conditions.");
+	unsigned long ulCellID;
+	unsigned char	ucRounding = 4;			// decimal places
+	for (unsigned long iRow = 0; iRow < 100; iRow++) {
+		for (unsigned long iCol = 0; iCol < 100; iCol++) {
+			ulCellID = ourCartesianDomain->getCellID(iCol, 100 - iRow - 1);
+			//Elevations
+			ourCartesianDomain->handleInputData(ulCellID, sqrt(iCol * iCol + iRow * iRow) / 10, model::rasterDatasets::dataValues::kBedElevation, ucRounding);
+			//Manning Coefficient
+			ourCartesianDomain->handleInputData(ulCellID, 0.0286, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
+			//Depth
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
+			//VelocityX
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
+			//VelocityY
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
+		}
 	}
 
-	if ( !pConfigFile->parseAsConfigFile() )
+
+
+	ourCartesianDomain->setID(pManagerDomainManager->getDomainCount());	// Should not be needed, but somehow is?
+	pManagerDomainManager->domains.push_back(ourCartesianDomain);
+
+	// Warn the user if it's a multi-domain model, just so they know...
+	if (pManagerDomainManager->domains.size() <= 1)
 	{
-		model::doError(
-			"Cannot load model configuration.",
-			model::errorCodes::kLevelModelStop
-		);
-		return model::doClose(
-			model::appReturnCodes::kAppInitFailure
-		);
+		pManager->log->writeLine("This is a SINGLE-DOMAIN model, limited to 1 device.");
 	}
+	else {
+		pManager->log->writeLine("This is a MULTI-DOMAIN model, and possibly multi-device.");
+	}
+
+	// Generate links
+	pManagerDomainManager->generateLinks();
+
+	// Spit out some details
+	pManagerDomainManager->logDetails();
+
+	// If we have more than one domain then we also need at least one link per domain
+	// otherwise something is wrong...
+	if (pManagerDomainManager->domains.size() > 1)
+	{
+		for (unsigned int i = 0; i < pManagerDomainManager->domains.size(); i++)
+		{
+			if (pManagerDomainManager->domains[i]->getLinkCount() < 1)
+			{
+				model::doError(
+					"One or more domains are not linked.",
+					model::errorCodes::kLevelModelStop
+				);
+				return false;
+			}
+		}
+	}
+
 
 	pManager->log->writeLine("The computational engine is now ready.");
 
@@ -656,24 +441,7 @@ void model::doError( std::string sError, unsigned char cError )
  */
 void model::storeWorkingEnv()
 {
-#ifdef PLATFORM_UNIX
 
-	// THIS IS TEMPORARY ONLY!
-	char cPath[ FILENAME_MAX ];
-
-	// Unix version of getcwd
-	getcwd( cPath, FILENAME_MAX );
-
-	// Verify that we've managed to obtain a path
-	if ( strcmp( cPath, "" ) == 0 )
-	{
-		// Fallback is temp directory
-		strcpy( cPath, "/tmp/" );
-	}
-	model::workingDir = new char[ FILENAME_MAX ];
-	std::strcpy( model::workingDir, cPath );
-#endif
-#ifdef PLATFORM_WIN
 
 	if ( model::workingDir != NULL )
 		return;
@@ -691,5 +459,4 @@ void model::storeWorkingEnv()
 	}
 	model::workingDir = new char[ _MAX_PATH ];
 	std::strcpy( model::workingDir, cPath );
-#endif
 }
