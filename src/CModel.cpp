@@ -683,7 +683,7 @@ void	CModel::runModelSync()
 		
 	// Calculate a new target time to aim for
 	this->runModelUpdateTarget( dCurrentTime );
-	this->setModelUpdateTarget(3600.00 * 10);
+	//this->setModelUpdateTarget(3600.00 * 10);
 	// ---
 	// TODO: In MPI implementation, we need to invoke a reduce operation here to identify the lowest
 	// sync proposal across all domains in the Comm...

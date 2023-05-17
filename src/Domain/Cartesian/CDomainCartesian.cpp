@@ -108,7 +108,7 @@ bool CDomainCartesian::configureDomain(double dOffsetX)
 	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[pNewBoundary->size];
 	for (int i = 0; i < pNewBoundary->size; i++){
-		pNewBoundary->pTimeseries[i].dTime = i*10;
+		pNewBoundary->pTimeseries[i].dTime = i*10000;
 		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 	pNewBoundary->setVariablesBasedonData();
@@ -723,31 +723,32 @@ void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, uns
  */
 void	CDomainCartesian::writeOutputs()
 {
+	unsigned long	ulCellID;
+	double value;
+
 	// Read the data back first...
 	// TODO: Review whether this is necessary, isn't it a sync point anyway?
 	pDevice->blockUntilFinished();
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	for (unsigned int i = 0; i < this->pOutputs.size(); ++i)
-	{
-		// Replaces %t with the time in the filename, if required
-		// TODO: Allow for decimal output filenames
-		std::string sFilename = this->pOutputs[i].sTarget;
-		std::string sTime = std::to_string( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
-		unsigned int uiTimeLocation = sFilename.find( "%t" );
-		if ( uiTimeLocation != std::string::npos )
-			sFilename.replace( uiTimeLocation, 2, sTime );
 
-		//TODO: Alaa:HIGH Write replacement
-		//
-		//CRasterDataset::domainToRaster(
-		//	this->pOutputs[i].cFormat,
-		//	sFilename,
-		//	this,
-		//	this->pOutputs[i].ucValue
-		//);
+	
+	Normalplain* np = new Normalplain(this->getCols(), this->getRows());
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+			//value = this->getBedElevation(ulCellID);
+			//value = this->getBedElevation(ulCellID);
+			//value = this->getBedElevation(ulCellID);
+			np->setBedElevation(ulCellID, value);
+		}
 	}
+	np->outputShape();
+	
+
 }
 
 /*

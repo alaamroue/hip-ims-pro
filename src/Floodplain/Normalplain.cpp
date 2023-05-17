@@ -37,6 +37,10 @@ void Normalplain::setBedElevation(unsigned long indexX, unsigned long indexY, fl
 	this->bedElevation[indexX][indexY] = value;
 }
 
+void Normalplain::setBedElevation(unsigned long index, float value) {
+	this->bedElevation[(unsigned long)floor(index / this->getSizeX())][(unsigned long)index % this->getSizeY()] = value;
+}
+
 void Normalplain::setBedElevation(cl_double4* src) {
 	for (unsigned long i = 0; i < 10; i++) {
 		for (unsigned long j = 0; j < 10; j++) {
@@ -44,6 +48,19 @@ void Normalplain::setBedElevation(cl_double4* src) {
 		}
 	}
 }
+
+void Normalplain::SetBedElevationMountainDef() {
+	float value;
+	for (unsigned long i = 0; i < getSizeX(); i++) {
+		for (unsigned long j = 0; j < getSizeX(); j++) {
+			value = sqrt(i * i + j * j)/10;
+			//if (i > getSizeX() * 0.7 && i< getSizeX() * 0.8 && j > getSizeX() * 0.7 && j < getSizeX() * 0.8)
+			//	value = 14;
+			this->setBedElevation(i, j, value);
+		}
+	}
+}
+
 
 void Normalplain::SetBedElevationMountain() {
 	unsigned long SizeX = this->getSizeX();
@@ -71,26 +88,18 @@ void Normalplain::outputShape() {
 	std::cout << std::setprecision(2);
 	std::cout << std::endl;
 
-	for (unsigned long i = size-1; i > -1 ; i--) {
-		for (unsigned long j = 0; j < size; j++) {
+	for (unsigned long i = 0; i < this->getSizeX(); i++) {
+		for (unsigned long j = 0; j < this->getSizeY(); j++) {
 			value = this->getBedElevation(i, j);
-			if (value-2 > 100+i*10+j) {
-				std::cout << sgreen << value << def << " ";
-			}
-			else if (value > 100 + i * 10 + j) {
-				std::cout << green << value << def << " ";
-			
-			}
-			else if (value < 100 + i * 10 + j) {
-				std::cout << red << value << def << " ";
-			}
-			else {
+
 				std::cout << value << " ";
-			
-			}
 
 		}
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+}
+
+double Normalplain::getManning(unsigned long index) {
+	return 0.0286;
 }

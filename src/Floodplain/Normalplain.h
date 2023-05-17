@@ -19,7 +19,10 @@ public:
 	double getBedElevation(unsigned long index);
 	float getBedElevation(unsigned long, unsigned long);
 	void setBedElevation(unsigned long, unsigned long, float);
+	void setBedElevation(unsigned long index, float value);
 	void setBedElevation(cl_double4* src);
 	void SetBedElevationMountain();
+	void SetBedElevationMountainDef();
 	void outputShape();
+	double getManning(unsigned long index);
 };
