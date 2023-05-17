@@ -57,7 +57,6 @@ class CSchemeMUSCLHancock : public CSchemeGodunov
 		virtual ~CSchemeMUSCLHancock( void );								// Destructor
 
 		// Public functions
-		virtual void		setupFromConfig( XMLElement*, bool = false );	// Set up the scheme
 		virtual void		logDetails();									// Write some details about the scheme
 		virtual void		prepareAll();									// Prepare absolutely everything for a model run
 		virtual void		scheduleIteration( bool,						// Schedule an iteration of the scheme

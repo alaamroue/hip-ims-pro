@@ -41,7 +41,6 @@ class CDomainCartesian : public CDomain
 
 		// Public functions
 		// - Replacements for CDomain stubs
-		bool			configureDomain( XMLElement* );							// Configure a domain, loading data etc.
 		virtual	unsigned char	getType()										{ return model::domainStructureTypes::kStructureCartesian; };	// Fetch a type code
 		virtual	CDomainBase::DomainSummary getSummary();						// Fetch summary information for this domain
 		bool			validateDomain( bool );									// Verify required data is available
@@ -50,8 +49,6 @@ class CDomainCartesian : public CDomain
 		void			prepareDomain();										// Create memory structures etc.
 		void			logDetails();											// Log details about the domain
 		void			writeOutputs();											// Write output files to disk
-		void			syncWithDomain( CDomain* );								// Synchronise with another domain
-		unsigned int	getOverlapSize( CDomain* );								// Get the size of the overlap zone
 		// - Specific to cartesian grids
 		void			imposeBoundaryModification(unsigned char, unsigned char); // Adjust the topography to impose boundary conditions
 		void			setRealDimensions( double, double );					// Set real domain dimensions (X, Y)
