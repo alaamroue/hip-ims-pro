@@ -187,7 +187,7 @@ void CExecutorControlOpenCL::logPlatforms(void)
 
 	for ( unsigned int iPlatformID = 0; iPlatformID < this->clPlatformCount; iPlatformID++ )
 	{
-		sPlatformNo = "  " + toString( iPlatformID + 1 ) + ". ";
+		sPlatformNo = "  " + std::to_string( iPlatformID + 1 ) + ". ";
 
 		pLog->writeLine( 
 			sPlatformNo + this->platformInfo[ iPlatformID ].cName,
@@ -195,7 +195,7 @@ void CExecutorControlOpenCL::logPlatforms(void)
 			wColour
 		);
 		pLog->writeLine( 
-			std::string( sPlatformNo.size(), ' ' ) + std::string( this->platformInfo[ iPlatformID ].cVersion ) + " with " + toString( this->platformInfo[ iPlatformID ].uiDeviceCount ) + " device(s)" ,
+			std::string( sPlatformNo.size(), ' ' ) + std::string( this->platformInfo[ iPlatformID ].cVersion ) + " with " + std::to_string( this->platformInfo[ iPlatformID ].uiDeviceCount ) + " device(s)" ,
 			true,
 			wColour
 		);
@@ -394,7 +394,7 @@ void	CExecutorControlOpenCL::selectDevice( unsigned int uiDeviceNo )
 		return;
 	} else {
 		pManager->log->writeLine(
-			"Selected device: #" + toString( uiDeviceNo )
+			"Selected device: #" + std::to_string( uiDeviceNo )
 		);
 	}
 

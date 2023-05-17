@@ -290,17 +290,17 @@ void	CDomainCartesian::logDetails()
 	pManager->log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
 	if ( this->ulProjectionCode > 0 ) 
 	{
-		pManager->log->writeLine( "  Projection:        EPSG:" + toString( this->ulProjectionCode ), true, wColour );
+		pManager->log->writeLine( "  Projection:        EPSG:" + std::to_string( this->ulProjectionCode ), true, wColour );
 	} else {
 		pManager->log->writeLine( "  Projection:        Unknown", true, wColour );
 	}
-	pManager->log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
-	pManager->log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
-	pManager->log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ) + this->cUnits, true, wColour );
-	pManager->log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
-														 toString( this->ulRows ) + "]", true, wColour );
-	pManager->log->writeLine( "  Real dimensions:   [" + toString( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " + 
-														 toString( this->dRealDimensions[ kAxisY ] ) + this->cUnits + "]", true, wColour );
+	pManager->log->writeLine( "  Device number:     " + std::to_string( this->pDevice->uiDeviceNo ), true, wColour );
+	pManager->log->writeLine( "  Cell count:        " + std::to_string( this->ulCellCount ), true, wColour );
+	pManager->log->writeLine( "  Cell resolution:   " + std::to_string( this->dCellResolution ) + this->cUnits, true, wColour );
+	pManager->log->writeLine( "  Cell dimensions:   [" + std::to_string( this->ulCols ) + ", " +
+		std::to_string( this->ulRows ) + "]", true, wColour );
+	pManager->log->writeLine( "  Real dimensions:   [" + std::to_string( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " +
+		std::to_string( this->dRealDimensions[ kAxisY ] ) + this->cUnits + "]", true, wColour );
 
 	pManager->log->writeDivide();
 }
@@ -625,7 +625,7 @@ void	CDomainCartesian::writeOutputs()
 		// Replaces %t with the time in the filename, if required
 		// TODO: Allow for decimal output filenames
 		std::string sFilename		= this->pOutputs[i].sTarget;
-		std::string sTime			= toString( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
+		std::string sTime			= std::to_string( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
 		unsigned int uiTimeLocation = sFilename.find( "%t" );
 		if ( uiTimeLocation != std::string::npos )
 			sFilename.replace( uiTimeLocation, 2, sTime );

@@ -34,7 +34,7 @@ int CBoundary::uiInstances = 0;
  */
 CBoundary::CBoundary( CDomain* pDomain )
 {
-	sName = "Boundary_" + toString( ++CBoundary::uiInstances );
+	sName = "Boundary_" + std::to_string( ++CBoundary::uiInstances );
 	this->pDomain = pDomain;
 }
 

@@ -49,8 +49,8 @@ CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
 	this->bSent 		= true;
 	this->uiSmallestOverlap = 999999999;
 
-	pManager->log->writeLine("Generating link definitions between domains #" + toString(this->uiTargetDomainID + 1) 
-		+ " and #" + toString(this->uiSourceDomainID + 1));
+	pManager->log->writeLine("Generating link definitions between domains #" + std::to_string(this->uiTargetDomainID + 1)
+		+ " and #" + std::to_string(this->uiSourceDomainID + 1));
 
 	this->generateDefinitions( pTarget, pSource );
 }
@@ -258,9 +258,6 @@ void	CDomainLink::pushToBuffer(COCLBuffer* pBuffer)
 
 	for (unsigned int i = 0; i < this->linkDefs.size(); i++)
 	{
-#ifdef DEBUG_MPI
-		pManager->log->writeLine("[DEBUG] Should now be pushing data to buffer at time " + Util::secondsToTime(dValidityTime) + " (" + toString(this->linkDefs[i].ulSize) + " bytes)");
-#endif
 		pBuffer->queueWritePartial(
 			this->linkDefs[i].ulOffsetTarget,
 			this->linkDefs[i].ulSize,

@@ -16,8 +16,7 @@
  * ------------------------------------------
  *
  */
-#ifndef HIPIMS_COMMON_H_
-#define HIPIMS_COMMON_H_
+#pragma once
 
 // Base includes
 #include "util.h"
@@ -26,6 +25,7 @@
 //#define DEBUG_MPI 1
 
 #define toString(s) boost::lexical_cast<std::string>(s)
+//std::to_string
 
 // Windows-specific includes
 #ifdef PLATFORM_WIN
@@ -83,5 +83,3 @@ void					doError( std::string, unsigned char );
 
 // Variables in use throughput
 using	model::pManager;
-
-#endif
