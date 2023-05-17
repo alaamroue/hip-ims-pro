@@ -100,10 +100,10 @@ void	CRasterDataset::logDetails()
 	pManager->log->writeDivide();
 	pManager->log->writeLine( "Dataset driver:      " + std::string( this->cDriverDescription ) );
 	pManager->log->writeLine( "Dataset driver name: " + std::string( this->cDriverLongName ) );
-	pManager->log->writeLine( "Dataset band count:  " + toString( this->uiBandCount ) );
-	pManager->log->writeLine( "Cell dimensions:     [" + toString( this->ulColumns ) + ", " + toString( this->ulRows ) + "]" );
-	pManager->log->writeLine( "Cell resolution:     [" + toString( this->dResolutionX ) + ", " + toString( this->dResolutionY ) + "]" );
-	pManager->log->writeLine( "Lower-left offset:   [" + toString( this->dOffsetX ) + ", " + toString( this->dOffsetY ) + "]" );
+	pManager->log->writeLine( "Dataset band count:  " + std::to_string(this->uiBandCount));
+	pManager->log->writeLine("Cell dimensions:     [" + std::to_string(this->ulColumns) + ", " + std::to_string(this->ulRows) + "]");
+	pManager->log->writeLine("Cell resolution:     [" + std::to_string(this->dResolutionX) + ", " + std::to_string(this->dResolutionY) + "]");
+	pManager->log->writeLine("Lower-left offset:   [" + std::to_string(this->dOffsetX) + ", " + std::to_string( this->dOffsetY ) + "]" );
 	pManager->log->writeDivide();
 }
 

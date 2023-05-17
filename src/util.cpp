@@ -52,7 +52,7 @@ namespace Util
 
 		if ( uiDays > 0 )
 		{
-			sTime = toString( uiDays ) + " d ";
+			sTime = std::to_string( uiDays ) + " d ";
 		}
 
 		if ( dTime > 1 )
