@@ -25,8 +25,10 @@
 #include "Domain/Cartesian/CDomainCartesian.h"
 #include "Datasets/CRasterDataset.h"
 #include "OpenCL/Executors/COCLDevice.h"
-#include "Schemes\CSchemeGodunov.h"
+#include "Schemes/CSchemeGodunov.h"
 #include "Floodplain/Normalplain.h"
+#include "Boundaries/CBoundaryUniform.h"
+#include "Boundaries\CBoundaryMap.h"
 
 
 CModel* pManager;
@@ -63,7 +65,7 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
-	double SyncTime = 36000.0;
+	double SyncTime = 3600.0*1000;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
 	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
@@ -108,7 +110,31 @@ int loadConfiguration()
 	);
 
 
-	ourCartesianDomain->configureDomain();
+	CBoundaryMap* ourBoundryMap = ourCartesianDomain->getBoundaries();
+	//CBoundary* pNewBoundary = NULL;
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryCell(ourBoundryMap->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(ourBoundryMap->pDomain));
+	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(ourBoundryMap->pDomain));
+
+	//Set Up Boundry
+	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(ourBoundryMap->pDomain);
+	pNewBoundary->logger = pManager->log;
+	pNewBoundary->sName = std::string("TimeSeriesName");
+	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
+	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
+	for (int i = 0; i < 100; i++) {
+		pNewBoundary->pTimeseries[i].dTime = i * 3600;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5*i;
+	}
+
+	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
+	pNewBoundary->uiTimeseriesLength = 100;
+	pNewBoundary->dTimeseriesLength = pNewBoundary->pTimeseries[100 - 1].dTime;
+	pNewBoundary->dTotalVolume = 0.0;
+
+	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
+
+
 	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();

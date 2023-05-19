@@ -41,7 +41,7 @@ public:
 	~CBoundaryMap();
 
 	//bool							setupFromConfig();
-	CBoundary*						getBoundaryByName( std::string );
+	//CBoundary*						getBoundaryByName( std::string );
 
 	void							prepareBoundaries( COCLProgram*, COCLBuffer*, COCLBuffer*, COCLBuffer*, COCLBuffer*, COCLBuffer* );
 	void							applyBoundaries( COCLBuffer* );

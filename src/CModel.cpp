@@ -782,9 +782,13 @@ void	CModel::runModelMain()
 
 	log->writeLine("Simulation Started...");
 
-	this->runNext(36000.0);
-	this->getDomainSet()->getDomain(0)->readDomain();
-	this->runNext(36000.0 *2);
+	for (double i = 3600; i < 3600*100; i+=3600)
+	{
+		this->runNext(i);
+		this->getDomainSet()->getDomain(0)->readDomain();
+
+	}
+
 
 
 	

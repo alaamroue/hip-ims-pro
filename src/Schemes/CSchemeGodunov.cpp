@@ -515,8 +515,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Dry cell threshold depths
 	// --
-	oclModel->registerConstant("VERY_SMALL", std::to_string(this->dThresholdVerySmall));
-	oclModel->registerConstant("QUITE_SMALL", std::to_string(this->dThresholdQuiteSmall));
+	oclModel->registerConstant("VERY_SMALL", [&]() { std::ostringstream oss; oss.precision(std::numeric_limits<double>::max_digits10); oss << this->dThresholdVerySmall; return oss.str(); }());
+	oclModel->registerConstant("QUITE_SMALL", [&]() { std::ostringstream oss; oss.precision(std::numeric_limits<double>::max_digits10); oss << this->dThresholdQuiteSmall; return oss.str(); }());
 
 	// --
 	// Debug mode 

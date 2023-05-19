@@ -744,11 +744,13 @@ void	CDomainCartesian::readDomain()
 			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX);
 			//value = this->getBedElevation(ulCellID);
 			//value = this->getBedElevation(ulCellID);
-			np->setBedElevation(ulCellID, value);
+			np->setBedElevation(ulCellID, value*pow(10,3));
 		}
 	}
 
-	np->outputShape();
+	ulCellID = this->getCellID(5, 5);
+	std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX) << std::endl;
+	//np->outputShape();
 
 }
 
