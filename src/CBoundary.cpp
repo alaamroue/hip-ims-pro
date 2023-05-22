@@ -12,26 +12,36 @@
  *  This code is licensed under GPLv3. See LICENCE
  *  for more information.
  * ------------------------------------------
- *  Main include only required for some files
- *  Contains app version settings, etc.
+ *  Domain boundary handling class
  * ------------------------------------------
  *
  */
-
-// Includes
-//#include <vld.h>				// Memory leak detection
-/*
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <iostream>
 #include <vector>
-#include <math.h>
-#include <cmath>
-#include <stdexcept>
-#include <thread>
-*/
 
-// Base includes
+#include "CBoundaryMap.h"
+#include "CBoundary.h"
 #include "common.h"
-#include "windows_platform.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "opencl.h"
+
+using std::vector;
+int CBoundary::uiInstances = 0;
+
+/* 
+ *  Constructor
+ */
+CBoundary::CBoundary( CDomain* pDomain )
+{
+	sName = "Boundary_" + std::to_string( ++CBoundary::uiInstances );
+	this->pDomain = pDomain;
+}
+
+/*
+ *  Destructor
+ */
+CBoundary::~CBoundary()
+{
+	// ...
+}
+

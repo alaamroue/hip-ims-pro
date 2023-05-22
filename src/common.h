@@ -21,13 +21,13 @@
 // Base includes
 #include "util.h"
 
-#include "Platforms/windows_platform.h"
+#include "windows_platform.h"
 
 // Windows-specific includes
 #include <tchar.h>
 #include <direct.h>
 
-#include "General/CLog.h"
+#include "CLog.h"
 #include "CModel.h"
 
 

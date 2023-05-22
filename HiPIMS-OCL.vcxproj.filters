@@ -16,6 +16,9 @@
     <Filter Include="OpenCL">
       <UniqueIdentifier>{1271985f-acdf-47d5-9fd5-0b4e2d813d9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL\CL Header">
+      <UniqueIdentifier>{f84631ee-ff62-4180-8537-3e3a89db9032}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CModel.cpp">
@@ -24,82 +27,82 @@
     <ClCompile Include="src\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\base\CExecutorControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundaries\CBoundary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundaries\CBoundaryCell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundaries\CBoundaryGridded.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundaries\CBoundaryMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\boundaries\CBoundaryUniform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domain\CDomain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domain\CDomainBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domain\CDomainManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domain\cartesian\CDomainCartesian.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\domain\links\CDomainLink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\general\CBenchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\general\CLog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opencl\executors\CExecutorControlOpenCL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opencl\executors\COCLBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opencl\executors\COCLDevice.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opencl\executors\COCLKernel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opencl\executors\COCLProgram.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\platforms\windows_platform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\schemes\CScheme.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\schemes\CSchemeGodunov.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\schemes\CSchemeInertial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\schemes\CSchemeMUSCLHancock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Floodplain\Normalplain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Datasets\CRasterDataset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\gpudemo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows_platform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Normalplain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CSchemeMUSCLHancock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CSchemeInertial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CSchemeGodunov.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CScheme.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CRasterDataset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\COCLBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\COCLDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\COCLKernel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\COCLProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBoundary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBoundaryCell.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBoundaryGridded.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBoundaryMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CBoundaryUniform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CDomain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CDomainBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CDomainCartesian.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CDomainLink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CDomainManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CExecutorControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CExecutorControlOpenCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,91 +122,91 @@
     <ClInclude Include="src\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\base\CExecutorControl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\boundaries\CBoundary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\boundaries\CBoundaryCell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\boundaries\CBoundaryGridded.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\boundaries\CBoundaryMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\boundaries\CBoundaryUniform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domain\CDomain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domain\CDomainBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domain\CDomainManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domain\cartesian\CDomainCartesian.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\domain\links\CDomainLink.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\general\CBenchmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\general\CLog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\opencl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\executors\CExecutorControlOpenCL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\executors\COCLBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\executors\COCLDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\executors\COCLKernel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\opencl\executors\COCLProgram.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\platforms\windows_platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\schemes\CScheme.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\schemes\CSchemeGodunov.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\schemes\CSchemeInertial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\schemes\CSchemeMUSCLHancock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Floodplain\colormod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Floodplain\Normalplain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Datasets\CRasterDataset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\gpudemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\opencl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Normalplain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CSchemeMUSCLHancock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CSchemeInertial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CSchemeGodunov.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CScheme.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CRasterDataset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\colormod.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\COCLBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\COCLDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\COCLKernel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\COCLProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CExecutorControlOpenCL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBenchmark.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBoundary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBoundaryCell.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBoundaryGridded.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBoundaryMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CBoundaryUniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CDomain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CDomainBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CDomainCartesian.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CDomainLink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CDomainManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CExecutorControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -213,62 +216,62 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\boundaries\CLBoundaries.clc">
+    <None Include="src\OpenCLSources\CLBoundaries.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\boundaries\CLBoundaries.clh">
+    <None Include="src\OpenCLSources\CLDomainCartesian.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\domain\cartesian\CLDomainCartesian.clc">
+    <None Include="src\OpenCLSources\CLDynamicTimestep.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\domain\cartesian\CLDomainCartesian.clh">
+    <None Include="src\OpenCLSources\CLFriction.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLDynamicTimestep.clc">
+    <None Include="src\OpenCLSources\CLSchemeGodunov.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLDynamicTimestep.clh">
+    <None Include="src\OpenCLSources\CLSchemeInertial.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLFriction.clc">
+    <None Include="src\OpenCLSources\CLSchemeMUSCLHancock.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLFriction.clh">
+    <None Include="src\OpenCLSources\CLSlopeLimiterMINMOD.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeGodunov.clc">
+    <None Include="src\OpenCLSources\CLSolverHLLC.clc">
       <Filter>OpenCL</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeGodunov.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLBoundaries.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeInertial.clc">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLDomainCartesian.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeInertial.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLDynamicTimestep.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeMUSCLHancock.clc">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLFriction.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\CLSchemeMUSCLHancock.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLSchemeGodunov.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\limiters\CLSlopeLimiterMINMOD.clc">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLSchemeInertial.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\schemes\limiters\CLSlopeLimiterMINMOD.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLSchemeMUSCLHancock.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\solvers\CLSolverHLLC.clc">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLSlopeLimiterMINMOD.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\solvers\CLSolverHLLC.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLSolverHLLC.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
-    <None Include="src\opencl\executors\CLUniversalHeader.clh">
-      <Filter>OpenCL</Filter>
+    <None Include="src\OpenCLSources\CLUniversalHeader.clh">
+      <Filter>OpenCL\CL Header</Filter>
     </None>
   </ItemGroup>
 </Project>

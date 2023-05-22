@@ -51,3 +51,4 @@ _debug*.log
 /1.log
 /_modelzz.log
 /open-vs.bat
+*.pdb

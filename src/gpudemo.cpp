@@ -20,15 +20,15 @@
 // Includes
 #include "gpudemo.h"
 #include "CModel.h"
-#include "Domain/CDomainManager.h"
-#include "Domain/CDomain.h"
-#include "Domain/Cartesian/CDomainCartesian.h"
-#include "Datasets/CRasterDataset.h"
-#include "OpenCL/Executors/COCLDevice.h"
-#include "Schemes/CSchemeGodunov.h"
-#include "Floodplain/Normalplain.h"
-#include "Boundaries/CBoundaryUniform.h"
-#include "Boundaries\CBoundaryMap.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "CRasterDataset.h"
+#include "COCLDevice.h"
+#include "CSchemeGodunov.h"
+#include "Normalplain.h"
+#include "CBoundaryUniform.h"
+#include "CBoundaryMap.h"
 
 
 CModel* pManager;
@@ -65,14 +65,14 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
-	double SyncTime = 3600.0*1000;
+	double SyncTime = 3600.0*100000;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
 	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
 	pManager->setName("Name");														// Set Name of Project
 	pManager->setDescription("The Description");									// Set Description of Project
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
-	pManager->setOutputFrequency(SyncTime);										// Set Output Frequency
+	pManager->setOutputFrequency(3600);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
 	pManager->setCourantNumber(0.5);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
@@ -124,7 +124,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 11.5*i;
+		pNewBoundary->pTimeseries[i].dComponent = 300;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;

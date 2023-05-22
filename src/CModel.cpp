@@ -21,12 +21,13 @@
 #include <cmath>
 #include <math.h>
 #include "common.h"
-#include "OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "Domain/CDomainManager.h"
-#include "Domain/CDomain.h"
-#include "Schemes/CScheme.h"
-#include "Datasets/CRasterDataset.h"
-#include "Schemes/CSchemeGodunov.h"
+#include "CExecutorControlOpenCL.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CScheme.h"
+#include "CRasterDataset.h"
+#include "CSchemeGodunov.h"
+#include "Normalplain.h"
 
 using std::min;
 using std::max;
@@ -781,12 +782,29 @@ void	CModel::runModelMain()
 	//dTargetTime = 360000.0;
 
 	log->writeLine("Simulation Started...");
+	unsigned long ulCellID;
+	double value;
+	unsigned char	ucRounding = 4;			// decimal places
+	CDomainCartesian* cd = (CDomainCartesian*) this->domains->getDomain(0);
+	CSchemeGodunov* myGodScheme = (CSchemeGodunov*)this->domains->getDomain(0)->getScheme();
+	Normalplain* np = new Normalplain(100, 100);
+	np->SetBedElevationMountain();
+	myGodScheme->np = np;
 
-	for (double i = 3600; i < 3600*100; i+=3600)
+	for (double i = 3600; i < 3600*10000; i+=3600)
 	{
+		myGodScheme->bDownloadLinks = true;
 		this->runNext(i);
+
+		//Read simulation results
 		this->getDomainSet()->getDomain(0)->readDomain();
 
+		if (i == 3600*5 && false) {
+			std::cout << "Changed" << std::endl;
+			myGodScheme->importLinkZoneData();
+
+
+		}
 	}
 
 
