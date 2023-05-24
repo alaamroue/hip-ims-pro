@@ -1,0 +1,303 @@
+﻿/*
+ * ------------------------------------------
+ *
+ *  Created:	~23.05.2023~
+ *  By:			~Alaa Mroue~
+ *  			~Version 01~
+ *	Based on CLSchemeGodunov.clc by Luke S. Smith and Qiuhua Liang
+ * ------------------------------------------
+ *
+ */
+
+
+/*
+ *  Calculate everything without using LDS caching
+ */
+__kernel REQD_WG_SIZE_FULL_TS
+void solverFunction ( 
+			__constant	cl_double *  				dTimestep,						// Timestep
+			__global	cl_double const * restrict	dBedElevation,					// Bed elevation
+			__global	cl_double4 *  			pCellStateSrc,					// Current cell state data
+			__global	cl_double4 *  			pCellStateDst,					// Current cell state data
+			__global	cl_double const * restrict	dManning						// Manning values
+		)
+{
+
+
+	// Identify the cell we're reconstructing (no overlap)
+	__private cl_long					lIdxX			= get_global_id(0);
+	__private cl_long					lIdxY			= get_global_id(1);
+	__private cl_ulong					ulIdx, ulIdxNeig;
+	__private cl_uchar					ucDirection;
+	
+	ulIdx = getCellID(lIdxX, lIdxY);
+
+	__private cl_double		dLclTimestep	= *dTimestep;
+	__private cl_double		dManningCoef;
+	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE;
+	__private cl_double		opt_h,opt_hN,opt_hE, opt_cx;
+	__private cl_double4	pCellData,pNeigDataN,pNeigDataE;					// Z, Zmax, Qx, Qy
+	__private cl_double4	pSourceTerms,		dDeltaValues;										// Z, Qx, Qy
+	__private cl_double4	pFlux[4];																// Z, Qx, Qy
+	__private cl_double8	pLeft,				pRight;												// Z, H, Qx, Qy, U, V, Zb
+	__private cl_uchar		ucStop			= 0;
+	__private cl_uchar		ucDryCount		= 0;
+	
+	//TODO: Alaa 
+	//This would be passed as a variable
+	__private cl_char flowStates= 0;
+	flowStates |= (true << 0); 
+	flowStates |= (false << 1);
+	flowStates |= (false << 2);
+	flowStates |= (false << 3); 
+	flowStates |= (false << 4);  
+
+	bool isFlowElement = (flowStates >> 0) & 1;
+	bool noflow_x = (flowStates >> 1) & 1;
+	bool noflow_y = (flowStates >> 2) & 1;
+	bool opt_pol_x = (flowStates >> 3) & 1;
+	bool opt_pol_y = (flowStates >> 4) & 1;
+
+	if lIdxX=9
+		bool noflow_x = true;
+	if lIdxY=9
+		bool noflow_y = true;
+
+	// Also don't bother if we've gone beyond the total simulation time
+	if (dLclTimestep <= 0.0)
+	{
+		// TODO: Is there a way of avoiding this?!
+		pCellStateDst[ulIdx] = pCellStateSrc[ulIdx];
+		return;
+	}
+
+	// Load cell data
+	dCellBedElev		= dBedElevation[ ulIdx ];
+	pCellData			= pCellStateSrc[ ulIdx ];
+	dManningCoef		= dManning[ ulIdx ];
+
+	// Cell disabled?
+	if ( pCellData.y <= -9999.0 || pCellData.x == -9999.0 )
+	{
+		pCellStateDst[ ulIdx ] = pCellData;
+		return;
+	}
+
+
+	#ifdef DEBUG_OUTPUT
+	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
+	{	
+
+	}
+	#endif
+	
+	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
+	dNeigBedElevN	= dBedElevation [ ulIdxNeig ];
+	pNeigDataN		= pCellStateSrc	[ ulIdxNeig ];
+
+	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_E);
+	dNeigBedElevE	= dBedElevation [ ulIdxNeig ];
+	pNeigDataE		= pCellStateSrc	[ ulIdxNeig ];
+
+	//All neighbours are dry? Don't bother calculating
+	if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
+	if ( ucDryCount >= 3 ) return;
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+opt_s = pCellData.x;
+opt_h = pCellData.x  - dCellBedElev;
+opt_hN = pNeigDataN.x - dNeigBedElevN;
+opt_hE = pNeigDataE.x - dNeigBedElevE;
+
+
+opt_zxmax = dCellBedElev > dNeigBedElevE ? dCellBedElev : dNeigBedElevE;
+opt_zymax = dCellBedElev > dNeigBedElevN ? dCellBedElev : dNeigBedElevN;
+
+///Summarized flowparameter in x-direction [calculation variables]
+//this->c_x = (1.0/this->flow_data.n_value+1.0/this->element_x->get_flow_data().n_value)*0.5;
+// Not correct?
+opt_cx = 0.034965034965034968;
+
+if(isFlowElement){
+	return;
+
+//in x-direction
+if(!noflow_x){
+	if(!opt_pol_x){
+
+		//manning x
+		if(opt_h > VERY_SMALL || opt_hE > VERY_SMALL){
+
+			flow_depth= opt_s - opt_zxmax;
+			if(flow_depth <0.0){
+				flow_depth=0.0;
+			}
+			flow_depth_neigh= opt_sE - opt_zxmax;
+			if(flow_depth_neigh<0.0){
+				flow_depth_neigh=0.0;
+			}
+
+			flow_depth=max(flow_depth,flow_depth_neigh);
+
+			if(flow_depth > VERY_SMALL){
+				//diffusive wave
+				delta_h= opt_sE - opt_s;
+				abs_delta_h=abs(delta_h);
+
+				if(abs_delta_h > VERY_SMALL){
+					ds_dt_buff= opt_cx * pow(flow_depth, (5.0/3.0));
+
+					if(abs_delta_h<=0.005078){
+						ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+					}
+					else{
+						ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
+					}
+
+					//set the result
+					ds_dt_data[counter]=ds_dt_data[counter]+ds_dt_buff;
+					ds_dt_data[counter+1]=ds_dt_data[counter+1]-ds_dt_buff;
+				}
+			}
+		}
+	}
+}
+		
+//in y-direction
+if(!noflow_y){
+	if(!opt_pol_y){
+
+		if(fp_data->opt_h[ ulIdx ]>constant::flow_epsilon || fp_data->opt_h[i+1][j]>constant::flow_epsilon){
+			//calculate the mid of the flow depth
+			flow_depth=fp_data->opt_s[ ulIdx ]-fp_data->opt_zymax[ ulIdx ];
+			if(flow_depth <0.0){
+				flow_depth=0.0;
+			}
+			flow_depth_neigh=fp_data->opt_s[i+1][j]-fp_data->opt_zymax[ ulIdx ];
+			if(flow_depth_neigh<0.0){
+				flow_depth_neigh=0.0;
+			}
+			//flow_depth=(flow_depth+flow_depth_neigh)*0.5;
+			flow_depth=max(flow_depth,flow_depth_neigh);
+
+			if(flow_depth>constant::flow_epsilon){
+				//diffusive wave
+				delta_h=fp_data->opt_s[i+1][j]-fp_data->opt_s[ ulIdx ];
+				abs_delta_h=abs(delta_h);
+				//kinematic wave
+				//delta_h=fp_data->opt_zymax[i+1][j]-fp_data->opt_zymax[ ulIdx ];
+				//abs_delta_h=abs(delta_h);
+
+				if(abs_delta_h>constant::flow_epsilon){
+					ds_dt_buff=fp_data->opt_cy[ ulIdx ]*pow(flow_depth, (5.0/3.0));
+					//replace the manning strickler function by a tangens- function by a given boundary; this functions is the best fit to the square-root
+					//functions between 0.001 m and 0.02 m; the boundary is set, where the functions (arctan/square root) are identically)
+
+					if(abs_delta_h<=0.005078){
+						ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+					}
+					else{
+						ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
+					}
+
+					//set the result
+					ds_dt_data[counter]=ds_dt_data[counter]+ds_dt_buff;
+					//ds_dt_data[counter+fp_data->Param_FP.get_no_elems_x()]=ds_dt_data[counter+fp_data->Param_FP.get_no_elems_x()]-ds_dt_buff;
+						ds_dt_data[fp_data->id_y[counter]]=ds_dt_data[fp_data->id_y[counter]]-ds_dt_buff;
+				}
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	// Calculation of change values per timestep and spatial dimension
+	dDeltaValues.x	= ( pFlux[1].x  - pFlux[3].x  )/DOMAIN_DELTAX + 
+
+					  ( pFlux[0].x  - pFlux[2].x  )/DOMAIN_DELTAY - 
+					  pSourceTerms.x;
+	dDeltaValues.z	= ( pFlux[1].y - pFlux[3].y )/DOMAIN_DELTAX + 
+					  ( pFlux[0].y - pFlux[2].y )/DOMAIN_DELTAY - 
+					  pSourceTerms.y;
+	dDeltaValues.w	= ( pFlux[1].z - pFlux[3].z )/DOMAIN_DELTAX + 
+					  ( pFlux[0].z - pFlux[2].z )/DOMAIN_DELTAY - 
+					  pSourceTerms.z;
+
+	// Round delta values to zero if small
+	// TODO: Explore whether this can be rewritten as some form of clamp operation?
+	if ( ( dDeltaValues.x > 0.0 && dDeltaValues.x <  VERY_SMALL ) ||
+		 ( dDeltaValues.x < 0.0 && dDeltaValues.x > -VERY_SMALL ) ) 
+		 dDeltaValues.x = 0.0;
+	if ( ( dDeltaValues.z > 0.0 && dDeltaValues.z <  VERY_SMALL ) ||
+		 ( dDeltaValues.z < 0.0 && dDeltaValues.z > -VERY_SMALL ) ) 
+		 dDeltaValues.z = 0.0;
+	if ( ( dDeltaValues.w > 0.0 && dDeltaValues.w <  VERY_SMALL ) ||
+		 ( dDeltaValues.w < 0.0 && dDeltaValues.w > -VERY_SMALL ) ) 
+		 dDeltaValues.w = 0.0;
+
+	// Stopping conditions
+	if ( ucStop > 0 )
+	{
+		pCellData.z = 0.0;
+		pCellData.w = 0.0;
+	}
+
+	// Update the flow state
+	pCellData.x		= pCellData.x	- dLclTimestep * dDeltaValues.x;
+	pCellData.z		= pCellData.z	- dLclTimestep * dDeltaValues.z;
+	pCellData.w		= pCellData.w	- dLclTimestep * dDeltaValues.w;
+
+
+
+
+	// New max FSL?
+	if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 )
+		pCellData.y = pCellData.x;
+
+	// Crazy low depths?
+	if ( pCellData.x - dCellBedElev < VERY_SMALL )
+		pCellData.x = dCellBedElev;
+
+	// Commit to global memory
+	pCellStateDst[ ulIdx ] = pCellData;
+}
+

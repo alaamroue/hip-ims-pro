@@ -1,4 +1,14 @@
 /*
+ * This file is a modified version of the code originally created by Luke S. Smith and Qiuhua Liang.
+ * Modifications: Project structure changes (Compare with original for exact changes)
+ * Modified by: Alaa Mroue
+ * Date of Modification: 04.2023
+ *
+ * Find the orignal code in OriginalSourceCode.zip
+ * OriginalSourceCode.zip: Is a snapshot of the src folder from https://github.com/lukeshope/hipims-ocl based on 1e62acf6b9b480e08646b232361b68c1827d91ae
+ */
+
+ /*
  * ------------------------------------------
  *
  *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
@@ -109,6 +119,12 @@ class CModel
 		cl_ulong				ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
 		unsigned int			selectedDevice;
 		unsigned int			domainCount;
+		double					dGlobalTimestep;								//
+
+		bool* bSyncReady;
+		bool* bIdle;
+		double dCellRate;
+		unsigned char ucRounding;
 
 	private:
 
@@ -132,7 +148,6 @@ class CModel
 		double					dLastProgressUpdate;							//
 		double					dTargetTime;									// 
 		double					dEarliestTime;									//
-		double					dGlobalTimestep;								//
 		unsigned long			ulRealTimeStart;
 		bool					bRollbackRequired;								// 
 		bool					bAllIdle;										//

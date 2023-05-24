@@ -1,4 +1,14 @@
 /*
+ * This file is a modified version of the code originally created by Luke S. Smith and Qiuhua Liang. (Originally main.h)
+ * Modifications: Project structure changes (Compare with original for exact changes)
+ * Modified by: Alaa Mroue
+ * Date of Modification: 04.2023
+ *
+ * Find the orignal code in OriginalSourceCode.zip
+ * OriginalSourceCode.zip: Is a snapshot of the src folder from https://github.com/lukeshope/hipims-ocl based on 1e62acf6b9b480e08646b232361b68c1827d91ae
+ */
+
+ /*
  * ------------------------------------------
  *
  *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)

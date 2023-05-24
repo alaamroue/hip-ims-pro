@@ -17,7 +17,7 @@
  *
  *  School of Civil Engineering & Geosciences
  *  Newcastle University
- * 
+ *
  * ------------------------------------------
  *  This code is licensed under GPLv3. See LICENCE
  *  for more information.
@@ -35,21 +35,19 @@
 #include "CDomain.h"
 #include "CDomainLink.h"
 #include "CDomainCartesian.h"
-#include "CSchemeGodunov.h"
-#include "CSchemeMUSCLHancock.h"
-#include "CSchemeInertial.h"
+#include "CSchemePromaides.h"
 
 using std::min;
 using std::max;
 /*
  *  Default constructor
  */
-CSchemeGodunov::CSchemeGodunov(void)
+CSchemePromaides::CSchemePromaides(void)
 {
 
 }
 
-CSchemeGodunov::CSchemeGodunov(CModel* cmodel)
+CSchemePromaides::CSchemePromaides(CModel* cmodel)
 {
 	this->logger = cmodel->getLogger();
 	logger->writeLine("Godunov-type scheme loaded for execution on OpenCL platform.");
@@ -122,7 +120,7 @@ CSchemeGodunov::CSchemeGodunov(CModel* cmodel)
 /*
  *  Destructor
  */
-CSchemeGodunov::~CSchemeGodunov(void)
+CSchemePromaides::~CSchemePromaides(void)
 {
 	this->releaseResources();
 	logger->writeLine("The Godunov scheme class was unloaded from memory.");
@@ -131,7 +129,7 @@ CSchemeGodunov::~CSchemeGodunov(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeGodunov::setupFromConfig()
+void	CSchemePromaides::setupFromConfig()
 {
 	// Call the base class function which handles a couple of things
 	CScheme::setupFromConfig();
@@ -186,7 +184,7 @@ void	CSchemeGodunov::setupFromConfig()
 /*
  *  Log the details and properties of this scheme instance.
  */
-void CSchemeGodunov::logDetails()
+void CSchemePromaides::logDetails()
 {
 	logger->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
@@ -229,7 +227,7 @@ void CSchemeGodunov::logDetails()
 /*
  *  Run all preparation steps
  */
-void CSchemeGodunov::prepareAll()
+void CSchemePromaides::prepareAll()
 {
 	logger->writeLine("Starting to prepare program for Godunov-type scheme.");
 
@@ -327,7 +325,7 @@ void CSchemeGodunov::prepareAll()
 /*
  *  Concatenate together the code for the different elements required
  */
-bool CSchemeGodunov::prepareCode()
+bool CSchemePromaides::prepareCode()
 {
 	bool bReturnState = true;
 
@@ -353,7 +351,7 @@ bool CSchemeGodunov::prepareCode()
 /*
  *  Create boundary data arrays etc.
  */
-bool CSchemeGodunov::prepareBoundaries()
+bool CSchemePromaides::prepareBoundaries()
 {
 	CBoundaryMap* pBoundaries = this->pDomain->getBoundaries();
 	pBoundaries->prepareBoundaries(oclModel, oclBufferCellBed, oclBufferCellManning, oclBufferTime, oclBufferTimeHydrological, oclBufferTimestep);
@@ -364,7 +362,7 @@ bool CSchemeGodunov::prepareBoundaries()
 /*
  *  Set the dry cell threshold depth
  */
-void	CSchemeGodunov::setDryThreshold(double dThresholdDepth)
+void	CSchemePromaides::setDryThreshold(double dThresholdDepth)
 {
 	this->dThresholdVerySmall = dThresholdDepth;
 	this->dThresholdQuiteSmall = dThresholdDepth * 10;
@@ -373,7 +371,7 @@ void	CSchemeGodunov::setDryThreshold(double dThresholdDepth)
 /*
  *  Get the dry cell threshold depth
  */
-double	CSchemeGodunov::getDryThreshold()
+double	CSchemePromaides::getDryThreshold()
 {
 	return this->dThresholdVerySmall;
 }
@@ -381,7 +379,7 @@ double	CSchemeGodunov::getDryThreshold()
 /*
  *  Set number of wavefronts used in reductions
  */
-void	CSchemeGodunov::setReductionWavefronts(unsigned int uiWavefronts)
+void	CSchemePromaides::setReductionWavefronts(unsigned int uiWavefronts)
 {
 	this->uiTimestepReductionWavefronts = uiWavefronts;
 }
@@ -389,7 +387,7 @@ void	CSchemeGodunov::setReductionWavefronts(unsigned int uiWavefronts)
 /*
  *  Get number of wavefronts used in reductions
  */
-unsigned int	CSchemeGodunov::getReductionWavefronts()
+unsigned int	CSchemePromaides::getReductionWavefronts()
 {
 	return this->uiTimestepReductionWavefronts;
 }
@@ -397,7 +395,7 @@ unsigned int	CSchemeGodunov::getReductionWavefronts()
 /*
  *  Set the Riemann solver to use
  */
-void	CSchemeGodunov::setRiemannSolver(unsigned char ucRiemannSolver)
+void	CSchemePromaides::setRiemannSolver(unsigned char ucRiemannSolver)
 {
 	this->ucSolverType = ucRiemannSolver;
 }
@@ -405,7 +403,7 @@ void	CSchemeGodunov::setRiemannSolver(unsigned char ucRiemannSolver)
 /*
  *  Get the Riemann solver in use
  */
-unsigned char	CSchemeGodunov::getRiemannSolver()
+unsigned char	CSchemePromaides::getRiemannSolver()
 {
 	return this->ucSolverType;
 }
@@ -413,7 +411,7 @@ unsigned char	CSchemeGodunov::getRiemannSolver()
 /*
  *  Set the cache configuration to use
  */
-void	CSchemeGodunov::setCacheMode(unsigned char ucCacheMode)
+void	CSchemePromaides::setCacheMode(unsigned char ucCacheMode)
 {
 	this->ucConfiguration = ucCacheMode;
 }
@@ -421,7 +419,7 @@ void	CSchemeGodunov::setCacheMode(unsigned char ucCacheMode)
 /*
  *  Get the cache configuration in use
  */
-unsigned char	CSchemeGodunov::getCacheMode()
+unsigned char	CSchemePromaides::getCacheMode()
 {
 	return this->ucConfiguration;
 }
@@ -429,19 +427,19 @@ unsigned char	CSchemeGodunov::getCacheMode()
 /*
  *  Set the cache size
  */
-void	CSchemeGodunov::setCachedWorkgroupSize(unsigned char ucSize)
+void	CSchemePromaides::setCachedWorkgroupSize(unsigned char ucSize)
 {
 	this->ulCachedWorkgroupSizeX = ucSize; this->ulCachedWorkgroupSizeY = ucSize;
 }
-void	CSchemeGodunov::setCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
+void	CSchemePromaides::setCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
 {
 	this->ulCachedWorkgroupSizeX = ucSizeX; this->ulCachedWorkgroupSizeY = ucSizeY;
 }
-void	CSchemeGodunov::setNonCachedWorkgroupSize(unsigned char ucSize)
+void	CSchemePromaides::setNonCachedWorkgroupSize(unsigned char ucSize)
 {
 	this->ulNonCachedWorkgroupSizeX = ucSize; this->ulNonCachedWorkgroupSizeY = ucSize;
 }
-void	CSchemeGodunov::setNonCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
+void	CSchemePromaides::setNonCachedWorkgroupSize(unsigned char ucSizeX, unsigned char ucSizeY)
 {
 	this->ulNonCachedWorkgroupSizeX = ucSizeX; this->ulNonCachedWorkgroupSizeY = ucSizeY;
 }
@@ -449,7 +447,7 @@ void	CSchemeGodunov::setNonCachedWorkgroupSize(unsigned char ucSizeX, unsigned c
 /*
  *  Set the cache constraints
  */
-void	CSchemeGodunov::setCacheConstraints(unsigned char ucCacheConstraints)
+void	CSchemePromaides::setCacheConstraints(unsigned char ucCacheConstraints)
 {
 	this->ucCacheConstraints = ucCacheConstraints;
 }
@@ -457,7 +455,7 @@ void	CSchemeGodunov::setCacheConstraints(unsigned char ucCacheConstraints)
 /*
  *  Get the cache constraints
  */
-unsigned char	CSchemeGodunov::getCacheConstraints()
+unsigned char	CSchemePromaides::getCacheConstraints()
 {
 	return this->ucCacheConstraints;
 }
@@ -465,7 +463,7 @@ unsigned char	CSchemeGodunov::getCacheConstraints()
 /*
  *  Calculate the dimensions for executing the problems (e.g. reduction glob/local sizes)
  */
-bool CSchemeGodunov::prepare1OExecDimensions()
+bool CSchemePromaides::prepare1OExecDimensions()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
@@ -494,7 +492,7 @@ bool CSchemeGodunov::prepare1OExecDimensions()
 
 	if (this->ulCachedWorkgroupSizeX == 0)
 		ulCachedWorkgroupSizeX = ulConstraintWG +
-		(this->ucCacheConstraints == model::cacheConstraints::musclHancock::kCacheAllowUndersize ? -1 : 0);
+		(this->ucCacheConstraints == 12 ? -1 : 0);
 	if (this->ulCachedWorkgroupSizeY == 0)
 		ulCachedWorkgroupSizeY = ulConstraintWG;
 
@@ -518,7 +516,7 @@ bool CSchemeGodunov::prepare1OExecDimensions()
 /*
  *  Allocate constants using the settings herein
  */
-bool CSchemeGodunov::prepare1OConstants()
+bool CSchemePromaides::prepare1OConstants()
 {
 	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
 
@@ -643,7 +641,7 @@ bool CSchemeGodunov::prepare1OConstants()
 /*
  *  Allocate memory for everything that isn't direct domain information (i.e. temporary/scheme data)
  */
-bool CSchemeGodunov::prepare1OMemory()
+bool CSchemePromaides::prepare1OMemory()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
@@ -693,7 +691,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferCellBed = new COCLBuffer("Bed elevations", oclModel, true, true);
 
 	oclBufferCellStates->logger = logger;
-	oclBufferCellStatesAlt->logger = logger; 
+	oclBufferCellStatesAlt->logger = logger;
 	oclBufferCellManning->logger = logger;
 	oclBufferCellBed->logger = logger;
 
@@ -757,7 +755,7 @@ bool CSchemeGodunov::prepare1OMemory()
 /*
  *  Create general kernels used by numerous schemes with the compiled program
  */
-bool CSchemeGodunov::prepareGeneralKernels()
+bool CSchemePromaides::prepareGeneralKernels()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
@@ -810,7 +808,7 @@ bool CSchemeGodunov::prepareGeneralKernels()
 /*
  *  Create kernels using the compiled program
  */
-bool CSchemeGodunov::prepare1OKernels()
+bool CSchemePromaides::prepare1OKernels()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
@@ -844,7 +842,7 @@ bool CSchemeGodunov::prepare1OKernels()
 /*
  *  Release all OpenCL resources consumed using the OpenCL methods
  */
-void CSchemeGodunov::releaseResources()
+void CSchemePromaides::releaseResources()
 {
 	this->bReady = false;
 
@@ -856,7 +854,7 @@ void CSchemeGodunov::releaseResources()
 /*
  *  Release all OpenCL resources consumed using the OpenCL methods
  */
-void CSchemeGodunov::release1OResources()
+void CSchemePromaides::release1OResources()
 {
 	this->bReady = false;
 
@@ -916,7 +914,7 @@ void CSchemeGodunov::release1OResources()
 /*
  *  Prepares the simulation
  */
-void	CSchemeGodunov::prepareSimulation()
+void	CSchemePromaides::prepareSimulation()
 {
 	// Adjust cell bed elevations if necessary for boundary conditions
 	logger->writeLine("Adjusting domain data for boundaries...");
@@ -959,9 +957,9 @@ void	CSchemeGodunov::prepareSimulation()
 	bThreadTerminated = false;
 }
 
-DWORD CSchemeGodunov::Threaded_runBatchLaunch(LPVOID param)
+DWORD CSchemePromaides::Threaded_runBatchLaunch(LPVOID param)
 {
-	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
+	CSchemePromaides* pScheme = static_cast<CSchemePromaides*>(param);
 	pScheme->Threaded_runBatch();
 	return 0;
 }
@@ -969,7 +967,7 @@ DWORD CSchemeGodunov::Threaded_runBatchLaunch(LPVOID param)
 /*
  *	Create a new thread to run this batch using
  */
-void CSchemeGodunov::runBatchThread()
+void CSchemePromaides::runBatchThread()
 {
 	if (this->bThreadRunning)
 		return;
@@ -980,7 +978,7 @@ void CSchemeGodunov::runBatchThread()
 	HANDLE hThread = CreateThread(
 		NULL,
 		0,
-		(LPTHREAD_START_ROUTINE)CSchemeGodunov::Threaded_runBatchLaunch,
+		(LPTHREAD_START_ROUTINE)CSchemePromaides::Threaded_runBatchLaunch,
 		this,
 		0,
 		NULL
@@ -992,7 +990,7 @@ void CSchemeGodunov::runBatchThread()
  *	Schedule a batch-load of work to run on the device and block
  *	until complete. Runs in its own thread.
  */
-void CSchemeGodunov::Threaded_runBatch()
+void CSchemePromaides::Threaded_runBatch()
 {
 	unsigned long ulCellID;
 	// Keep the thread in existence because of the overhead
@@ -1092,7 +1090,7 @@ void CSchemeGodunov::Threaded_runBatch()
 				for (unsigned long iCol = 0; iCol < 100; ++iCol) {
 					ulCellID = pDomain->getCellID(iCol, iRow);
 					value = np->getBedElevation(ulCellID);
-					vStateData[ulCellID].s[0] = np->getBedElevation(ulCellID)*2;
+					vStateData[ulCellID].s[0] = np->getBedElevation(ulCellID) * 2;
 					vStateData[ulCellID].s[1] = np->getBedElevation(ulCellID);
 					vStateData[ulCellID].s[2] = 0.0;
 					vStateData[ulCellID].s[3] = 0.0;
@@ -1241,7 +1239,7 @@ void CSchemeGodunov::Threaded_runBatch()
 /*
  *  Runs the actual simulation until completion or error
  */
-void	CSchemeGodunov::runSimulation(double dTargetTime, double dRealTime)
+void	CSchemePromaides::runSimulation(double dTargetTime, double dRealTime)
 {
 	// Wait for current work to finish
 	if (this->bRunning || this->pDomain->getDevice()->isBusy())
@@ -1263,8 +1261,8 @@ void	CSchemeGodunov::runSimulation(double dTargetTime, double dRealTime)
 		unsigned int uiOldQueueAdditionSize = this->uiQueueAdditionSize;
 
 
-		this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3,static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
-		
+		this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3, static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
+
 		// Stop silly jumps in the queue addition size
 		if (this->uiQueueAdditionSize > uiOldQueueAdditionSize * 2 &&
 			this->uiQueueAdditionSize > 40)
@@ -1274,16 +1272,16 @@ void	CSchemeGodunov::runSimulation(double dTargetTime, double dRealTime)
 		if (this->uiQueueAdditionSize < 1)
 			this->uiQueueAdditionSize = 1;
 	}
-		dBatchStartedTime = dRealTime;
-		this->bRunning = true;
-		this->runBatchThread();
+	dBatchStartedTime = dRealTime;
+	this->bRunning = true;
+	this->runBatchThread();
 
 }
 
 /*
  *  Clean-up temporary resources consumed during the simulation
  */
-void	CSchemeGodunov::cleanupSimulation()
+void	CSchemePromaides::cleanupSimulation()
 {
 	// TODO: Anything to clean-up? Callbacks? Timers?
 	dBatchStartedTime = 0.0;
@@ -1299,7 +1297,7 @@ void	CSchemeGodunov::cleanupSimulation()
 /*
  *  Rollback the simulation to the last successful round
  */
-void	CSchemeGodunov::rollbackSimulation(double dCurrentTime, double dTargetTime)
+void	CSchemePromaides::rollbackSimulation(double dCurrentTime, double dTargetTime)
 {
 	// Wait until any pending tasks have completed first...
 	this->getDomain()->getDevice()->blockUntilFinished();
@@ -1349,7 +1347,7 @@ void	CSchemeGodunov::rollbackSimulation(double dCurrentTime, double dTargetTime)
 /*
  *  Is the simulation a failure requiring a rollback?
  */
-bool	CSchemeGodunov::isSimulationFailure(double dExpectedTargetTime)
+bool	CSchemePromaides::isSimulationFailure(double dExpectedTargetTime)
 {
 	if (bRunning)
 		return false;
@@ -1386,7 +1384,7 @@ bool	CSchemeGodunov::isSimulationFailure(double dExpectedTargetTime)
 /*
  *  Force the timestap to be advanced even if we're synced
  */
-void	CSchemeGodunov::forceTimeAdvance()
+void	CSchemePromaides::forceTimeAdvance()
 {
 	bUseForcedTimeAdvance = true;
 }
@@ -1394,7 +1392,7 @@ void	CSchemeGodunov::forceTimeAdvance()
 /*
  *  Is the simulation ready to be synchronised?
  */
-bool	CSchemeGodunov::isSimulationSyncReady(double dExpectedTargetTime)
+bool	CSchemePromaides::isSimulationSyncReady(double dExpectedTargetTime)
 {
 	// Check whether we're still busy or failure occured
 	//if ( isSimulationFailure() )
@@ -1442,7 +1440,7 @@ bool	CSchemeGodunov::isSimulationSyncReady(double dExpectedTargetTime)
 /*
  *  Runs the actual simulation until completion or error
  */
-void	CSchemeGodunov::scheduleIteration(
+void	CSchemePromaides::scheduleIteration(
 	bool			bUseAlternateKernel,
 	COCLDevice* pDevice,
 	CDomain* pDomain
@@ -1497,7 +1495,7 @@ void	CSchemeGodunov::scheduleIteration(
 /*
  *  Read back all of the domain data
  */
-void CSchemeGodunov::readDomainAll()
+void CSchemePromaides::readDomainAll()
 {
 	if (bUseAlternateKernel)
 	{
@@ -1511,7 +1509,7 @@ void CSchemeGodunov::readDomainAll()
 /*
  *  Read back domain data for the synchronisation zones only
  */
-void CSchemeGodunov::importLinkZoneData()
+void CSchemePromaides::importLinkZoneData()
 {
 	this->bImportLinks = true;
 }
@@ -1519,7 +1517,7 @@ void CSchemeGodunov::importLinkZoneData()
 /*
 *	Fetch the pointer to the last cell source buffer
 */
-COCLBuffer* CSchemeGodunov::getLastCellSourceBuffer()
+COCLBuffer* CSchemePromaides::getLastCellSourceBuffer()
 {
 	if (bUseAlternateKernel)
 	{
@@ -1533,7 +1531,7 @@ COCLBuffer* CSchemeGodunov::getLastCellSourceBuffer()
 /*
  *	Fetch the pointer to the next cell source buffer
  */
-COCLBuffer* CSchemeGodunov::getNextCellSourceBuffer()
+COCLBuffer* CSchemePromaides::getNextCellSourceBuffer()
 {
 	if (bUseAlternateKernel)
 	{
@@ -1547,7 +1545,7 @@ COCLBuffer* CSchemeGodunov::getNextCellSourceBuffer()
 /*
  *  Save current cell states incase of need to rollback
  */
-void CSchemeGodunov::saveCurrentState()
+void CSchemePromaides::saveCurrentState()
 {
 	// Flag is flipped after an iteration, so if it's true that means
 	// the last one saved to the normal cell state buffer...
@@ -1568,7 +1566,7 @@ void CSchemeGodunov::saveCurrentState()
 /*
  *  Set the target sync time
  */
-void CSchemeGodunov::setTargetTime(double dTime)
+void CSchemePromaides::setTargetTime(double dTime)
 {
 	if (dTime == this->dTargetTime)
 		return;
@@ -1582,36 +1580,37 @@ void CSchemeGodunov::setTargetTime(double dTime)
 /*
  *  Propose a synchronisation point based on current performance of the scheme
  */
-double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
+double CSchemePromaides::proposeSyncPoint(double dCurrentTime)
 {
 	// TODO: Improve this so we're using more than just the current timestep...
 	double dProposal = dCurrentTime + fabs(this->dTimestep);
 
 	// Can only use this method once we have some simulation completed, not valid
 	// at the start.
-	if ( dCurrentTime > 1E-5 && uiBatchSuccessful > 0 )
+	if (dCurrentTime > 1E-5 && uiBatchSuccessful > 0)
 	{
 		// Try to accommodate approximately three spare iterations
-		dProposal = dCurrentTime + 
+		dProposal = dCurrentTime +
 			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - this->syncBatchSpares) / pDomain->getRollbackLimit()));
 		// Don't allow massive jumps
 		//if ((dProposal - dCurrentTime) > dBatchTimesteps * 3.0)
 		//	dProposal = dCurrentTime + dBatchTimesteps * 3.0;
 		// If we've hit our rollback limit, use the time we reached to determine a conservative estimate for 
 		// a new sync point
-		if ( uiBatchSuccessful >= pDomain->getRollbackLimit() )
+		if (uiBatchSuccessful >= pDomain->getRollbackLimit())
 			dProposal = dCurrentTime + dBatchTimesteps * 0.95;
-	} else {
+	}
+	else {
 		// Can't return a suggestion of not going anywhere..
-		if ( dProposal - dCurrentTime < 1E-5 )
+		if (dProposal - dCurrentTime < 1E-5)
 			dProposal = dCurrentTime + fabs(this->dTimestep);
 	}
 
 	// If using real-time visualisation, force syncs more frequently (?)
-#ifdef _WINDLL
-	// This line is broken... Maybe? Not sure...
-	//dProposal = min( dProposal, dCurrentTime + ( dBatchTimesteps / uiBatchSuccessful ) * 2 * uiQueueAdditionSize );
-#endif
+	#ifdef _WINDLL
+		// This line is broken... Maybe? Not sure...
+		//dProposal = min( dProposal, dCurrentTime + ( dBatchTimesteps / uiBatchSuccessful ) * 2 * uiQueueAdditionSize );
+	#endif
 
 	return dProposal;
 }
@@ -1619,7 +1618,7 @@ double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
 /*
  *  Get the batch average timestep
  */
-double CSchemeGodunov::getAverageTimestep()
+double CSchemePromaides::getAverageTimestep()
 {
 	if (uiBatchSuccessful < 1) return 0.0;
 	return dBatchTimesteps / uiBatchSuccessful;
@@ -1628,7 +1627,7 @@ double CSchemeGodunov::getAverageTimestep()
 /*
  *	Force a specific timestep (when synchronising them)
  */
-void CSchemeGodunov::forceTimestep(double dTimestep)
+void CSchemePromaides::forceTimestep(double dTimestep)
 {
 	// Might not have to write anything :-)
 	if (dTimestep == this->dCurrentTimestep)
@@ -1641,22 +1640,23 @@ void CSchemeGodunov::forceTimestep(double dTimestep)
 /*
  *  Fetch key details back to the right places in memory
  */
-void	CSchemeGodunov::readKeyStatistics()
+void	CSchemePromaides::readKeyStatistics()
 {
 	cl_uint uiLastBatchSuccessful = uiBatchSuccessful;
 
 	// Pull key data back from our buffers to the scheme class
-	if ( this->floatPrecision == model::floatPrecision::kSingle )
+	if (this->floatPrecision == model::floatPrecision::kSingle)
 	{
-		dCurrentTimestep = static_cast<cl_double>( *( oclBufferTimestep->getHostBlock<float*>() ) );
+		dCurrentTimestep = static_cast<cl_double>(*(oclBufferTimestep->getHostBlock<float*>()));
 		dCurrentTime = static_cast<cl_double>(*(oclBufferTime->getHostBlock<float*>()));
-		dBatchTimesteps = static_cast<cl_double>( *( oclBufferBatchTimesteps->getHostBlock<float*>() ) );
-	} else {
-		dCurrentTimestep = *( oclBufferTimestep->getHostBlock<double*>() );
-		dCurrentTime = *(oclBufferTime->getHostBlock<double*>());
-		dBatchTimesteps = *( oclBufferBatchTimesteps->getHostBlock<double*>() );
+		dBatchTimesteps = static_cast<cl_double>(*(oclBufferBatchTimesteps->getHostBlock<float*>()));
 	}
-	uiBatchSuccessful = *( oclBufferBatchSuccessful->getHostBlock<cl_uint*>() );
-	uiBatchSkipped	  = *( oclBufferBatchSkipped->getHostBlock<cl_uint*>() );
+	else {
+		dCurrentTimestep = *(oclBufferTimestep->getHostBlock<double*>());
+		dCurrentTime = *(oclBufferTime->getHostBlock<double*>());
+		dBatchTimesteps = *(oclBufferBatchTimesteps->getHostBlock<double*>());
+	}
+	uiBatchSuccessful = *(oclBufferBatchSuccessful->getHostBlock<cl_uint*>());
+	uiBatchSkipped = *(oclBufferBatchSkipped->getHostBlock<cl_uint*>());
 	uiBatchRate = uiBatchSuccessful > uiLastBatchSuccessful ? (uiBatchSuccessful - uiLastBatchSuccessful) : 1;
 }

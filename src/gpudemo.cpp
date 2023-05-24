@@ -1,4 +1,14 @@
 /*
+ * This file is a modified version of the code originally created by Luke S. Smith and Qiuhua Liang. (Originally main.cpp)
+ * Modifications: Project structure changes (Compare with original for exact changes)
+ * Modified by: Alaa Mroue
+ * Date of Modification: 04.2023
+ *
+ * Find the orignal code in OriginalSourceCode.zip
+ * OriginalSourceCode.zip: Is a snapshot of the src folder from https://github.com/lukeshope/hipims-ocl based on 1e62acf6b9b480e08646b232361b68c1827d91ae
+ */
+
+ /*
  * ------------------------------------------
  *
  *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
@@ -142,20 +152,19 @@ int loadConfiguration()
 
 
 	unsigned long ulCellID;
-	unsigned char	ucRounding = 4;			// decimal places
 	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
 		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
 			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);
 			//Elevations
-			ourCartesianDomain->handleInputData(ulCellID, np->getBedElevation(ulCellID), model::rasterDatasets::dataValues::kBedElevation, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, np->getBedElevation(ulCellID), model::rasterDatasets::dataValues::kBedElevation, pManager->ucRounding);
 			//Manning Coefficient
-			ourCartesianDomain->handleInputData(ulCellID, np->getManning(ulCellID), model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, np->getManning(ulCellID), model::rasterDatasets::dataValues::kManningCoefficient, pManager->ucRounding);
 			//Depth
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, pManager->ucRounding);
 			//VelocityX
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, pManager->ucRounding);
 			//VelocityY
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, pManager->ucRounding);
 		}
 	}
 

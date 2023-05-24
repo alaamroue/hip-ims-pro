@@ -105,6 +105,9 @@
     <ClCompile Include="src\CExecutorControlOpenCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CSchemePromaides.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CModel.h">
@@ -209,6 +212,9 @@
     <ClInclude Include="src\CExecutorControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\CSchemePromaides.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\CLCode.rc">
@@ -272,6 +278,13 @@
     </None>
     <None Include="src\OpenCLSources\CLUniversalHeader.clh">
       <Filter>OpenCL\CL Header</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="src\OpenCLSources\CLSchemePromaides.clh">
+      <Filter>OpenCL\CL Header</Filter>
+    </None>
+    <None Include="src\OpenCLSources\CLSchemePromaides.clc">
+      <Filter>OpenCL</Filter>
     </None>
   </ItemGroup>
 </Project>

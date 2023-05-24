@@ -1,4 +1,14 @@
 /*
+ * This file is a modified version of the code originally created by Luke S. Smith and Qiuhua Liang.
+ * Modifications: Project structure changes (Compare with original for exact changes)
+ * Modified by: Alaa Mroue
+ * Date of Modification: 04.2023
+ *
+ * Find the orignal code in OriginalSourceCode.zip
+ * OriginalSourceCode.zip: Is a snapshot of the src folder from https://github.com/lukeshope/hipims-ocl based on 1e62acf6b9b480e08646b232361b68c1827d91ae
+ */
+
+ /*
  * ------------------------------------------
  *
  *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
@@ -58,6 +68,7 @@ CModel::CModel(void)
 	this->ulRealTimeStart = 0;
 
 	this->forcedAbort = false;
+	this->ucRounding = 4;
 }
 
 
@@ -771,9 +782,9 @@ void	CModel::runModelCleanup()
  */
 void	CModel::runModelMain()
 {
-	bool*							bSyncReady				= new bool[domainCount];
-	bool*							bIdle					= new bool[domainCount];
-	double							dCellRate				= 0.0;
+	bSyncReady				= new bool[domainCount];
+	bIdle					= new bool[domainCount];
+	dCellRate				= 0.0;
 
 
 	dGlobalTimestep = this->domains->getDomain(0)->getScheme()->getTimestep();

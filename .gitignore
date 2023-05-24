@@ -52,3 +52,4 @@ _debug*.log
 /_modelzz.log
 /open-vs.bat
 *.pdb
+/packages/Microsoft.Windows.CppWinRT.2.0.220531.1
