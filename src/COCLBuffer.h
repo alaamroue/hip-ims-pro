@@ -55,6 +55,7 @@ public:
 	void			queueReadPartial( cl_ulong, size_t, void* = NULL );
 	void			queueWriteAll();
 	void			queueWritePartial( cl_ulong, size_t, void* = NULL );
+	void			queueFillZero();
 	CLog* logger;
 
 protected:

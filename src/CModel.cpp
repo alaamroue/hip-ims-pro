@@ -126,7 +126,7 @@ bool CModel::setExecutorToDefaultGPU()
 {
 	CExecutorControl* pExecutor = new CExecutorControlOpenCL();						//Create Executor
 	pExecutor->logger = this->log;
-	pExecutor->logPlatforms();
+	//pExecutor->logPlatforms();
 	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);                //Set Type
 	if (!pExecutor->createDevices()) return false;									//Creates Device
 	this->setExecutor(pExecutor);
@@ -802,7 +802,7 @@ void	CModel::runModelMain()
 	np->SetBedElevationMountain();
 	myGodScheme->np = np;
 
-	for (double i = 3600; i < 3600*10000; i+=3600)
+	for (double i = 3600; i <= 3600*10; i+=3600)
 	{
 		myGodScheme->bDownloadLinks = true;
 		this->runNext(i);
@@ -810,12 +810,10 @@ void	CModel::runModelMain()
 		//Read simulation results
 		this->getDomainSet()->getDomain(0)->readDomain();
 
-		if (i == 3600*5 && false) {
-			std::cout << "Changed" << std::endl;
-			myGodScheme->importLinkZoneData();
-
-
-		}
+		//if (i == 3600*5 && false) {
+		//	std::cout << "Changed" << std::endl;
+		//	myGodScheme->importLinkZoneData();
+		//}
 	}
 
 

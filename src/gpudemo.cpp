@@ -36,6 +36,7 @@
 #include "CRasterDataset.h"
 #include "COCLDevice.h"
 #include "CSchemeGodunov.h"
+#include "CSchemePromaides.h"
 #include "Normalplain.h"
 #include "CBoundaryUniform.h"
 #include "CBoundaryMap.h"
@@ -75,23 +76,23 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
-	double SyncTime = 3600.0*100000;
+	double SyncTime = 36000.0;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
 	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
 	pManager->setName("Name");														// Set Name of Project
 	pManager->setDescription("The Description");									// Set Description of Project
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
-	pManager->setOutputFrequency(3600);										// Set Output Frequency
+	pManager->setOutputFrequency(SyncTime);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
-	pManager->setCourantNumber(0.5);												// Set the Courant Number to be used (Godunov)
+	pManager->getDomainSet()->setSyncMethod(model::syncMethod::kSyncTimestep);
+	pManager->setCourantNumber(1);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
 	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
 	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
-
 
 	CRasterDataset	pDataset;
 
@@ -105,7 +106,7 @@ int loadConfiguration()
 	pDataset.dOffsetX = 0.00;
 	pDataset.dOffsetY = 0.00;
 
-	pDataset.logDetails();
+	//pDataset.logDetails();
 
 	ourCartesianDomain->setProjectionCode(0);					// Unknown
 	ourCartesianDomain->setUnits("m");
@@ -134,7 +135,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 300;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
@@ -144,8 +145,8 @@ int loadConfiguration()
 
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
-
 	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
+	//CSchemePromaides* pScheme = new CSchemePromaides(pManager);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
 	ourCartesianDomain->setScheme(pScheme);

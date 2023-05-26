@@ -1,31 +1,12 @@
 /*
- * This file is a modified version of the code originally created by Luke S. Smith and Qiuhua Liang.
- * Modifications: Project structure changes (Compare with original for exact changes)
- * Modified by: Alaa Mroue
+ * This file is a based on the code created by Luke S. Smith and Qiuhua Liang.
+ * Created by: Alaa Mroue
  * Date of Modification: 04.2023
  *
  * Find the orignal code in OriginalSourceCode.zip
  * OriginalSourceCode.zip: Is a snapshot of the src folder from https://github.com/lukeshope/hipims-ocl based on 1e62acf6b9b480e08646b232361b68c1827d91ae
  */
 
- /*
- * ------------------------------------------
- *
- *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
- *  Luke S. Smith and Qiuhua Liang
- *  luke@smith.ac
- *
- *  School of Civil Engineering & Geosciences
- *  Newcastle University
- *
- * ------------------------------------------
- *  This code is licensed under GPLv3. See LICENCE
- *  for more information.
- * ------------------------------------------
- *  Scheme class
- * ------------------------------------------
- *
- */
 #include <algorithm>
 
 #include "common.h"
@@ -63,7 +44,7 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	this->dCurrentTime = 0.0;
 	this->dThresholdVerySmall = 1E-10;
 	this->dThresholdQuiteSmall = this->dThresholdVerySmall * 10;
-	this->bFrictionInFluxKernel = true;
+	this->bFrictionInFluxKernel = false;
 	this->bIncludeBoundaries = false;
 	this->uiTimestepReductionWavefronts = 200;
 
@@ -129,57 +110,6 @@ CSchemePromaides::~CSchemePromaides(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemePromaides::setupFromConfig()
-{
-	// Call the base class function which handles a couple of things
-	CScheme::setupFromConfig();
-
-
-	this->setCourantNumber(0.5);
-
-	//this->setDryThreshold( boost::lexical_cast<double>( 0.5 ) );
-
-	//unsigned char ucTimestepMode = 255;
-	//ucTimestepMode = model::timestepMode::kCFL;
-	//ucTimestepMode = model::timestepMode::kFixed;
-	//this->setTimestepMode( ucTimestepMode );
-
-
-	//this->setTimestep( boost::lexical_cast<double>( ?? ) );
-	//this->setReductionWavefronts( boost::lexical_cast<unsigned int>( ?? ) );
-
-
-
-	unsigned char ucFriction = 255;
-	//ucFriction = 1;
-	ucFriction = 0;
-	this->setFrictionStatus(ucFriction == 1);
-
-	//unsigned char ucSolver = 255;
-	//ucSolver = model::solverTypes::kHLLC;
-	//this->setRiemannSolver( ucSolver );
-
-	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( 32 ) );
-	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( 32 ) );
-	this->setCachedWorkgroupSize(1, 1);
-	this->setNonCachedWorkgroupSize(1, 1);
-	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-	//this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-	//this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-
-	//unsigned char usCache = 255;
-	//usCache = model::schemeConfigurations::godunovType::kCacheEnabled;
-	//usCache = model::schemeConfigurations::godunovType::kCacheNone;
-	//this->setCacheMode( usCache );
-
-	//unsigned char ucCacheConstraints = 255;
-	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
-	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowOversize;
-	//ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowUndersize;
-	//this->setCacheConstraints( ucCacheConstraints );
-
-}
 
 /*
  *  Log the details and properties of this scheme instance.
@@ -333,14 +263,14 @@ bool CSchemePromaides::prepareCode()
 	oclModel->appendCodeFromResource("CLFriction_H");
 	oclModel->appendCodeFromResource("CLSolverHLLC_H");
 	oclModel->appendCodeFromResource("CLDynamicTimestep_H");
-	oclModel->appendCodeFromResource("CLSchemeGodunov_H");
+	oclModel->appendCodeFromResource("CLSchemePromaides_H");
 	oclModel->appendCodeFromResource("CLBoundaries_H");
 
 	oclModel->appendCodeFromResource("CLDomainCartesian_C");
 	oclModel->appendCodeFromResource("CLFriction_C");
 	oclModel->appendCodeFromResource("CLSolverHLLC_C");
 	oclModel->appendCodeFromResource("CLDynamicTimestep_C");
-	oclModel->appendCodeFromResource("CLSchemeGodunov_C");
+	oclModel->appendCodeFromResource("CLSchemePromaides_C");
 	oclModel->appendCodeFromResource("CLBoundaries_C");
 
 	bReturnState = oclModel->compileProgram();
@@ -523,6 +453,7 @@ bool CSchemePromaides::prepare1OConstants()
 	// --
 	// Dry cell threshold depths
 	// --
+	//TODO: ALaa fix this asap
 	oclModel->registerConstant("VERY_SMALL", [&]() { std::ostringstream oss; oss.precision(std::numeric_limits<double>::max_digits10); oss << this->dThresholdVerySmall; return oss.str(); }());
 	oclModel->registerConstant("QUITE_SMALL", [&]() { std::ostringstream oss; oss.precision(std::numeric_limits<double>::max_digits10); oss << this->dThresholdQuiteSmall; return oss.str(); }());
 
@@ -546,45 +477,21 @@ bool CSchemePromaides::prepare1OConstants()
 	// Work-group size requirements
 	// --
 
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheNone)
-	{
-		oclModel->registerConstant(
+	oclModel->registerConstant(
 			"REQD_WG_SIZE_FULL_TS",
 			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulNonCachedWorkgroupSizeX) + ", " + std::to_string(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
-	}
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled)
-	{
-		oclModel->registerConstant(
-			"REQD_WG_SIZE_FULL_TS",
-			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulNonCachedWorkgroupSizeX) + ", " + std::to_string(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
-		);
-	}
+
 
 	oclModel->registerConstant(
 		"REQD_WG_SIZE_LINE",
 		"__attribute__((reqd_work_group_size(" + std::to_string(this->ulReductionWorkgroupSize) + ", 1, 1)))"
 	);
 
-	// --
-	// Size of local cache arrays
-	// --
+	// Promaides Constants
+	oclModel->registerConstant("Cgg", "9.8066");
+	oclModel->registerConstant("Cfacweir", "2.95245");
 
-	switch (this->ucCacheConstraints)
-	{
-	case model::cacheConstraints::godunovType::kCacheActualSize:
-		oclModel->registerConstant("GTS_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("GTS_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
-		break;
-	case model::cacheConstraints::godunovType::kCacheAllowUndersize:
-		oclModel->registerConstant("GTS_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("GTS_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
-		break;
-	case model::cacheConstraints::godunovType::kCacheAllowOversize:
-		oclModel->registerConstant("GTS_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("GTS_DIM2", std::to_string(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
-		break;
-	}
 
 	// --
 	// CFL/fixed timestep
@@ -819,22 +726,11 @@ bool CSchemePromaides::prepare1OKernels()
 	// Godunov-type scheme kernels
 	// --
 
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheNone)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheDisabled");
-		oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheEnabled");
-		oclKernelFullTimestep->setGroupSize(this->ulCachedWorkgroupSizeX, this->ulCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulCachedGlobalSizeX, this->ulCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
+	oclKernelFullTimestep = oclModel->getKernel("solverFunctionPromaides");
+	oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
+	oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
+	COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };
+	oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
 
 	return bReturnState;
 }
@@ -860,21 +756,21 @@ void CSchemePromaides::release1OResources()
 
 	logger->writeLine("Releasing 1st-order scheme resources held for OpenCL.");
 
-	if (this->oclModel != NULL)							delete oclModel;
+	if (this->oclModel != NULL)								delete oclModel;
 	if (this->oclKernelFullTimestep != NULL)				delete oclKernelFullTimestep;
 	if (this->oclKernelFriction != NULL)					delete oclKernelFriction;
 	if (this->oclKernelTimestepReduction != NULL)			delete oclKernelTimestepReduction;
-	if (this->oclKernelTimeAdvance != NULL)				delete oclKernelTimeAdvance;
-	if (this->oclKernelTimestepUpdate != NULL)			delete oclKernelTimestepUpdate;
+	if (this->oclKernelTimeAdvance != NULL)					delete oclKernelTimeAdvance;
+	if (this->oclKernelTimestepUpdate != NULL)				delete oclKernelTimestepUpdate;
 	if (this->oclKernelResetCounters != NULL)				delete oclKernelResetCounters;
-	if (this->oclBufferCellStates != NULL)				delete oclBufferCellStates;
+	if (this->oclBufferCellStates != NULL)					delete oclBufferCellStates;
 	if (this->oclBufferCellStatesAlt != NULL)				delete oclBufferCellStatesAlt;
-	if (this->oclBufferCellManning != NULL)				delete oclBufferCellManning;
-	if (this->oclBufferCellBed != NULL)					delete oclBufferCellBed;
+	if (this->oclBufferCellManning != NULL)					delete oclBufferCellManning;
+	if (this->oclBufferCellBed != NULL)						delete oclBufferCellBed;
 	if (this->oclBufferTimestep != NULL)					delete oclBufferTimestep;
 	if (this->oclBufferTimestepReduction != NULL)			delete oclBufferTimestepReduction;
 	if (this->oclBufferTime != NULL)						delete oclBufferTime;
-	if (this->oclBufferTimeTarget != NULL)				delete oclBufferTimeTarget;
+	if (this->oclBufferTimeTarget != NULL)					delete oclBufferTimeTarget;
 	if (this->oclBufferTimeHydrological != NULL)			delete oclBufferTimeHydrological;
 
 	oclModel = NULL;

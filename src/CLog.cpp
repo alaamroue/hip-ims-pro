@@ -38,7 +38,7 @@ CLog::CLog(void)
 {
 	this->setPath();
 	this->openFile();
-	this->writeHeader();
+	//this->writeHeader();
 	this->uiDebugFileID = 1;
 	this->uiLineCount = 0;
 	setlocale( LC_ALL, "" );

@@ -413,6 +413,12 @@ void gts_cacheDisabled (
 	if ( pCellData.x - dCellBedElev < VERY_SMALL )
 		pCellData.x = dCellBedElev;
 
+
+	if ( lIdxX == 3 && lIdxY == 3)
+	{	
+		//printf("pCellData.x: %f pCellData.y: %f pCellData.z: %f pCellData.w: %f   \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w);
+	}
+
 	// Commit to global memory
 	pCellStateDst[ ulIdx ] = pCellData;
 }

@@ -1,0 +1,1887 @@
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  DEVICE MODULE (OPENCL, C99)
+ * ------------------------------------------
+ *  Universal header, included in every single
+ *  program compiled by this model for OpenCL.
+ * ------------------------------------------
+ *
+ */
+
+// To be made configurable at a later date
+#define USE_FUNCTION_STUBS			1
+#define USE_ALTERNATE_CONSTRUCTS	1
+
+// Enable to use printf with AMD devices
+#ifdef DEBUG_OUTPUT
+#pragma		OPENCL EXTENSION cl_amd_printf   : enable
+//#pragma		OPENCL EXTENSION cl_intel_printf : enable
+#endif
+
+#define		GRAVITY					9.81		// 9.80665
+
+// Type aliases to be consistent across different platforms
+typedef char	    cl_char;
+typedef uchar		cl_uchar;
+typedef short       cl_short;
+typedef ushort		cl_ushort;
+typedef int			cl_int;
+typedef int2		cl_int2;
+//typedef int3		cl_int3;
+typedef int4		cl_int4;
+typedef int8		cl_int8;
+typedef uint		cl_uint;
+typedef uint2		cl_uint2;
+//typedef uint3		cl_uint3;
+typedef uint4		cl_uint4;
+typedef uint8		cl_uint8;
+typedef long		cl_long;
+typedef long2		cl_long2;
+//typedef long3		cl_long3;
+typedef long4		cl_long4;
+typedef long8		cl_long8;
+typedef ulong		cl_ulong;
+typedef ulong2		cl_ulong2;
+//typedef ulong3		cl_ulong3;
+typedef ulong4		cl_ulong4;
+typedef ulong8		cl_ulong8;
+//typedef half		cl_half;			// Requires OpenCL extension...
+typedef float       cl_float;
+typedef float2      cl_float2;
+//typedef float3      cl_float3;
+typedef float4      cl_float4;
+typedef float8      cl_float8;
+
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  Header file
+ *  CARTESIAN DOMAIN
+ * ------------------------------------------
+ *  Management functions for a Cartesian
+ *  domain.
+ * ------------------------------------------
+ *
+ */
+
+// Note: Some compile-time constants are defined automatically by
+// the model, including:
+//   DOMAIN_CELLCOUNT
+//   DOMAIN_ROWS
+//   DOMAIN_COLS
+//   DOMAIN_DELTAX
+//   DOMAIN_DELTAY
+
+// Neighbour directions
+#define DOMAIN_DIR_N	0
+#define DOMAIN_DIR_E	1
+#define DOMAIN_DIR_S	2
+#define DOMAIN_DIR_W	3
+
+#ifdef USE_FUNCTION_STUBS
+
+// Function definitions
+cl_ulong	getNeighbourID(cl_ulong, cl_uchar);
+cl_ulong	getNeighbourByIndices(cl_long, cl_long, cl_uchar);
+cl_ulong	getCellID(cl_long, cl_long);
+void		getCellIndices( cl_ulong, cl_long*, cl_long* );
+
+#endif
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  Header file
+ *  FRICTION
+ * ------------------------------------------
+ *  Calculate the timestep using a reduction
+ *  procedure and increment the total model 
+ *  time.
+ * ------------------------------------------
+ *
+ */
+
+#ifdef USE_FUNCTION_STUBS
+
+// Function definitions
+__kernel  REQD_WG_SIZE_FULL_TS
+void per_Friction ( 
+	__constant	cl_double *,
+	__global	cl_double4 *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *  	// TEMP only for rainfall		
+);
+
+cl_double4 implicitFriction(
+	cl_double4,
+	cl_double,
+	cl_double,
+	cl_double
+);
+
+#endif/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  Header file
+ *  HLLC APPROXIMATE RIEMANN SOLVER
+ * ------------------------------------------
+ *  Implementation of the approximate HLLC
+ *  Riemann solver for the GPU.
+ * ------------------------------------------
+ *
+ */
+
+#ifdef USE_FUNCTION_STUBS
+
+// Function definitions
+cl_double4	riemannSolver(
+	cl_uchar,
+	cl_double8,
+	cl_double8,
+	bool
+);
+
+#endif/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  Header file
+ *  CFL DYNAMIC TIMESTEP
+ * ------------------------------------------
+ *  Calculate the timestep using a reduction
+ *  procedure and increment the total model 
+ *  time.
+ * ------------------------------------------
+ *
+ */
+#define TIMESTEP_EARLY_LIMIT			0.1
+#define TIMESTEP_EARLY_LIMIT_DURATION	60.0
+#define TIMESTEP_START_MINIMUM			1E-10
+#define TIMESTEP_START_MINIMUM_DURATION	1.0
+#define TIMESTEP_MINIMUM				1E-10
+#define TIMESTEP_MAXIMUM				15.0
+
+#ifdef USE_FUNCTION_STUBS
+// Function definitions
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_Advance_Normal ( 
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double4 *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_uint *,
+	__global	cl_uint *
+);
+
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_ResetCounters(
+	__global	cl_double *,
+	__global	cl_uint *,
+	__global	cl_uint *
+);
+
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_UpdateTimestep ( 
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *,
+	__global	cl_double *
+);
+
+__kernel  REQD_WG_SIZE_LINE
+void tst_Reduce ( 
+	__global	cl_double4 *,
+	__global	cl_double const * restrict,
+	__global	cl_double *
+);
+
+#endif
+__kernel  REQD_WG_SIZE_FULL_TS
+void solverFunctionPromaides ( 
+	__constant	cl_double *,
+	__global	cl_double const * restrict,
+	__global	cl_double4 *,
+	__global	cl_double4 *,
+	__global    cl_double const * restrict
+);/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  Header file
+ *  BOUNDARY CONDITIONS
+ * ------------------------------------------
+ *  Management functions for a domain
+ *  boundaries.
+ * ------------------------------------------
+ *
+ */
+
+// Hydrological timestep
+// This should be low to capture velocities properly, but isn't
+// always necessary
+// TODO: Make configurable...
+#define TIMESTEP_HYDROLOGICAL			1.0
+
+// Boundary types
+#define BOUNDARY_ATMOSPHERIC			0
+#define BOUNDARY_FLOWCONDITIONS			1
+
+// Boundary operating definitions
+#define BOUNDARY_DEPTH_IGNORE			0
+#define BOUNDARY_DEPTH_IS_FSL			1
+#define BOUNDARY_DEPTH_IS_DEPTH			2
+#define BOUNDARY_DEPTH_IS_CRITICAL		3
+
+#define BOUNDARY_DISCHARGE_IGNORE		0
+#define BOUNDARY_DISCHARGE_IS_DISCHARGE	1
+#define BOUNDARY_DISCHARGE_IS_VELOCITY	2
+#define BOUNDARY_DISCHARGE_IS_VOLUME	3
+
+#define BOUNDARY_UNIFORM_RAIN_INTENSITY	0
+#define BOUNDARY_UNIFORM_LOSS_RATE		1
+
+#define BOUNDARY_GRIDDED_RAIN_INTENSITY 0
+#define BOUNDARY_GRIDDED_RAIN_ACCUMUL	1
+#define BOUNDARY_GRIDDED_MASS_FLUX		2
+
+#ifdef USE_FUNCTION_STUBS
+
+typedef struct sBdyCellConfiguration
+{
+	cl_ulong		TimeseriesEntries;
+	cl_double		TimeseriesInterval;
+	cl_double		TimeseriesLength;
+	cl_ulong		RelationCount;
+	cl_uint			DefinitionDepth;
+	cl_uint			DefinitionDischarge;
+} sBdyCellConfiguration;
+
+typedef struct sBdyGriddedConfiguration
+{
+	cl_double		TimeseriesInterval;
+	cl_double		GridResolution;
+	cl_double		GridOffsetX;
+	cl_double		GridOffsetY;
+	cl_ulong		TimeseriesEntries;
+	cl_ulong		Definition;
+	cl_ulong		GridRows;
+	cl_ulong		GridCols;
+} sBdyGriddedConfiguration;
+
+typedef struct sBdyUniformConfiguration
+{
+	cl_uint			TimeseriesEntries;
+	cl_double		TimeseriesInterval;
+	cl_double		TimeseriesLength;
+	cl_uint			Definition;
+} sBdyUniformConfiguration;
+
+__kernel void bdy_Cell ( 
+	__constant		sBdyCellConfiguration *,
+	__global		cl_ulong const * restrict,
+	__global		cl_double4 const * restrict,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double4 *,
+	__global		cl_double *,
+	__global		cl_double *
+);
+
+__kernel void bdy_Gridded ( 
+	__constant		sBdyGriddedConfiguration *,
+	__global		cl_double const * restrict,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double4 *,
+	__global		cl_double *,
+	__global		cl_double *
+);
+
+__kernel void bdy_Uniform ( 
+	__constant		sBdyUniformConfiguration *,
+	__global		cl_double2 const * restrict,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double *,
+	__global		cl_double4 *,
+	__global		cl_double *,
+	__global		cl_double *
+);
+
+#endif/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  CARTESIAN DOMAIN
+ * ------------------------------------------
+ *  Management functions for a Cartesian
+ *  domain.
+ * ------------------------------------------
+ *
+ */
+
+/*
+ *  Fetch the ID for a cell using its X and Y indices
+ */
+cl_ulong	getCellID(cl_long lIdxX, cl_long lIdxY)
+{
+	cl_long	lCols = DOMAIN_COLS;
+	return (lIdxY * lCols) + lIdxX;
+}
+
+/*
+ *  Fetch the X and Y indices for a cell using its ID
+ */
+void	getCellIndices(cl_ulong ulID, cl_long* lIdxX, cl_long* lIdxY)
+{
+	*lIdxX = ulID % DOMAIN_COLS;
+	*lIdxY = (ulID - *lIdxX) / DOMAIN_COLS;
+}
+
+/*
+ *  Fetch the ID for a neighbouring cell in the domain
+ */
+cl_ulong	getNeighbourID(cl_ulong ulCellID, cl_uchar ucDirection)
+{
+	cl_long lIdxX = 0;
+	cl_long lIdxY = 0;
+	getCellIndices( ulCellID, &lIdxX, &lIdxY );
+
+	switch( ucDirection )
+	{
+	case DOMAIN_DIR_N:
+		++lIdxY;
+		break;
+	case DOMAIN_DIR_E:
+		++lIdxX;
+		break;
+	case DOMAIN_DIR_S:
+		--lIdxY;
+		break;
+	case DOMAIN_DIR_W:
+		--lIdxX;
+		break;
+	}
+
+	return getCellID( lIdxX, lIdxY );
+}
+
+/*
+ *  Fetch the ID for a neighbouring cell in the domain
+ */
+cl_ulong	getNeighbourByIndices( cl_long lIdxX, cl_long lIdxY, cl_uchar ucDirection )
+{
+	switch( ucDirection )
+	{
+	case DOMAIN_DIR_N:
+		++lIdxY;
+		break;
+	case DOMAIN_DIR_E:
+		++lIdxX;
+		break;
+	case DOMAIN_DIR_S:
+		--lIdxY;
+		break;
+	case DOMAIN_DIR_W:
+		--lIdxX;
+		break;
+	}
+
+	return getCellID( lIdxX, lIdxY );
+}
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  IMPLICIT FRICTION
+ * ------------------------------------------
+ *  Reduce discharge values according to 
+ *  friction coefficients.
+ * ------------------------------------------
+ *
+ */
+
+/*
+ *	Point-implicit calculation of the friction effects
+ */
+cl_double4 implicitFriction(
+	cl_double4		pCellState,
+	cl_double		dBedElevation,
+	cl_double		dManningCoefficient,
+	cl_double		dLclTimestep
+	)
+{
+	__private cl_double		dDepth, dQ;
+
+	// Calculate depth and composite discharge
+	dQ = sqrt(pCellState.z * pCellState.z + pCellState.w * pCellState.w);
+	dDepth = pCellState.x - dBedElevation;
+
+	// Low discharge or low depth means don't bother
+	if (dDepth < VERY_SMALL || dQ < VERY_SMALL) return pCellState;
+
+	// Coefficient of friction, etc. See Liang (2010)
+	__private cl_double		dCf = (GRAVITY * dManningCoefficient * dManningCoefficient) / (pow((cl_double)dDepth, (cl_double)(1.0 / 3.0)));
+	__private cl_double		dSfx = (-dCf / (dDepth * dDepth)) * pCellState.z * dQ;
+	__private cl_double		dSfy = (-dCf / (dDepth * dDepth)) * pCellState.w * dQ;
+	__private cl_double		dDx = 1.0 + dLclTimestep * (dCf / (dDepth * dDepth)) * (2 * (pCellState.z * pCellState.z) + (pCellState.w * pCellState.w)) / dQ;
+	__private cl_double		dDy = 1.0 + dLclTimestep * (dCf / (dDepth * dDepth)) * ((pCellState.z * pCellState.z) + 2 * (pCellState.w * pCellState.w)) / dQ;
+	__private cl_double		dFx = dSfx / dDx;
+	__private cl_double		dFy = dSfy / dDy;
+
+	// Friction can only stop flow, not reverse it
+	if (pCellState.z >= 0.0)
+	{
+		if (dFx < -pCellState.z / dLclTimestep) dFx = -pCellState.z / dLclTimestep;
+	}
+	else {
+		if (dFx > -pCellState.z / dLclTimestep) dFx = -pCellState.z / dLclTimestep;
+	}
+	if (pCellState.w >= 0.0)
+	{
+		if (dFy < -pCellState.w / dLclTimestep) dFy = -pCellState.w / dLclTimestep;
+	}
+	else {
+		if (dFy > -pCellState.w / dLclTimestep) dFy = -pCellState.w / dLclTimestep;
+	}
+
+	// Update and commit data
+	pCellState.z = pCellState.z + dLclTimestep * dFx;
+	pCellState.w = pCellState.w + dLclTimestep * dFy;
+
+	return pCellState;
+}
+
+/*
+ *  Adjust the discharge with regard to friction
+ */
+__kernel  REQD_WG_SIZE_FULL_TS
+void per_Friction( 
+		__constant cl_double *  	dTimestep,
+		__global cl_double4 *  	pCellData,
+		__global cl_double *  	dBedData,
+		__global cl_double *  	dManningData,
+		__global cl_double *  	dTime			// TODO: Remove this, only required for temp rain
+	)
+{
+	__private cl_double		dLclTimestep	= *dTimestep;
+	__private cl_long		lIdxX			= get_global_id(0);
+	__private cl_long		lIdxY			= get_global_id(1);
+	__private cl_ulong		ulIdx;
+
+	__private cl_double4	pCellState;
+	__private cl_double		dBedElevation;
+	__private cl_double		dManningCoefficient;
+
+	// Don't bother if we've gone beyond the domain bounds
+	if ( lIdxX >= DOMAIN_COLS - 1 || lIdxY >= DOMAIN_ROWS - 1 || lIdxX == 0 || lIdxY == 0 ) 
+		return;
+
+	// Also don't bother if we've gone beyond the total simulation time
+	if ( dLclTimestep <= 0.0 )
+		return;
+
+	ulIdx = getCellID(lIdxX, lIdxY);
+	pCellState			= pCellData[ ulIdx ];
+	dBedElevation		= dBedData[ ulIdx ];
+	dManningCoefficient	= dManningData[ ulIdx ];
+
+	if ( pCellState.x - dBedElevation < VERY_SMALL ) 
+		return;
+
+	pCellState = implicitFriction(
+		pCellState,
+		dBedElevation,
+		dManningCoefficient,
+		dLclTimestep
+	);
+
+	// TODO: Remvoe this
+	// TEMPORARY ONLY
+	// Introduce some rainfall to the domain at 10mm/hr
+	//pCellState.x += 0.060/3600 * dLclTimestep;
+
+	pCellData[ ulIdx ]	= pCellState;
+}
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  HLLC APPROXIMATE RIEMANN SOLVER
+ * ------------------------------------------
+ *  Implementation of the approximate HLLC
+ *  Riemann solver for the GPU.
+ * ------------------------------------------
+ *
+ */
+
+/*
+ *  Calculate an approximate solution to the Riemann problem
+ *  at the cell interface using the HLLC approach.
+ */
+cl_double4 riemannSolver(
+	cl_uchar	ucDirection,
+	cl_double8		pLeft,
+	cl_double8		pRight,
+	bool		bDebug
+	)
+{
+	uint2		uiDirectionVector;
+	cl_double	FM_L, FM_R, F1_M, F2_M;
+	cl_double	s_L, s_R, s_M, a_Avg, H_star, U_star, A_star;
+	cl_double4	pFluxL, pFluxR, pFlux;
+	cl_double2	dVel, dDis, dA;
+	bool		bLeft, bRight, bMiddle_1, bMiddle_2;
+
+#ifdef USE_ALTERNATE_CONSTRUCTS
+	uiDirectionVector = ( ( ucDirection == DOMAIN_DIR_N || ucDirection == DOMAIN_DIR_S ) ? (uint2){0,1} : (uint2){1,0} );
+
+	// Are both sides dry? Simple solution if so...
+	if (pLeft.S1 < VERY_SMALL && pRight.S1 < VERY_SMALL)
+	{
+		pFlux = (cl_double4){
+			0.0,
+				uiDirectionVector.S0 * 0.5 * GRAVITY * (
+				((pLeft.S0 + pRight.S0) / 2) * ((pLeft.S0 + pRight.S0) / 2) -
+				pLeft.S6 * (pLeft.S0 + pRight.S0)
+				),
+				uiDirectionVector.S1 * 0.5 * GRAVITY * (
+				((pLeft.S0 + pRight.S0) / 2) * ((pLeft.S0 + pRight.S0) / 2) -
+				pLeft.S6 * (pLeft.S0 + pRight.S0)
+				),
+				0.0
+		};
+
+		return pFlux;
+	}
+#else
+	uiDirectionVector = ((ucDirection == DOMAIN_DIR_N || ucDirection == DOMAIN_DIR_S) ? (uint2)(0, 1) : (uint2)(1, 0));
+
+	// Are both sides dry? Simple solution if so...
+	if (pLeft.S1 < VERY_SMALL && pRight.S1 < VERY_SMALL)
+	{
+		pFlux = (cl_double4)(
+			0.0,
+			uiDirectionVector.S0 * 0.5 * GRAVITY * (
+			((pLeft.S0 + pRight.S0) / 2) * ((pLeft.S0 + pRight.S0) / 2) -
+			pLeft.S6 * (pLeft.S0 + pRight.S0)
+			),
+			uiDirectionVector.S1 * 0.5 * GRAVITY * (
+			((pLeft.S0 + pRight.S0) / 2) * ((pLeft.S0 + pRight.S0) / 2) -
+			pLeft.S6 * (pLeft.S0 + pRight.S0)
+			),
+			0.0
+			);
+
+		return pFlux;
+	}
+#endif
+
+	// Is one side dry?
+	// -> Left
+	pLeft.S4 = (pLeft.S1 < VERY_SMALL ? 0.0 : pLeft.S2 / pLeft.S1);
+	pLeft.S5 = (pLeft.S1 < VERY_SMALL ? 0.0 : pLeft.S3 / pLeft.S1);
+
+	// -> Right
+	pRight.S4 = (pRight.S1 < VERY_SMALL ? 0.0 : pRight.S2 / pRight.S1);
+	pRight.S5 = (pRight.S1 < VERY_SMALL ? 0.0 : pRight.S3 / pRight.S1);
+
+	// Prerequisite calculations
+#ifdef USE_ALTERNATE_CONSTRUCTS
+	dVel    = (cl_double2){
+			uiDirectionVector.S0 * pLeft.S4 + uiDirectionVector.S1 * pLeft.S5,				// Left
+			uiDirectionVector.S0 * pRight.S4 + uiDirectionVector.S1 * pRight.S5				// Right
+		};
+	dDis = (cl_double2){
+			uiDirectionVector.S0 * pLeft.S2 + uiDirectionVector.S1 * pLeft.S3,				// Left
+			uiDirectionVector.S0 * pRight.S2 + uiDirectionVector.S1 * pRight.S3				// Right
+		};
+	dA = (cl_double2){
+			sqrt(GRAVITY * pLeft.S1),														// Left
+			sqrt(GRAVITY * pRight.S1)														// Right
+		};
+#else
+	dVel    = (cl_double2)( 
+				uiDirectionVector.S0 * pLeft.S4   + uiDirectionVector.S1 * pLeft.S5,		// Left
+				uiDirectionVector.S0 * pRight.S4  + uiDirectionVector.S1 * pRight.S5		// Right
+			);
+	dDis    = (cl_double2)( 
+				uiDirectionVector.S0 * pLeft.S2   + uiDirectionVector.S1 * pLeft.S3,		// Left
+				uiDirectionVector.S0 * pRight.S2  + uiDirectionVector.S1 * pRight.S3		// Right
+			);
+	dA      = (cl_double2)( 
+				sqrt( GRAVITY * pLeft.S1  ),												// Left
+				sqrt( GRAVITY * pRight.S1 )													// Right
+			);
+#endif
+
+	a_Avg	= ( dA.S0   + dA.S1   ) / 2;
+	H_star	= ( ( a_Avg + ( dVel.S0 - dVel.S1 )/4 ) * ( a_Avg + ( dVel.S0 - dVel.S1 )/4 ) ) / GRAVITY;
+	U_star	= ( dVel.S0 + dVel.S1 ) / 2 + dA.S0 - dA.S1;
+	A_star	= sqrt( GRAVITY * H_star );
+
+	// Calculate speed estimates
+	if ( pLeft.S1 < VERY_SMALL )
+	{
+		s_L = dVel.S1 - 2 * dA.S1;
+	} else {
+		s_L = ( ( ( dVel.S0 - dA.S0 ) > (U_star - A_star) ) ? ( U_star - A_star ) : ( dVel.S0 - dA.S0 ) );
+	}
+	if ( pRight.S1 < VERY_SMALL )
+	{
+		s_R = dVel.S0 + 2 * dA.S0;
+	} else {
+		s_R = ( ( ( dVel.S1 + dA.S1 ) < ( U_star + A_star ) ) ? ( U_star + A_star ) : ( dVel.S1 + dA.S1 ) );
+	}
+	s_M = ( s_L * pRight.S1 * ( dVel.S1 - s_R ) - s_R * pLeft.S1 * ( dVel.S0-s_L ) ) /
+			( pRight.S1 * ( dVel.S1 - s_R ) - pLeft.S1 * ( dVel.S0 - s_L ) );
+
+	// Flux on left and right
+#ifdef USE_ALTERNATE_CONSTRUCTS
+	pFluxL		= (cl_double4){
+						dDis.S0,
+						dVel.S0 * pLeft.S2 + uiDirectionVector.S0 * 0.5 * GRAVITY * ( pLeft.S0*pLeft.S0 - 2 * pLeft.S6 * pLeft.S0 ),
+						dVel.S0 * pLeft.S3 + uiDirectionVector.S1 * 0.5 * GRAVITY * ( pLeft.S0*pLeft.S0 - 2 * pLeft.S6 * pLeft.S0 ),
+						0.0
+					};
+	pFluxR		= (cl_double4){
+						dDis.S1,
+						dVel.S1 * pRight.S2 + uiDirectionVector.S0 * 0.5 * GRAVITY * ( pRight.S0*pRight.S0 - 2 * pLeft.S6 * pRight.S0 ),
+						dVel.S1 * pRight.S3 + uiDirectionVector.S1 * 0.5 * GRAVITY * ( pRight.S0*pRight.S0 - 2 * pLeft.S6 * pRight.S0 ),
+						0.0
+					};
+#else
+	pFluxL = (cl_double4)(
+		dDis.S0,
+		dVel.S0 * pLeft.S2 + uiDirectionVector.S0 * 0.5 * GRAVITY * (pLeft.S0*pLeft.S0 - 2 * pLeft.S6 * pLeft.S0),
+		dVel.S0 * pLeft.S3 + uiDirectionVector.S1 * 0.5 * GRAVITY * (pLeft.S0*pLeft.S0 - 2 * pLeft.S6 * pLeft.S0),
+		0.0
+		);
+	pFluxR = (cl_double4)(
+		dDis.S1,
+		dVel.S1 * pRight.S2 + uiDirectionVector.S0 * 0.5 * GRAVITY * (pRight.S0*pRight.S0 - 2 * pLeft.S6 * pRight.S0),
+		dVel.S1 * pRight.S3 + uiDirectionVector.S1 * 0.5 * GRAVITY * (pRight.S0*pRight.S0 - 2 * pLeft.S6 * pRight.S0),
+		0.0
+		);
+#endif
+
+	// Selection of the final result
+	bLeft			= s_L >= 0.0;
+	bMiddle_1		= s_L <  0.0 && s_R >= 0.0 && s_M >= 0.0;
+	bMiddle_2		= s_L <  0.0 && s_R >= 0.0 && !bMiddle_1;
+	bRight			= !bLeft && !bMiddle_1 && !bMiddle_2;
+
+	if ( bLeft )  
+	{
+		#ifdef DEBUG_OUTPUT
+		if ( bDebug )
+		{
+			printf( "(Dir %i) Using left fluxes\n", ucDirection );
+		}
+		#endif
+		return pFluxL;
+	}
+	if ( bRight ) 
+	{
+		#ifdef DEBUG_OUTPUT
+		if ( bDebug )
+		{
+			printf( "(Dir %i) Using right fluxes\n", ucDirection );
+		}
+		#endif
+		return pFluxR;
+	}
+
+	FM_L	= uiDirectionVector.S0 * pFluxL.y + uiDirectionVector.S1 * pFluxL.z;
+	FM_R	= uiDirectionVector.S0 * pFluxR.y + uiDirectionVector.S1 * pFluxR.z;
+	F1_M	= ( s_R * pFluxL.x - s_L * pFluxR.x + s_L * s_R * ( pRight.S0 - pLeft.S0 ) ) / ( s_R - s_L );
+	F2_M	= ( s_R * FM_L     - s_L * FM_R     + s_L * s_R * ( dDis.S1   - dDis.S0  ) ) / ( s_R - s_L );
+
+#ifdef USE_ALTERNATE_CONSTRUCTS
+	if ( bMiddle_1 )
+	{
+		pFlux = (cl_double4){
+			F1_M,
+			uiDirectionVector.S0 * F2_M + uiDirectionVector.S1 * F1_M * pLeft.S4,
+			uiDirectionVector.S0 * F1_M * pLeft.S5 + uiDirectionVector.S1 * F2_M,
+			0.0
+		};
+	}
+
+	if (bMiddle_2)
+	{
+		pFlux = (cl_double4){
+			F1_M,
+			uiDirectionVector.S0 * F2_M + uiDirectionVector.S1 * F1_M * pRight.S4,
+			uiDirectionVector.S0 * F1_M * pRight.S5 + uiDirectionVector.S1 * F2_M,
+			0.0
+		};
+	}
+#else
+	if ( bMiddle_1 )
+	{
+		pFlux = (cl_double4)(
+			F1_M,
+			uiDirectionVector.S0 * F2_M + uiDirectionVector.S1 * F1_M * pLeft.S4,
+			uiDirectionVector.S0 * F1_M * pLeft.S5 + uiDirectionVector.S1 * F2_M,
+			0.0
+		);
+	}
+
+	if ( bMiddle_2 )
+	{
+		pFlux = (cl_double4)(
+			F1_M,
+			uiDirectionVector.S0 * F2_M + uiDirectionVector.S1 * F1_M * pRight.S4,
+			uiDirectionVector.S0 * F1_M * pRight.S5 + uiDirectionVector.S1 * F2_M,
+			0.0
+		);
+	}
+#endif
+
+	return pFlux;
+}
+/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  CFL DYNAMIC TIMESTEP
+ * ------------------------------------------
+ *  Calculate the timestep using a reduction
+ *  procedure and increment the total model 
+ *  time.
+ * ------------------------------------------
+ *
+ */
+
+/*
+ *  Advance the total model time by the timestep specified
+ */
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_Advance_Normal( 
+		__global cl_double *  	dTime,
+		__global cl_double *  	dTimestep,
+		__global cl_double *  	dTimeHydrological,
+		__global cl_double *  	pReductionData,
+		__global cl_double4 *  	pCellData,
+		__global cl_double *  	dBedData,
+		__global cl_double *  	dTimeSync,
+		__global cl_double *  	dBatchTimesteps,
+		__global cl_uint *  		uiBatchSuccessful,
+		__global cl_uint *  		uiBatchSkipped
+	)
+{
+	__private cl_double	dLclTime			 = *dTime;
+	__private cl_double	dLclTimestep		 = fmax( 0.0, *dTimestep );
+	__private cl_double	dLclTimeHydrological = *dTimeHydrological;
+	__private cl_double	dLclSyncTime		 = *dTimeSync;
+	__private cl_double dLclBatchTimesteps	 = *dBatchTimesteps;
+	__private cl_uint uiLclBatchSuccessful	 = *uiBatchSuccessful;
+	__private cl_uint uiLclBatchSkipped		 = *uiBatchSkipped;
+
+	// Increment total time (only ever referenced in this kernel)
+	dLclTime += dLclTimestep;
+	dLclBatchTimesteps += dLclTimestep;
+
+	if ( dLclTimestep > 0.0 )
+	{
+		uiLclBatchSuccessful++;
+	} else {
+		uiLclBatchSkipped++;
+	}
+
+	// Hydrological processes run with their own timestep which is larger
+	if (dLclTimeHydrological > TIMESTEP_HYDROLOGICAL)
+	{
+		dLclTimeHydrological = dLclTimestep;
+	} else {
+		dLclTimeHydrological += dLclTimestep;
+	}
+
+	#ifdef TIMESTEP_DYNAMIC
+
+	__private cl_double dCellSpeed, dMaxSpeed;
+	__private cl_double dMinTime;
+
+	dCellSpeed = 0.0;
+	dMaxSpeed  = 0.0;
+	for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
+	{
+		dCellSpeed = pReductionData[i];
+		if ( dCellSpeed > dMaxSpeed ) 
+			dMaxSpeed = dCellSpeed;
+	}
+
+	// Convert velocity to a time (assumes domain deltaX=deltaY here)
+	// Force progression at the start of a simulation.
+	dMinTime = DOMAIN_DELTAX/dMaxSpeed;
+	if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM)
+		dMinTime = TIMESTEP_START_MINIMUM;
+
+	// Multiply by the Courant number
+	dLclTimestep = COURANT_NUMBER * dMinTime;
+
+	#endif
+	#ifdef TIMESTEP_FIXED
+
+	dLclTimestep = TIMESTEP_FIXED;
+
+	#endif
+
+	// Don't exceed the output interval
+	// but also don't stop things at the start
+	// Also don't exceed the synchronisation time
+	/*
+	if ( fmod( dLclTime, SCHEME_OUTPUTTIME ) < 1E-7 && dLclTime > 0.5 )
+	{
+		dLclTimestep = 0.0;
+	} else {
+		if ( ( dLclTime + dLclTimestep ) > ( trunc( dLclTime / SCHEME_OUTPUTTIME ) + 1 ) * SCHEME_OUTPUTTIME )
+			dLclTimestep = ( ( trunc( dLclTime / SCHEME_OUTPUTTIME ) + 1 ) * SCHEME_OUTPUTTIME ) - dLclTime;
+	}
+	*/
+
+	// Impose a minimum timestep
+	if (dLclTimestep > 0.0 && dLclTimestep < TIMESTEP_MINIMUM)
+		dLclTimestep = TIMESTEP_MINIMUM;
+
+	// Don't exceed the sync time
+	// A negative timestep suspends simulation but allows the value to be used
+	// back on the host.
+	if ( ( dLclTime + dLclTimestep ) >= dLclSyncTime )
+	{
+		if ( dLclSyncTime - dLclTime > VERY_SMALL )
+			dLclTimestep = dLclSyncTime - dLclTime;
+		if ( dLclSyncTime - dLclTime <= VERY_SMALL )
+			dLclTimestep = -dLclTimestep;
+	}
+
+	// Control the timestep initially to ensure it's not silly, because
+	// boundary conditions may only just be kicking in (i.e. dry domain)
+	if (dLclTime < TIMESTEP_EARLY_LIMIT_DURATION && dLclTimestep > TIMESTEP_EARLY_LIMIT)
+		dLclTimestep = TIMESTEP_EARLY_LIMIT;
+
+	// Don't exceed the total simulation time
+	if ( ( dLclTime + dLclTimestep ) > SCHEME_ENDTIME )
+		dLclTimestep = SCHEME_ENDTIME - dLclTime;
+
+	// A sensible maximum timestep
+	if (dLclTimestep > TIMESTEP_MAXIMUM)
+		dLclTimestep = TIMESTEP_MAXIMUM;
+
+	// Commit to global memory
+	*dTime			   = dLclTime;
+	*dTimestep		   = dLclTimestep;
+	*dTimeHydrological = dLclTimeHydrological;
+	*dBatchTimesteps   = dLclBatchTimesteps;
+	*uiBatchSuccessful = uiLclBatchSuccessful;
+	*uiBatchSkipped    = uiLclBatchSkipped;
+}
+
+/*
+ *  Advance the total model time by the timestep specified
+ */
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_ResetCounters ( 
+		__global cl_double *  	dBatchTimesteps,
+		__global cl_uint *  	uiBatchSuccessful,
+		__global cl_uint *  	uiBatchSkipped
+	)
+{
+	*uiBatchSuccessful = 0;
+	*uiBatchSkipped = 0;
+	*dBatchTimesteps = 0.0;
+}
+
+/*
+ *  Reduce the timestep by calculating for each workgroup
+ */
+__kernel  REQD_WG_SIZE_LINE
+void tst_Reduce( 
+		__global cl_double4 *  			pCellData,
+		__global cl_double const * restrict	dBedData,
+		__global cl_double *  			pReductionData
+	)
+{
+	__local cl_double pScratchData[ TIMESTEP_GROUPSIZE ];
+
+	// Get global ID for cell
+	cl_uint		uiLocalID		= get_local_id(0);
+	cl_uint		uiLocalSize		= get_local_size(0);
+	
+	cl_ulong	ulCellID		= get_global_id(0);
+	cl_double4	pCellState;
+	cl_double	dBedElevation;
+	cl_double	dCellSpeed, dDepth, dVelX, dVelY;
+	cl_double	dMaxSpeed		= 0.0;
+
+	while ( ulCellID < DOMAIN_CELLCOUNT )
+	{
+		// Calculate the velocity...
+		pCellState		= pCellData[ ulCellID ];
+		dBedElevation	= dBedData[ ulCellID ];
+		
+		dDepth = pCellState.x - dBedElevation;
+		
+		if ( dDepth > QUITE_SMALL && pCellState.y > -9999.0 )
+		{
+			#ifndef TIMESTEP_SIMPLIFIED
+
+			dVelX = pCellState.z / dDepth;
+			dVelY = pCellState.w / dDepth;
+			if ( dVelX < 0.0 ) dVelX = -dVelX;
+			if ( dVelY < 0.0 ) dVelY = -dVelY;
+
+			dVelX += sqrt( GRAVITY * dDepth );
+			dVelY += sqrt( GRAVITY * dDepth );
+
+			#else
+
+			dVelX = sqrt( GRAVITY * dDepth );
+			dVelY = sqrt( GRAVITY * dDepth );
+
+			#endif
+			dCellSpeed = ( dVelX  < dVelY ) ? dVelY : dVelX;
+
+		} else {
+			dCellSpeed = 0.0;
+		}
+
+		// Is this velocity higher, therefore a greater time constraint?
+		if ( dCellSpeed > dMaxSpeed ) 
+			dMaxSpeed = dCellSpeed;
+
+		// Move on to the next cell
+		ulCellID += get_global_size(0);
+	}
+
+	// Commit to local memory
+	pScratchData[ uiLocalID ] = dMaxSpeed;
+
+	// No progression until scratch memory is fully populated
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// 2nd stage of the reduction process
+	// Funnelling style operation from the center
+	for( int iOffset = uiLocalSize / 2;
+			 iOffset > 0;
+			 iOffset = iOffset / 2 )
+	{
+		if ( uiLocalID < iOffset )
+		{
+			cl_double	dComparison   = pScratchData[ uiLocalID + iOffset ];
+			cl_double	dMine		  = pScratchData[ uiLocalID ];
+			pScratchData[ uiLocalID ] = ( dMine < dComparison ) ? dComparison: dMine;
+		} 
+		barrier(CLK_LOCAL_MEM_FENCE);
+	}
+
+	// Only one workgroup to update the time
+	if ( uiLocalID == 0 )
+		pReductionData[ get_group_id(0) ] = pScratchData[ 0 ];
+}
+
+/*
+ *  Update the timestep after a synchronisation or rollback
+ *  Reduction will have been carried out again first.
+ */
+__kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
+void tst_UpdateTimestep( 
+		__global cl_double *  	dTime,
+		__global cl_double *  	dTimestep,
+		__global cl_double *  	pReductionData,
+		__global cl_double *  	dTimeSync,
+		__global cl_double *  	dBatchTimesteps
+	)
+{
+	__private cl_double	dLclTime			 = *dTime;
+	__private cl_double	dLclOriginalTimestep = fabs(*dTimestep);
+	__private cl_double	dLclSyncTime		 = *dTimeSync;
+	__private cl_double dLclBatchTimesteps	 = *dBatchTimesteps;
+	__private cl_double dLclTimestep;
+
+	#ifdef TIMESTEP_DYNAMIC
+
+	__private cl_double dCellSpeed, dMaxSpeed;
+	__private cl_double dMinTime;
+
+	dCellSpeed = 0.0;
+	dMaxSpeed  = 0.0;
+	for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
+	{
+		dCellSpeed = pReductionData[i];
+		if ( dCellSpeed > dMaxSpeed ) 
+			dMaxSpeed = dCellSpeed;
+	}
+
+	// Convert velocity to a time (assumes domain deltaX=deltaY here)
+	// Force progression at the start of a simulation.
+	dMinTime = DOMAIN_DELTAX/dMaxSpeed;
+	
+	if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM)
+		dMinTime = TIMESTEP_START_MINIMUM;
+
+	// Multiply by the Courant number
+	dLclTimestep = COURANT_NUMBER * dMinTime;
+
+	#endif
+
+	// We only adjust the timestep if it's SMALLER than our original
+	// which already accounted for sync points etc.
+	// TODO: Force time advancing if necessary instead of calling this...
+	dLclTimestep = fmin(dLclTimestep, dLclOriginalTimestep);
+	dLclBatchTimesteps  = dLclBatchTimesteps - dLclOriginalTimestep + dLclTimestep;
+
+	// Don't exceed the early limit
+	if (dLclTime < TIMESTEP_EARLY_LIMIT_DURATION && dLclTimestep > TIMESTEP_EARLY_LIMIT)
+		dLclTimestep = TIMESTEP_EARLY_LIMIT;
+	
+	// Don't exceed the sync time
+	if ((dLclTime + dLclTimestep) >= dLclSyncTime)
+		dLclTimestep = fmax((cl_double)0.0, dLclSyncTime - dLclTime);
+
+	// A sensible maximum timestep
+	if (dLclTimestep > TIMESTEP_MAXIMUM)
+		dLclTimestep = TIMESTEP_MAXIMUM;
+
+	// Commit to global memory
+	*dTimestep		   = dLclTimestep;
+	*dBatchTimesteps   = dLclBatchTimesteps;
+}
+/*
+ * ------------------------------------------
+ *
+ *  Created:	23.05.2023
+ *  By:			Alaa Mroue
+ *  			Version 01
+ *	Based on CLSchemeGodunov.clc by Luke S. Smith and Qiuhua Liang
+ * ------------------------------------------
+ *
+ */
+ 
+/*
+ *  Calculate everything without using LDS caching
+ */
+__kernel REQD_WG_SIZE_FULL_TS
+void solverFunctionPromaides ( 
+			__constant	cl_double *  				dTimestep,						// Timestep
+			__global	cl_double const * restrict	dBedElevation,					// Bed elevation
+			__global	cl_double4 *  				pCellStateSrc,					// Current cell state data
+			__global	cl_double4 *  				pCellStateDst,					// Current cell state data
+			__global	cl_double const * restrict	dManning						// Manning values
+		)
+{
+
+
+	// Identify the cell we're reconstructing (no overlap)
+	__private cl_long					lIdxX			= get_global_id(0);
+	__private cl_long					lIdxY			= get_global_id(1);
+	__private cl_ulong					ulIdx, ulIdxNeigN, ulIdxNeigE;;
+	__private cl_uchar					ucDirection;
+	
+	ulIdx = getCellID(lIdxX, lIdxY);
+
+	__private cl_double		dLclTimestep	= *dTimestep;
+	__private cl_double		dManningCoef;
+	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE;
+	__private cl_double		opt_h,opt_hN,opt_hE, opt_cx, opt_z, opt_s,opt_zxmax,opt_zymax, opt_cy, opt_sE, opt_sN, v_x, v_y;
+	__private cl_double4	pCellData,pNeigDataN,pNeigDataE;					// Z, Zmax, Qx, Qy
+	__private cl_double4	pSourceTerms,		dDeltaValues;										// Z, Qx, Qy
+	__private cl_double4	pFlux[4];																// Z, Qx, Qy
+	__private cl_double8	pLeft,				pRight;												// Z, H, Qx, Qy, U, V, Zb
+	
+
+	__private cl_uchar		ucStop				=	0;
+	__private cl_uchar		ucDryCount			=	0;
+	__private cl_double		ds_dt_data			=	0.0;
+	__private cl_double		ds_dt_dataE			=	0.0;
+	__private cl_double		ds_dt_dataN			=	0.0;
+	__private cl_double		flow_depth			=	0.0;
+	__private cl_double		flow_depth_neigh	=	0.0;
+	__private cl_double		delta_h				=	0.0;
+	__private cl_double		abs_delta_h			=	0.0;
+	__private cl_double		ds_dt_buff			=	0.0;
+	__private cl_double		reduction_term		=	0.0;
+	__private cl_char flowStates = 0;
+	
+	//TODO: Alaa 
+	//This would be passed as a variable
+	flowStates |= (true << 0); 
+	flowStates |= (false << 1);
+	flowStates |= (false << 2);
+	flowStates |= (false << 3); 
+	flowStates |= (false << 4);  
+
+	bool isFlowElement = (flowStates >> 0) & 1;
+	bool noflow_x = (flowStates >> 1) & 1;
+	bool noflow_y = (flowStates >> 2) & 1;
+	bool opt_pol_x = (flowStates >> 3) & 1;
+	bool opt_pol_y = (flowStates >> 4) & 1;
+
+	if (lIdxX==9) {
+		noflow_x = true;
+	}
+	if (lIdxY==9){
+		noflow_y = true;
+	}
+
+	// Also don't bother if we've gone beyond the total simulation time
+	if (dLclTimestep <= 0.0)
+	{
+		// TODO: Is there a way of avoiding this?!
+		pCellStateDst[ulIdx] = pCellStateSrc[ulIdx];
+		return;
+	}
+
+	// Load cell data
+	dCellBedElev		= dBedElevation[ ulIdx ];
+	pCellData			= pCellStateSrc[ ulIdx ];
+	dManningCoef		= dManning[ ulIdx ];
+
+	// Cell disabled?
+	if ( pCellData.y <= -9999.0 || pCellData.x == -9999.0 )
+	{
+		pCellStateDst[ ulIdx ] = pCellData;
+		return;
+	}
+
+
+	#ifdef DEBUG_OUTPUT
+	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
+	{	
+
+	}
+	#endif
+	
+	ulIdxNeigN = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
+	dNeigBedElevN	= dBedElevation [ ulIdxNeigN ];
+	pNeigDataN		= pCellStateSrc	[ ulIdxNeigN ];
+
+	ulIdxNeigE = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_E);
+	dNeigBedElevE	= dBedElevation [ ulIdxNeigE ];
+	pNeigDataE		= pCellStateSrc	[ ulIdxNeigE ];
+
+
+	//All neighbours are dry? Don't bother calculating
+	if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
+	if ( ucDryCount >= 3 ) return;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//set data
+opt_z = dCellBedElev;
+if(isFlowElement){
+	opt_h = 0.0;
+	opt_s = opt_z;
+}else{
+	opt_h = pCellData.x  - opt_z;
+	opt_s = pCellData.x;
+
+}
+
+//Add Boundry and couple conditions
+//ds_dt_data = bound_cond_dsdt + coup_cond_dsdt;
+ds_dt_data=0;
+ds_dt_dataN=0;
+ds_dt_dataE=0;
+
+
+//opt_h = pCellData.x  - dCellBedElev;
+opt_hN = pNeigDataN.x - dNeigBedElevN;
+opt_hE = pNeigDataE.x - dNeigBedElevE;
+
+opt_sN = pNeigDataN.x;
+opt_sE = pNeigDataE.x;
+
+
+opt_zxmax = dCellBedElev > dNeigBedElevE ? dCellBedElev : dNeigBedElevE;
+opt_zymax = dCellBedElev > dNeigBedElevN ? dCellBedElev : dNeigBedElevN;
+
+///Summarized flowparameter in x-direction [calculation variables]
+//this->c_x = (1.0/this->flow_data.n_value+1.0/this->element_x->get_flow_data().n_value)*0.5;
+// Not correct?
+
+opt_cx = 0.034965034965034968;
+opt_cy = 0.034965034965034968;
+
+if(isFlowElement){
+	return;
+
+//in x-direction
+if(!noflow_x){
+	if(!opt_pol_x){
+
+		//manning x
+		if(opt_h > VERY_SMALL || opt_hE > VERY_SMALL){
+
+			flow_depth= opt_s - opt_zxmax;
+			if(flow_depth <0.0){
+				flow_depth=0.0;
+			}
+			flow_depth_neigh= opt_sE - opt_zxmax;
+			if(flow_depth_neigh<0.0){
+				flow_depth_neigh=0.0;
+			}
+
+			flow_depth=max(flow_depth,flow_depth_neigh);
+
+			v_x=0;
+			ds_dt_buff=0;
+			if(flow_depth > VERY_SMALL){
+				//diffusive wave
+				delta_h= opt_sE - opt_s;
+				abs_delta_h=fabs(delta_h);
+
+				if(abs_delta_h > VERY_SMALL){
+					ds_dt_buff= opt_cx * pow(flow_depth, (5.0/3.0));
+
+					if(abs_delta_h<=0.005078){
+						ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+					}
+					else{
+						ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
+					}
+
+					//set the result
+					ds_dt_data = ds_dt_data + ds_dt_buff;
+					ds_dt_dataE = ds_dt_dataE - ds_dt_buff;
+					v_x= -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
+				}
+			}
+		}
+	}else{
+		flow_depth		 =  opt_s - opt_zxmax;
+		flow_depth_neigh =  opt_sE- opt_zxmax;
+
+		v_x = 0.0;
+		//noFlow
+		if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
+			ds_dt_buff=0.0;
+		}
+		else{ //Flow
+			//flow out of this element without submerged weirflow reduction into the neihgbouring element
+			if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
+				ds_dt_buff = -1.0 * Cfacweir * opt_cx * pow(flow_depth, (3.0/2.0));
+
+				v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
+			}
+			//flow out of the neighbouring element without submerged weirflow reduction into this element
+			else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
+
+				ds_dt_buff = Cfacweir * opt_cx * pow(flow_depth_neigh,(3.0/2.0));
+				v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
+			}
+			//submerged weirflow with reduction
+			else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
+				//flow out of this element into the neihgbouring element
+				if(flow_depth>flow_depth_neigh){
+					ds_dt_buff = Cfacweir * opt_cx * pow(flow_depth,(3.0/2.0));
+					//reduction of the discharge (submerged weirflow)
+					reduction_term = (1.0-flow_depth_neigh/flow_depth);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term <= 0.000463529){
+						ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+					}
+					else{
+						ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
+					}
+
+					v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
+				}
+				//flow out of the neighbouring element into this element
+				else{
+					ds_dt_buff = Cfacweir * opt_cx * pow(flow_depth_neigh,(3.0/2.0));
+					//reduction of the discharge (submerged weirflow)
+					reduction_term = (1.0 - flow_depth/flow_depth_neigh);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term <= 0.000463529){
+						ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+					}
+					else{
+						ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
+					}
+
+					v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
+				}
+			}
+			//set the result
+			ds_dt_data = ds_dt_data + ds_dt_buff;
+			ds_dt_dataE = ds_dt_dataE - ds_dt_buff;
+		}
+	}
+
+
+}
+		
+//in y-direction
+if(!noflow_y){
+	v_y=0;
+	if(!opt_pol_y){
+
+		if( opt_h > VERY_SMALL ||  opt_hN > VERY_SMALL){
+			//calculate the mid of the flow depth
+			flow_depth= opt_s - opt_zymax;
+			if(flow_depth <0.0){
+				flow_depth=0.0;
+			}
+			flow_depth_neigh= opt_sN - opt_zymax;
+			if(flow_depth_neigh<0.0){
+				flow_depth_neigh=0.0;
+			}
+			//flow_depth=(flow_depth+flow_depth_neigh)*0.5;
+			flow_depth=max(flow_depth,flow_depth_neigh);
+			
+			ds_dt_buff=0;
+			if(flow_depth > VERY_SMALL){
+				//diffusive wave
+				delta_h= opt_sN- opt_s;
+				abs_delta_h=fabs(delta_h);
+
+				if(abs_delta_h > VERY_SMALL){
+					ds_dt_buff= opt_cy*pow(flow_depth, (5.0/3.0));
+
+					if(abs_delta_h<=0.005078){
+						ds_dt_buff *= 0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+					}
+					else{
+						ds_dt_buff *= delta_h/pow(abs_delta_h,0.5);
+					}
+
+					//set the result
+					ds_dt_data	= ds_dt_data + ds_dt_buff;
+					ds_dt_dataN = ds_dt_dataN - ds_dt_buff;
+					v_y			= -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
+				}
+			}
+		}
+	}else{
+		flow_depth = opt_s-opt_zymax;
+		flow_depth_neigh = opt_sN - opt_zymax;
+		
+		//noFlow
+		if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
+			ds_dt_buff=0.0;
+		}
+		//flow
+		else{
+			//flow out of this element without submerged weirflow reduction into the neihgbouring element
+			if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
+				ds_dt_buff=-1.0* Cfacweir *opt_cy*pow(flow_depth,(3.0/2.0));
+				v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
+			}
+			//flow out of the neighbouring element without submerged weirflow reduction into this element
+			else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
+				ds_dt_buff= Cfacweir *opt_cy*pow(flow_depth_neigh,(3.0/2.0));
+				v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
+			}
+			//submerged weirflow with reduction
+			else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
+				//flow out of this element into the neihgbouring element
+				if(flow_depth>flow_depth_neigh){
+					ds_dt_buff= Cfacweir *opt_cy*pow(flow_depth,(3.0/2.0));
+					//reduction of the discharge (submerged weirflow)
+					reduction_term=(1.0-flow_depth_neigh/flow_depth);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term<=0.000463529){
+						ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
+					}
+					else{
+						ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
+					}
+					v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
+				}
+				//flow out of the neighbouring element into this element
+				else{
+					ds_dt_buff= Cfacweir *opt_cy*pow(flow_depth_neigh,(3.0/2.0));
+					//reduction of the discharge (submerged weirflow)
+					reduction_term=(1.0-flow_depth/flow_depth_neigh);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term<=0.000463529){
+						ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
+					}
+					else{
+						ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
+					}
+					v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
+				}
+			}
+
+			//set result data
+			ds_dt_data = ds_dt_data + ds_dt_buff;
+            ds_dt_dataN = ds_dt_dataN - ds_dt_buff;
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/* 
+ * Data:
+ * ds_dt_data	
+ * ds_dt_dataN
+ * ds_dt_dataE
+ * v_x
+ * v_y
+ */
+
+
+	// Update the flow state
+	pCellData.x		= pCellData.x	- dLclTimestep * ds_dt_data;
+	pCellData.z		= pCellData.z	- v_x;
+	pCellData.w		= pCellData.w	- v_y;
+
+	pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
+	pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
+
+	// New max FSL?
+	if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 )
+		pCellData.y = pCellData.x;
+
+	// Crazy low depths?
+	if ( pCellData.x - dCellBedElev < VERY_SMALL )
+		pCellData.x = dCellBedElev;
+
+	// Commit to global memory
+	pCellStateDst[ulIdx] = pCellData;
+	
+	// TODO: Alaa: Probaby a very bad idea
+	// I'm not sure if this works but the idea is that if the destination was greater than zero
+	// then we remove the extra bed elevation value otherwise the next operation will have a 
+	// destination >0 and it will remove it, no? However the overhead on this is very large in 
+	// addition to having to clear the destination array before giving it to the kernel 
+	// which is more overhead considering the additional calcs aren't that much. Keep in mind 
+	// that atomic add isn't supported by all gpus and that we would need to implement it using
+	// cmp exhcange functions
+
+	/*
+	cl_double oldDstValueCell = atomic_add_valuesdfdf(&pCellStateDst[ulIdx].x, pCellData.x);
+	if(oldDstValueCell>pCellData.x*1.5){
+		pCellStateDst[ulIdx].x = pCellStateDst[ulIdx].x - pCellStateSrc[ ulIdx ].x;
+	}
+	cl_double oldDstValueCellN = atomic_add_value(&pCellStateDst[ulIdxNeigN].x, pNeigDataN.x);
+	if(oldDstValueCellN>pCellStateSrc[ ulIdxNeigN ].x*1.5){
+		pCellStateDst[ulIdxNeigN].x = pCellStateDst[ulIdxNeigN].x - pCellStateSrc[ ulIdxNeigN ].x;
+	}
+	cl_double oldDstValueCellE atomic_add_value(&pCellStateDst[ulIdxNeigE].x, pNeigDataE.x);
+	if(oldDstValueCellE>pCellStateSrc[ ulIdxNeigN ].x*1.5){
+		pCellStateDst[ulIdxNeigN].x = pCellStateDst[ulIdxNeigN].x - pCellStateSrc[ ulIdxNeigN ].x;
+	}
+	*/
+
+}/*
+ * ------------------------------------------
+ *
+ *  HIGH-PERFORMANCE INTEGRATED MODELLING SYSTEM (HiPIMS)
+ *  Luke S. Smith and Qiuhua Liang
+ *  luke@smith.ac
+ *
+ *  School of Civil Engineering & Geosciences
+ *  Newcastle University
+ * 
+ * ------------------------------------------
+ *  This code is licensed under GPLv3. See LICENCE
+ *  for more information.
+ * ------------------------------------------
+ *  BOUNDARY CONDITIONS
+ * ------------------------------------------
+ *  Management functions for a domain
+ *  boundaries.
+ * ------------------------------------------
+ *
+ */
+
+__kernel void bdy_Cell (
+	__constant		sBdyCellConfiguration *		pConfiguration,
+	__global		cl_ulong const * restrict	pRelations,
+	__global		cl_double4 const * restrict pTimeseries,
+	__global		cl_double *					pTime,
+	__global		cl_double *					pTimestep,
+	__global		cl_double *					pTimeHydrological,
+	__global		cl_double4 *				pCellState,
+	__global		cl_double *					pCellBed,
+	__global		cl_double *					pCellManning
+	)
+{
+	__private cl_long				lRelationID		= get_global_id(0);
+	__private sBdyCellConfiguration pConfig			= *pConfiguration;
+	__private cl_double				dLocalTime		= *pTime;
+	__private cl_double				dLocalTimestep  = *pTimestep;
+
+	if (lRelationID >= pConfig.RelationCount || dLocalTime >= pConfig.TimeseriesLength || dLocalTimestep <= 0.0)
+		return;
+
+	__private cl_ulong				ulBaseTimestep  = (cl_ulong)floor( dLocalTime / pConfig.TimeseriesInterval );
+	__private cl_ulong				ulNextTimestep  = ulBaseTimestep + 1;
+	__private cl_ulong				ulCellID		= pRelations[lRelationID];
+	__private cl_double4			pCellData		= pCellState[ulCellID];
+	__private cl_double				dCellBed		= pCellBed[ulCellID];
+	__private cl_double4			pTSBase			= pTimeseries[ulBaseTimestep];
+	__private cl_double4			pTSNext			= pTimeseries[ulNextTimestep];
+
+	// Interpolate between timesteps
+	__private cl_double4			pTSInterp = pTSBase + (pTSNext - pTSBase) * ( fmod(dLocalTime, pConfig.TimeseriesInterval ) / pConfig.TimeseriesInterval);
+
+	// Apply depth/fsl
+	if (pConfig.DefinitionDepth == BOUNDARY_DEPTH_IS_DEPTH)
+	{
+		#ifdef DEBUG_OUTPUT
+		printf("Depth is fixed.\n");
+		#endif
+		pCellData.x = dCellBed + pTSInterp.y;			// Depth is fixed
+	}
+	else if (pConfig.DefinitionDepth == BOUNDARY_DEPTH_IS_FSL)
+	{
+		#ifdef DEBUG_OUTPUT
+		printf("FSL is fixed.\n");
+		#endif
+		pCellData.x = fmax(dCellBed, pTSInterp.y);		// FSL is fixed
+	}
+	else
+	{
+		#ifdef DEBUG_OUTPUT
+		printf("Depth and FSL are free.\n");
+		#endif
+		if (fabs(pTSInterp.z) > VERY_SMALL ||
+			fabs(pTSInterp.w) > VERY_SMALL ||
+			pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_VOLUME)
+		{
+			// Calculate a suitable depth based
+			__private cl_double dDepth = (fabs(pTSInterp.z) * dLocalTimestep) / DOMAIN_DELTAY + (fabs(pTSInterp.w) * dLocalTimestep) / DOMAIN_DELTAX;
+			__private cl_double dNormalDepth = fmax(pown(pTSInterp.z, 2) / GRAVITY, pown(pTSInterp.w, 2) / GRAVITY);
+			__private cl_double dCriticalDepth = fmax(pow(pow(pTSInterp.z, 2) / GRAVITY, 1.0 / 3.0), pow(pow(pTSInterp.w, 2) / GRAVITY, 1.0 / 3.0));
+
+			// Not going to impose a direction if we're trying to represent
+			// a surging discharge rate (e.g. manhole surge)
+			if (pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_VOLUME)
+			{
+				// In the case of volume boundaries, no scaling has taken place
+				dNormalDepth = 0.0;
+				dDepth = (fabs(pTSInterp.z) * dLocalTimestep) / (DOMAIN_DELTAX * DOMAIN_DELTAY);
+				dCriticalDepth = 0.0;
+				pTSInterp.z = 0.0;
+				pTSInterp.w = 0.0;
+			}
+			
+			pCellData.x = fmax(dCellBed + dCriticalDepth, pCellData.x + dDepth);
+			
+			#ifdef DEBUG_OUTPUT
+			printf("Setting depth as %f.\n", dDepth);
+			#endif
+		}
+	}
+
+	if (pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_DISCHARGE)
+	{
+		// Apply flow in X direction
+		pCellData.z = pTSInterp.z;
+	}
+	else if (pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_VELOCITY) {
+		// Apply velocity in X direction
+		pCellData.z = pTSInterp.z * (pCellData.x - dCellBed);
+	}
+
+	if (pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_DISCHARGE)
+	{
+		// Apply flow in Y direction
+		pCellData.w = pTSInterp.w;
+	}
+	else if (pConfig.DefinitionDischarge == BOUNDARY_DISCHARGE_IS_VELOCITY) {
+		// Apply velocity in X direction
+		pCellData.w = pTSInterp.w * (pCellData.x - dCellBed);
+	}
+
+	#ifdef DEBUG_OUTPUT
+	printf("Final Cell Data:       { %f, %f, %f, %f }\n", pCellData.x, pCellData.y, pCellData.z, pCellData.w);
+	#endif
+
+	pCellState[ ulCellID ] = pCellData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__kernel void bdy_Uniform(
+	__constant		sBdyUniformConfiguration *	pConfiguration,
+	__global		cl_double2 const * restrict	pTimeseries,
+	__global		cl_double *					pTime,
+	__global		cl_double *					pTimestep,
+	__global		cl_double *					pTimeHydrological,
+	__global		cl_double4 *				pCellState,
+	__global		cl_double *					pCellBed,
+	__global		cl_double *					pCellManning
+	)
+{
+	// Which global series are we processing, and which cell
+	// Global ID is X, Y cell, then Z for the series
+	__private cl_long		lIdxX = get_global_id(0);
+	__private cl_long		lIdxY = get_global_id(1);
+	__private cl_ulong		ulIdx;
+
+	// Don't bother if we've gone beyond the domain bounds
+	if (lIdxX >= DOMAIN_COLS - 1 ||
+		lIdxY >= DOMAIN_ROWS - 1 ||
+		lIdxX <= 0 ||
+		lIdxY <= 0){
+		return;}
+
+	ulIdx = getCellID(lIdxX, lIdxY);
+
+	// How far in to the simulation are we? And current cell data
+	__private sBdyUniformConfiguration	pConfig			= *pConfiguration;
+	__private cl_double4				pCellData		= pCellState[ulIdx];
+	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
+	__private cl_double					dLclTime		= *pTime;
+	__private cl_double					dLclRealTimestep= *pTimestep;
+	__private cl_double					dLclTimestep	= *pTimeHydrological;
+
+	// Hydrological processes have their own timesteps
+	if (dLclTimestep < TIMESTEP_HYDROLOGICAL || dLclRealTimestep <= 0.0)
+		return;
+
+	if ( dLclTime >= pConfig.TimeseriesLength || pCellData.y <= -9999.0 )
+		return;
+
+	// Calculate the right cell and stuff to be grabbing data from here...
+	__private cl_ulong ulTimestep = (cl_ulong)floor(dLclTime / pConfig.TimeseriesInterval);
+	__private cl_double2 dRecord = pTimeseries[ulTimestep];
+
+	//printf("%i %lf %lf %i\n",
+	//pConfig.TimeseriesEntries,
+	//pConfig.TimeseriesInterval,
+	//pConfig.TimeseriesLength,
+	//pConfig.Definition
+	//);
+
+
+	
+	//cl_uint			TimeseriesEntries;
+	//cl_double		TimeseriesInterval;
+	//cl_double		TimeseriesLength;
+	//cl_uint			Definition;
+
+
+
+
+
+	// Apply the value...
+	if (pConfig.Definition == BOUNDARY_UNIFORM_RAIN_INTENSITY)
+		pCellData.x += dRecord.y / 3600000.0 * dLclTimestep;
+		//printf("\ndRecord.y: %lf", dRecord.y);
+
+	if (pConfig.Definition == BOUNDARY_UNIFORM_LOSS_RATE)
+		pCellData.x = max(dCellBedElev, pCellData.x - dRecord.y / 3600000.0 * dLclTimestep);
+
+	// Return to global memory
+	pCellState[ulIdx] = pCellData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__kernel void bdy_Gridded (
+	__constant		sBdyGriddedConfiguration *	pConfiguration,
+	__global		cl_double const * restrict	pTimeseries,
+	__global		cl_double *					pTime,
+	__global		cl_double *					pTimestep,
+	__global		cl_double *					pTimeHydrological,
+	__global		cl_double4 *				pCellState,
+	__global		cl_double *					pCellBed,
+	__global		cl_double *					pCellManning
+	)
+{
+	// Which global series are we processing, and which cell
+	// Global ID is X, Y cell, then Z for the series
+	__private cl_long		lIdxX = get_global_id(0);
+	__private cl_long		lIdxY = get_global_id(1);
+	__private cl_ulong		ulIdx;
+
+	// Don't bother if we've gone beyond the domain bounds
+	if (lIdxX >= DOMAIN_COLS - 1 ||
+		lIdxY >= DOMAIN_ROWS - 1 ||
+		lIdxX <= 0 ||
+		lIdxY <= 0 )
+		return;
+
+	ulIdx = getCellID(lIdxX, lIdxY);
+
+	// How far in to the simulation are we? And current cell data
+	__private sBdyGriddedConfiguration	pConfig			= *pConfiguration;
+	__private cl_double4				pCellData		= pCellState[ulIdx];
+	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
+	__private cl_double					dLclTime		= *pTime;
+	__private cl_double					dLclTimestep	= *pTimeHydrological;
+
+	// Cell disabled?
+	if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
+		return;
+
+	// Hydrological processes have their own timesteps
+	if (dLclTimestep < TIMESTEP_HYDROLOGICAL)
+		return;
+
+	// Calculate the right cell and stuff to be grabbing data from here...
+	__private cl_ulong ulTimestep = (cl_ulong)floor( dLclTime / pConfig.TimeseriesInterval );
+	if ( ulTimestep >= pConfig.TimeseriesEntries ) ulTimestep = pConfig.TimeseriesEntries;
+
+	__private cl_double ulColumn  = floor( ( ( (cl_double)lIdxX * (cl_double)DOMAIN_DELTAX ) - pConfig.GridOffsetX ) / pConfig.GridResolution );
+	__private cl_double ulRow     = floor( ( ( (cl_double)lIdxY * (cl_double)DOMAIN_DELTAY ) - pConfig.GridOffsetY ) / pConfig.GridResolution );
+	__private cl_ulong ulBdyCell  = ( pConfig.GridRows * pConfig.GridCols ) * ulTimestep +
+									( pConfig.GridCols * (cl_ulong)ulRow ) + (cl_ulong)ulColumn;
+	__private cl_double dRate	  = pTimeseries[ ulBdyCell ];
+
+	// Apply the value...
+	if ( pConfig.Definition == BOUNDARY_GRIDDED_RAIN_INTENSITY )
+		pCellData.x += dRate / 3600000.0 * dLclTimestep;
+
+	if ( pConfig.Definition == BOUNDARY_GRIDDED_MASS_FLUX )
+		pCellData.x += dRate / ( (cl_double)DOMAIN_DELTAX * (cl_double)DOMAIN_DELTAY ) * dLclTimestep;
+
+	// Return to global memory
+	pCellState[ulIdx] = pCellData;
+}

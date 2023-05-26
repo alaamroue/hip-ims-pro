@@ -754,7 +754,7 @@ void	CDomainCartesian::readDomain()
 	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
 		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
 			ulCellID = this->getCellID(iCol, iRow);
-			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX);
+			value = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel);
 			//value = this->getBedElevation(ulCellID);
 			//value = this->getBedElevation(ulCellID);
 			//np->setBedElevation(ulCellID, value*pow(10,3));
@@ -762,7 +762,7 @@ void	CDomainCartesian::readDomain()
 	}
 
 	ulCellID = this->getCellID(10, 10);
-	std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX) << std::endl;
+	std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) << std::endl;
 	//np->outputShape();
 
 }

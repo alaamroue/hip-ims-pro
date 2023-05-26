@@ -330,3 +330,73 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 		}
 	}
 }
+
+/*
+ *  Attempt to fill the buffer with zero
+ */
+
+//TODO: Alaa Make this inside of kernel:
+//__kernel void zeroFill(__global double* buffer) {
+//	const int i = get_global_id(0);
+//	buffer[i] = 0.0;
+
+void COCLBuffer::queueFillZero()
+{
+	cl_ulong ulOffset = 0;
+	size_t ulSize = static_cast<size_t>(this->ulSize);
+
+	cl_event	clEvent = NULL;
+
+	pDevice->markBusy();
+
+	// Add a read buffer to the queue (non-blocking)
+	// Calling functions are expected to handle barriers etc.
+	//TODO: Alaa double and float // fix me
+	double zero = 0.0;
+	cl_int iReturn = clEnqueueFillBuffer(
+		this->clQueue,				// Device queue
+		clBuffer,					// Buffer object
+		&zero,						//Pattern
+		sizeof(double),				//Pattern Size
+		ulOffset,					// Offset
+		ulSize,						// Size
+		NULL,						// No. of events in wait list
+		NULL,						// Wait list
+		(fCallbackWrite != NULL && fCallbackWrite != COCLDevice::defaultCallback ? &clEvent : NULL)					// Event pointer
+	);
+
+
+
+	// Did any errors occur?
+	if (iReturn != CL_SUCCESS)
+	{
+		model::doError(
+			"Unable to write to memory buffer for device\n  "
+			+ this->sName + " (" + std::to_string(iReturn) + ")\n"
+			+ "  Offset: " + std::to_string(ulOffset)
+			+ "  Size: " + std::to_string(ulSize)
+			+ "  Buf size: " + std::to_string(this->ulSize),
+			model::errorCodes::kLevelModelStop
+		);
+	}
+
+	// Attach a callback
+	if (fCallbackWrite != NULL && fCallbackWrite != COCLDevice::defaultCallback)
+	{
+		iReturn = clSetEventCallback(
+			clEvent,
+			CL_COMPLETE,
+			fCallbackWrite,
+			&this->uiDeviceID
+		);
+
+		if (iReturn != CL_SUCCESS)
+		{
+			model::doError(
+				"Attaching thread callback failed for device #" + std::to_string(this->uiDeviceID) + ".",
+				model::errorCodes::kLevelModelStop
+			);
+			return;
+		}
+	}
+}
