@@ -810,12 +810,12 @@ void	CModel::runModelMain()
 		//Read simulation results
 		this->getDomainSet()->getDomain(0)->readDomain();
 
-		if (i == 3600*5 && false) {
-			std::cout << "Changed" << std::endl;
-			myGodScheme->importLinkZoneData();
+		//if (i == 3600*5 && false) {
+		//	std::cout << "Changed" << std::endl;
+		//	myGodScheme->importLinkZoneData();
 
 
-		}
+		//}
 	}
 
 

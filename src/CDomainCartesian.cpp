@@ -761,7 +761,7 @@ void	CDomainCartesian::readDomain()
 		}
 	}
 
-	ulCellID = this->getCellID(10, 10);
+	ulCellID = this->getCellID(3, 3);
 	std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX) << std::endl;
 	//np->outputShape();
 

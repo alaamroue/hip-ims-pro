@@ -134,7 +134,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 300;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
