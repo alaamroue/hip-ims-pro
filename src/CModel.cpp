@@ -802,7 +802,7 @@ void	CModel::runModelMain()
 	np->SetBedElevationMountain();
 	myGodScheme->np = np;
 
-	for (double i = 3600; i < 3600*10000; i+=3600)
+	for (double i = 3600; i < 3600*100; i+=3600)
 	{
 		myGodScheme->bDownloadLinks = true;
 		this->runNext(i);

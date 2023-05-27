@@ -36,6 +36,7 @@
 #include "CRasterDataset.h"
 #include "COCLDevice.h"
 #include "CSchemeGodunov.h"
+#include "CSchemePromaides.h"
 #include "Normalplain.h"
 #include "CBoundaryUniform.h"
 #include "CBoundaryMap.h"
@@ -75,7 +76,7 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
-	double SyncTime = 3600.0*100000;
+	double SyncTime = 3600.0*100;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
 	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
@@ -134,7 +135,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 11.5;
+		pNewBoundary->pTimeseries[i].dComponent = 0.115;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
@@ -145,7 +146,8 @@ int loadConfiguration()
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
 
-	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
+	//CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
+	CSchemePromaides* pScheme = new CSchemePromaides(pManager);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
 	ourCartesianDomain->setScheme(pScheme);

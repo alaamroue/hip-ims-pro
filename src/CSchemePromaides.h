@@ -26,36 +26,11 @@
  * ------------------------------------------
  *
  */
-#ifndef HIPIMS_SCHEMES_CSCHEMEGODUNOV_H_
-#define HIPIMS_SCHEMES_CSCHEMEGODUNOV_H_
+#pragma once
 
 #include "CScheme.h"
 #include "Normalplain.h"
 #include <mutex>
-
-namespace model {
-
-	// Kernel configurations
-	namespace schemeConfigurations {
-		namespace godunovType {
-			enum godunovType {
-				kCacheNone = 0,		// No caching
-				kCacheEnabled = 1			// Cache cell state data
-			};
-		}
-	}
-
-	namespace cacheConstraints {
-		namespace godunovType {
-			enum godunovType {
-				kCacheActualSize = 0,		// LDS of actual size
-				kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
-				kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
-			};
-		}
-	}
-
-}
 
 /*
  *  SCHEME CLASS
@@ -189,5 +164,3 @@ protected:
 	COCLBuffer* oclBufferBatchSkipped;
 
 };
-
-#endif

@@ -72,32 +72,52 @@ namespace model
 		unsigned long	ulBoundaryOthers;
 	};
 
-// Application return codes
-namespace appReturnCodes{ enum appReturnCodes {
-	kAppSuccess							= 0,	// Success
-	kAppInitFailure						= 1,	// Initialisation failure
-	kAppFatal							= 2		// Fatal error
-}; }
+	// Application return codes
+	namespace appReturnCodes{ enum appReturnCodes {
+		kAppSuccess							= 0,	// Success
+		kAppInitFailure						= 1,	// Initialisation failure
+		kAppFatal							= 2		// Fatal error
+	}; }
 
 // Error type codes
-namespace errorCodes { enum errorCodes {
-	kLevelFatal							= 1,	// Fatal error, no continuation
-	kLevelModelStop						= 2,	// Error that requires the model to abort
-	kLevelModelContinue					= 4,	// Error for which the model can continue
-	kLevelWarning						= 8,	// Display a warning message
-	kLevelInformation					= 16	// Just provide some information
-}; }
+	namespace errorCodes { enum errorCodes {
+		kLevelFatal							= 1,	// Fatal error, no continuation
+		kLevelModelStop						= 2,	// Error that requires the model to abort
+		kLevelModelContinue					= 4,	// Error for which the model can continue
+		kLevelWarning						= 8,	// Display a warning message
+		kLevelInformation					= 16	// Just provide some information
+	}; }
 
-// Floating point precision
-namespace floatPrecision{
-	enum floatPrecision {
-		kSingle = 0,	// Single-precision
-		kDouble = 1		// Double-precision
-	};
-}
+	// Floating point precision
+	namespace floatPrecision{
+		enum floatPrecision {
+			kSingle = 0,	// Single-precision
+			kDouble = 1		// Double-precision
+		};
+	}
 
-//extern	CModel*			pManager;
-void					doError( std::string, unsigned char );
+	// Kernel configurations
+	namespace schemeConfigurations {
+		namespace godunovType {
+			enum godunovType {
+				kCacheNone = 0,		// No caching
+				kCacheEnabled = 1			// Cache cell state data
+			};
+		}
+	}
+
+	namespace cacheConstraints {
+		namespace godunovType {
+			enum godunovType {
+				kCacheActualSize = 0,		// LDS of actual size
+				kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
+				kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
+			};
+		}
+	}
+
+	//extern	CModel*			pManager;
+	void					doError( std::string, unsigned char );
 }
 
 

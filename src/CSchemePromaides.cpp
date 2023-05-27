@@ -333,14 +333,14 @@ bool CSchemePromaides::prepareCode()
 	oclModel->appendCodeFromResource("CLFriction_H");
 	oclModel->appendCodeFromResource("CLSolverHLLC_H");
 	oclModel->appendCodeFromResource("CLDynamicTimestep_H");
-	oclModel->appendCodeFromResource("CLSchemeGodunov_H");
+	oclModel->appendCodeFromResource("CLSchemePromaides_H");
 	oclModel->appendCodeFromResource("CLBoundaries_H");
 
 	oclModel->appendCodeFromResource("CLDomainCartesian_C");
 	oclModel->appendCodeFromResource("CLFriction_C");
 	oclModel->appendCodeFromResource("CLSolverHLLC_C");
 	oclModel->appendCodeFromResource("CLDynamicTimestep_C");
-	oclModel->appendCodeFromResource("CLSchemeGodunov_C");
+	oclModel->appendCodeFromResource("CLSchemePromaides_C");
 	oclModel->appendCodeFromResource("CLBoundaries_C");
 
 	bReturnState = oclModel->compileProgram();
