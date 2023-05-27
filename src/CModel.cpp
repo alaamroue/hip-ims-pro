@@ -68,7 +68,7 @@ CModel::CModel(void)
 	this->ulRealTimeStart = 0;
 
 	this->forcedAbort = false;
-	this->ucRounding = 4;
+	this->ucRounding = 6;
 }
 
 
@@ -802,13 +802,13 @@ void	CModel::runModelMain()
 	np->SetBedElevationMountain();
 	myGodScheme->np = np;
 
-	for (double i = 3600; i < 3600*100; i+=3600)
+	for (double i = 3600; i <= 3600*100; i+=3600)
 	{
 		myGodScheme->bDownloadLinks = true;
 		this->runNext(i);
 
 		//Read simulation results
-		this->getDomainSet()->getDomain(0)->readDomain();
+		//this->getDomainSet()->getDomain(0)->readDomain();
 
 		//if (i == 3600*5 && false) {
 		//	std::cout << "Changed" << std::endl;

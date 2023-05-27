@@ -2,7 +2,7 @@
 //#define DEBUG_CELLX 10
 //#define DEBUG_CELLY 10
 
-#define Cfacweir 1.0
+#define Cfacweir 2.9524528409
 
 __kernel REQD_WG_SIZE_FULL_TS
 void gts_cacheDisabled ( 
@@ -55,11 +55,6 @@ void gts_cacheDisabled (
 	__private cl_double		reduction_term		=	0.0;
 	__private cl_double		v_x					=   0.0;
 	__private cl_double		v_y					=   0.0;
-	__private cl_double		value1				=   0.0;
-	__private cl_double		valueN				=   0.0;
-	__private cl_double		valueE				=   0.0;
-	__private cl_double		valueS				=   0.0;
-	__private cl_double		valueW				=   0.0;
 	__private cl_char flowStates = 0;
 	
 	//TODO: Alaa 
@@ -165,28 +160,10 @@ void gts_cacheDisabled (
 	opt_sS = pNeigDataS.x;
 	opt_sW = pNeigDataW.x;
 
-	value1 =  sqrt(lIdxX * lIdxX*1.0 + lIdxY*lIdxY) / 100/10;
-	if (lIdxX > 100 * 0.7 && lIdxX< 100 * 0.8 && lIdxY > 100 * 0.7 && lIdxY < 100 * 0.8)
-		value1 = sqrt(2.0) / 10;
-	valueN =  sqrt((lIdxX) * (lIdxX)*1.0 + (lIdxY+1)*(lIdxY+1)) / 100/10;
-	if ((lIdxX) > 100 * 0.7 && (lIdxX)< 100 * 0.8 && (lIdxY+1 )> 100 * 0.7 && (lIdxY+1 )< 100 * 0.8)
-		valueN = sqrt(2.0) / 10;
-	valueE =  sqrt((lIdxX+1) * (lIdxX+1)*1.0 + (lIdxY)*(lIdxY)) / 100/10;
-	if ((lIdxX+1) > 100 * 0.7 && (lIdxX+1)< 100 * 0.8 && (lIdxY )> 100 * 0.7 && (lIdxY )< 100 * 0.8)
-		valueE = sqrt(2.0) / 10;
-	valueS =  sqrt((lIdxX) * (lIdxX)*1.0 + (lIdxY-1)*(lIdxY-1)) / 100/10;
-	if ((lIdxX) > 100 * 0.7 && (lIdxX)< 100 * 0.8 && (lIdxY-1 )> 100 * 0.7 && (lIdxY-1 )< 100 * 0.8)
-		valueS = sqrt(2.0) / 10;
-	valueW =  sqrt((lIdxX-1) * (lIdxX-1)*1.0 + (lIdxY)*(lIdxY)) / 100/10;
-	if ((lIdxX-1) > 100 * 0.7 && (lIdxX-1)< 100 * 0.8 && (lIdxY )> 100 * 0.7 && (lIdxY )< 100 * 0.8)
-		valueW = sqrt(2.0) / 10;
-	
-
-
-	opt_zNmax = value1 > valueN ? value1 : valueN;
-	opt_zEmax = value1 > valueE ? value1 : valueE;
-	opt_zSmax = value1 > valueS ? value1 : valueS;
-	opt_zWmax = value1 > valueW ? value1 : valueW;
+	opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
+	opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
+	opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
+	opt_zWmax = opt_z > dNeigBedElevW ? opt_z : dNeigBedElevW;
 	
 	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])*0.001;
 	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])*0.001;
@@ -217,6 +194,9 @@ void gts_cacheDisabled (
 				}
 
 				flow_depth=max(flow_depth,flow_depth_neigh);
+
+
+
 
 				ds_dt_buff=0;
 				if(flow_depth > VERY_SMALL){
@@ -596,7 +576,7 @@ void gts_cacheDisabled (
 			}
 		}
 	}
-
+	
 	// Update the flow state
 	pCellData.x		= pCellData.x	+ dLclTimestep * ds_dt_data;
 	pCellData.z		= v_x;

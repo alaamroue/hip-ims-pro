@@ -85,7 +85,7 @@ int loadConfiguration()
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
 	pManager->setOutputFrequency(3600);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
-	pManager->setCourantNumber(0.5);												// Set the Courant Number to be used (Godunov)
+	pManager->setCourantNumber(30000);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
 	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
 	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
@@ -135,7 +135,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 0.115;
+		pNewBoundary->pTimeseries[i].dComponent = 11.5;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
