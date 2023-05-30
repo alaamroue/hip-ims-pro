@@ -50,7 +50,7 @@ namespace dataValues { enum dataValues {
 	kDisabledCells		= 8,		// Disabled cells
 	kMaxDepth			= 9,		// Max depth
 	kMaxFSL				= 10,		// Max FSL
-	kFroudeNumber		= 11		// Froude number
+	kFroudeNumber		= 11,		// Froude number
 }; };
 };
 };

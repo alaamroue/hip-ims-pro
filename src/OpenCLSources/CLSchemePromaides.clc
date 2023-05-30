@@ -10,7 +10,8 @@ void gts_cacheDisabled (
 			__global	cl_double const * restrict	dBedElevation,					// Bed elevation
 			__global	cl_double4 *  			pCellStateSrc,					// Current cell state data
 			__global	cl_double4 *  			pCellStateDst,					// Current cell state data
-			__global	cl_double const * restrict	dManning						// Manning values
+			__global	cl_double const * restrict	dManning,						// Manning values
+			__global	FlowStates const * restrict	flowstates						// Manning values
 		)
 {
 
@@ -55,21 +56,17 @@ void gts_cacheDisabled (
 	__private cl_double		reduction_term		=	0.0;
 	__private cl_double		v_x					=   0.0;
 	__private cl_double		v_y					=   0.0;
-	__private cl_char flowStates = 0;
+	__private FlowStates		flowStateCell;
 	
 	//TODO: Alaa 
 	//This would be passed as a variable
-	flowStates |= (true << 0); 
-	flowStates |= (false << 1);
-	flowStates |= (false << 2);
-	flowStates |= (false << 3); 
-	flowStates |= (false << 4);  
+	flowStateCell = flowstates[ ulIdx ];
 
-	bool isFlowElement = (flowStates >> 0) & 1;
-	bool noflow_x = (flowStates >> 1) & 1;
-	bool noflow_y = (flowStates >> 2) & 1;
-	bool opt_pol_x = (flowStates >> 3) & 1;
-	bool opt_pol_y = (flowStates >> 4) & 1;
+	bool isFlowElement	= flowStateCell.isFlowElement;
+	bool noflow_x		= flowStateCell.noflow_x;
+	bool noflow_y		= flowStateCell.noflow_y;
+	bool opt_pol_x		= flowStateCell.opt_pol_x;
+	bool opt_pol_y		= flowStateCell.opt_pol_y;
 
 	//if (lIdxX==DOMAIN_COLS-1) {
 	//	noflow_x = true;
@@ -174,7 +171,7 @@ void gts_cacheDisabled (
 	//v_y = pCellData.w;
 
 	if(!isFlowElement || noflow_x || opt_pol_x || noflow_y || opt_pol_y){
-		printf("we shouldn't be here");
+		printf("We shouldn't be here \n");
 		return;
 	}
 

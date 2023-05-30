@@ -1,4 +1,13 @@
 
+typedef struct FlowStates
+{
+	bool isFlowElement;
+	bool noflow_x;
+	bool noflow_y;
+	bool opt_pol_x;
+	bool opt_pol_y;
+} FlowStates;
+
 
 // Function definitions
 __kernel  REQD_WG_SIZE_FULL_TS
@@ -7,6 +16,7 @@ void gts_cacheDisabled (
 	__global	cl_double const * restrict,
 	__global	cl_double4 *,
 	__global	cl_double4 *,
-	__global    cl_double const * restrict
+	__global    cl_double const * restrict,
+	__global	FlowStates const * restrict
 );
 

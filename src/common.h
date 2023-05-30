@@ -71,6 +71,15 @@ namespace model
 		unsigned long	ulBoundaryCells;
 		unsigned long	ulBoundaryOthers;
 	};
+	// Flow States
+	struct FlowStates
+	{
+		bool isFlowElement;
+		bool noflow_x;
+		bool noflow_y;
+		bool opt_pol_x;
+		bool opt_pol_y;
+	};
 
 	// Application return codes
 	namespace appReturnCodes{ enum appReturnCodes {

@@ -199,6 +199,64 @@ void	CDomain::createStoreBuffers(
 	}
 }
 
+void	CDomain::createStoreBuffers(
+	void** vArrayCellStates,
+	void** vArrayBedElevations,
+	void** vArrayManningCoefs,
+	void** vArrayFlowStates,
+	unsigned char	ucFloatSize
+)
+{
+	if (!bPrepared)
+		prepareDomain();
+
+	this->ucFloatSize = ucFloatSize;
+
+	try {
+		if (ucFloatSize == sizeof(cl_float))
+		{
+			// Single precision
+			this->fCellStates = new cl_float4[this->ulCellCount];
+			this->fBedElevations = new cl_float[this->ulCellCount];
+			this->fManningValues = new cl_float[this->ulCellCount];
+			this->dCellStates = (cl_double4*)(this->fCellStates);
+			this->dBedElevations = (cl_double*)(this->fBedElevations);
+			this->dManningValues = (cl_double*)(this->fManningValues);
+
+			this->cFlowStates = new model::FlowStates[this->ulCellCount];
+
+			*vArrayCellStates = static_cast<void*>(this->fCellStates);
+			*vArrayBedElevations = static_cast<void*>(this->fBedElevations);
+			*vArrayManningCoefs = static_cast<void*>(this->fManningValues);
+			*vArrayFlowStates = static_cast<void*>(this->cFlowStates);
+		}
+		else {
+			// Double precision
+			this->dCellStates = new cl_double4[this->ulCellCount];
+			this->dBedElevations = new cl_double[this->ulCellCount];
+			this->dManningValues = new cl_double[this->ulCellCount];
+			this->fCellStates = (cl_float4*)(this->dCellStates);
+			this->fBedElevations = (cl_float*)(this->dBedElevations);
+			this->fManningValues = (cl_float*)(this->dManningValues);
+
+			this->cFlowStates = new model::FlowStates[this->ulCellCount];
+
+			*vArrayCellStates = static_cast<void*>(this->dCellStates);
+			*vArrayBedElevations = static_cast<void*>(this->dBedElevations);
+			*vArrayManningCoefs = static_cast<void*>(this->dManningValues);
+			*vArrayFlowStates = static_cast<void*>(this->cFlowStates);
+		}
+	}
+	catch (std::bad_alloc)
+	{
+		model::doError(
+			"Domain memory allocation failure. Probably out of memory.",
+			model::errorCodes::kLevelFatal
+		);
+		return;
+	}
+}
+
 /*
  *  Populate all domain cells with default values
  *  NOTE: Shouldn't be required anymore, C++11 used in COCLBuffer to initialise to zero on allocate
@@ -225,6 +283,7 @@ void	CDomain::initialiseMemory()
 			this->dBedElevations[ i ]   = 1;	// Bed elevation
 			this->dManningValues[ i ]	= 0;	// Manning coefficient
 		}
+
 	}
 }
 
@@ -253,6 +312,15 @@ void	CDomain::setManningCoefficient( unsigned long ulCellID, double dCoefficient
 		this->dManningValues[ ulCellID ] = dCoefficient;
 	}
 }
+
+/*
+ *  Sets the Flow States Values (noFlow, noFlowX, noFlowY, poliniX, poliniY)
+ */
+void	CDomain::setFlowStatesValue(unsigned long ulCellID, model::FlowStates state)
+{
+		this->cFlowStates[ulCellID] = state;
+}
+
 
 /*
  *  Sets a state variable for a given cell
@@ -402,7 +470,7 @@ void	CDomain::handleInputData(
 			Util::round( dValue, ucRounding ) 
 		);
 		break;
-	}
+}
 }
 
 /*

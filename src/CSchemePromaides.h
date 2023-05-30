@@ -155,6 +155,7 @@ protected:
 	// OpenCL elements
 	COCLProgram* oclModel;
 	COCLBuffer* oclBufferCellManning;
+	COCLBuffer* oclBufferCellFlowStates;
 	COCLBuffer* oclBufferCellBed;
 	COCLBuffer* oclBufferTimestep;
 	COCLBuffer* oclBufferTimeHydrological;
