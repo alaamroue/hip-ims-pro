@@ -204,6 +204,7 @@ void	CDomain::createStoreBuffers(
 	void** vArrayBedElevations,
 	void** vArrayManningCoefs,
 	void** vArrayFlowStates,
+	void** vArrayBoundCoup,
 	unsigned char	ucFloatSize
 )
 {
@@ -219,32 +220,43 @@ void	CDomain::createStoreBuffers(
 			this->fCellStates = new cl_float4[this->ulCellCount];
 			this->fBedElevations = new cl_float[this->ulCellCount];
 			this->fManningValues = new cl_float[this->ulCellCount];
+			this->fBoundCoup = new cl_float2[this->ulCellCount];
+
+			// Double precision
 			this->dCellStates = (cl_double4*)(this->fCellStates);
 			this->dBedElevations = (cl_double*)(this->fBedElevations);
 			this->dManningValues = (cl_double*)(this->fManningValues);
+			this->dBoundCoup = (cl_double2*)(this->fBoundCoup);
 
+			// Both
 			this->cFlowStates = new model::FlowStates[this->ulCellCount];
 
 			*vArrayCellStates = static_cast<void*>(this->fCellStates);
 			*vArrayBedElevations = static_cast<void*>(this->fBedElevations);
 			*vArrayManningCoefs = static_cast<void*>(this->fManningValues);
 			*vArrayFlowStates = static_cast<void*>(this->cFlowStates);
+			*vArrayBoundCoup = static_cast<void*>(this->fBoundCoup);
 		}
 		else {
 			// Double precision
 			this->dCellStates = new cl_double4[this->ulCellCount];
 			this->dBedElevations = new cl_double[this->ulCellCount];
 			this->dManningValues = new cl_double[this->ulCellCount];
+			this->dBoundCoup = new cl_double2[this->ulCellCount];
+
+
 			this->fCellStates = (cl_float4*)(this->dCellStates);
 			this->fBedElevations = (cl_float*)(this->dBedElevations);
 			this->fManningValues = (cl_float*)(this->dManningValues);
+			this->fBoundCoup = (cl_float2*)(this->dBoundCoup);
 
 			this->cFlowStates = new model::FlowStates[this->ulCellCount];
 
-			*vArrayCellStates = static_cast<void*>(this->dCellStates);
-			*vArrayBedElevations = static_cast<void*>(this->dBedElevations);
-			*vArrayManningCoefs = static_cast<void*>(this->dManningValues);
-			*vArrayFlowStates = static_cast<void*>(this->cFlowStates);
+			*vArrayCellStates		= static_cast<void*>(this->dCellStates);
+			*vArrayBedElevations	= static_cast<void*>(this->dBedElevations);
+			*vArrayManningCoefs		= static_cast<void*>(this->dManningValues);
+			*vArrayFlowStates		= static_cast<void*>(this->cFlowStates);
+			*vArrayBoundCoup		= static_cast<void*>(this->dBoundCoup);
 		}
 	}
 	catch (std::bad_alloc)
@@ -319,6 +331,35 @@ void	CDomain::setManningCoefficient( unsigned long ulCellID, double dCoefficient
 void	CDomain::setFlowStatesValue(unsigned long ulCellID, model::FlowStates state)
 {
 		this->cFlowStates[ulCellID] = state;
+}
+
+
+/*
+ *  Sets the Manning coefficient for a given cell
+ */
+void	CDomain::setBoundaryCondition(unsigned long ulCellID, double value)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fBoundCoup[ulCellID].s[0] = static_cast<float>(value);
+	}
+	else {
+		this->dBoundCoup[ulCellID].s[0] = value;
+	}
+}
+
+/*
+ *  Sets the Manning coefficient for a given cell
+ */
+void	CDomain::setCouplingCondition(unsigned long ulCellID, double value)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fBoundCoup[ulCellID].s[1] = static_cast<float>(value);
+	}
+	else {
+		this->dBoundCoup[ulCellID].s[1] = value;
+	}
 }
 
 

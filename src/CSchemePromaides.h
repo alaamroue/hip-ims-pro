@@ -106,6 +106,8 @@ public:
 	COCLKernel* oclKernelTimeAdvance;
 	Normalplain* np;
 	bool				bDownloadLinks;											// Download dependent links?
+
+
 protected:
 
 	// Private variables
@@ -156,6 +158,7 @@ protected:
 	COCLProgram* oclModel;
 	COCLBuffer* oclBufferCellManning;
 	COCLBuffer* oclBufferCellFlowStates;
+	COCLBuffer* oclBufferBoundCoup;
 	COCLBuffer* oclBufferCellBed;
 	COCLBuffer* oclBufferTimestep;
 	COCLBuffer* oclBufferTimeHydrological;

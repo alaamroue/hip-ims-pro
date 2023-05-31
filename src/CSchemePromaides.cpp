@@ -89,6 +89,7 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	oclBufferCellStatesAlt = NULL;
 	oclBufferCellManning = NULL;
 	oclBufferCellFlowStates = NULL;
+	oclBufferBoundCoup = NULL;
 	oclBufferCellBed = NULL;
 	oclBufferTimestep = NULL;
 	oclBufferTimestepReduction = NULL;
@@ -678,12 +679,13 @@ bool CSchemePromaides::prepare1OMemory()
 	// Domain and cell state data
 	// --
 
-	void* pCellStates = NULL, * pBedElevations = NULL, * pManningValues = NULL, * pFlowStateValues = NULL;
+	void* pCellStates = NULL, * pBedElevations = NULL, * pManningValues = NULL, * pFlowStateValues = NULL, * pBoundCoup = NULL;
 	pDomain->createStoreBuffers(
 		&pCellStates,
 		&pBedElevations,
 		&pManningValues,
 		&pFlowStateValues,
+		&pBoundCoup,
 		ucFloatSize
 	);
 
@@ -691,12 +693,14 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellStatesAlt = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
 	oclBufferCellManning = new COCLBuffer("Manning coefficients", oclModel, true, true);
 	oclBufferCellFlowStates = new COCLBuffer("Flow Conditions", oclModel, true, true);
+	oclBufferBoundCoup = new COCLBuffer("Boundary and Coupling Conditions", oclModel, false, true);
 	oclBufferCellBed = new COCLBuffer("Bed elevations", oclModel, true, true);
 
 	oclBufferCellStates->logger = logger;
 	oclBufferCellStatesAlt->logger = logger;
 	oclBufferCellManning->logger = logger;
 	oclBufferCellFlowStates->logger = logger;
+	oclBufferBoundCoup->logger = logger;
 	oclBufferCellBed->logger = logger;
 
 
@@ -704,6 +708,7 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellStatesAlt->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
 	oclBufferCellManning->setPointer(pManningValues, ucFloatSize * pDomain->getCellCount());
 	oclBufferCellFlowStates->setPointer(pFlowStateValues, sizeof(model::FlowStates) * pDomain->getCellCount());
+	oclBufferBoundCoup->setPointer(pBoundCoup, ucFloatSize * 2 * pDomain->getCellCount());
 	oclBufferCellBed->setPointer(pBedElevations, ucFloatSize * pDomain->getCellCount());
 
 
@@ -711,6 +716,7 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellStatesAlt->createBuffer();
 	oclBufferCellManning->createBuffer();
 	oclBufferCellFlowStates->createBuffer();
+	oclBufferBoundCoup->createBuffer();
 	oclBufferCellBed->createBuffer();
 
 	// --
@@ -830,7 +836,7 @@ bool CSchemePromaides::prepare1OKernels()
 		oclKernelFullTimestep = oclModel->getKernel("gts_cacheDisabled");
 		oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
 		oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates };
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup };
 		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
 	}
 	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled)
@@ -838,7 +844,7 @@ bool CSchemePromaides::prepare1OKernels()
 		oclKernelFullTimestep = oclModel->getKernel("gts_cacheEnabled");
 		oclKernelFullTimestep->setGroupSize(this->ulCachedWorkgroupSizeX, this->ulCachedWorkgroupSizeY);
 		oclKernelFullTimestep->setGlobalSize(this->ulCachedGlobalSizeX, this->ulCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates };
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup };
 		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
 	}
 
@@ -877,6 +883,7 @@ void CSchemePromaides::release1OResources()
 	if (this->oclBufferCellStatesAlt != NULL)				delete oclBufferCellStatesAlt;
 	if (this->oclBufferCellManning != NULL)				delete oclBufferCellManning;
 	if (this->oclBufferCellFlowStates != NULL)				delete oclBufferCellFlowStates;
+	if (this->oclBufferBoundCoup != NULL)				delete oclBufferBoundCoup;
 	if (this->oclBufferCellBed != NULL)					delete oclBufferCellBed;
 	if (this->oclBufferTimestep != NULL)					delete oclBufferTimestep;
 	if (this->oclBufferTimestepReduction != NULL)			delete oclBufferTimestepReduction;
@@ -895,6 +902,7 @@ void CSchemePromaides::release1OResources()
 	oclBufferCellStatesAlt = NULL;
 	oclBufferCellManning = NULL;
 	oclBufferCellFlowStates = NULL;
+	oclBufferBoundCoup = NULL;
 	oclBufferCellBed = NULL;
 	oclBufferTimestep = NULL;
 	oclBufferTimestepReduction = NULL;
@@ -938,6 +946,7 @@ void	CSchemePromaides::prepareSimulation()
 	oclBufferCellBed->queueWriteAll();
 	oclBufferCellManning->queueWriteAll();					//It has a pointer to the Scheme's Values
 	oclBufferCellFlowStates->queueWriteAll();
+	oclBufferBoundCoup->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();
@@ -1088,10 +1097,10 @@ void CSchemePromaides::Threaded_runBatch()
 		}
 
 		// Have we been asked to import data for our domain links?
-		if (this->bImportLinks)
+		if (this->bImportLinks )
 		{
-			std::cout << "Ohh hhi mark" << std::endl;
-
+			std::cout << "Importing data" << std::endl;
+			/*
 			// Create Fake Data
 			double value = 0;
 			cl_double4* vStateData = new cl_double4[10000];
@@ -1099,23 +1108,19 @@ void CSchemePromaides::Threaded_runBatch()
 				for (unsigned long iCol = 0; iCol < 100; ++iCol) {
 					ulCellID = pDomain->getCellID(iCol, iRow);
 					value = np->getBedElevation(ulCellID);
-					vStateData[ulCellID].s[0] = np->getBedElevation(ulCellID) * 2;
+					vStateData[ulCellID].s[0] = np->getBedElevation(ulCellID)*2;
 					vStateData[ulCellID].s[1] = np->getBedElevation(ulCellID);
 					vStateData[ulCellID].s[2] = 0.0;
 					vStateData[ulCellID].s[3] = 0.0;
 				}
 			}
+			*/
+			//oclBufferCellStates->queueWritePartial(0, 320000, vStateData);
+			//oclBufferCellStatesAlt->queueWritePartial(0, 320000, vStateData);
 
 
-
-			oclBufferCellStates->queueWritePartial(0, 320000, vStateData);
-			oclBufferCellStatesAlt->queueWritePartial(0, 320000, vStateData);
-
-			// Import data from links which are 'dependent' on this domain
-			for (unsigned int i = 0; i < pDomain->getLinkCount(); i++)
-			{
-				pDomain->getLink(i)->pushToBuffer(this->getNextCellSourceBuffer());
-			}
+			//this->getNextCellSourceBuffer()->queueWriteAll();
+			this->oclBufferBoundCoup->queueWriteAll();
 
 			// Last sync time
 			this->dLastSyncTime = this->dCurrentTime;

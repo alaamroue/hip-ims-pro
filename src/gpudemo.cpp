@@ -137,7 +137,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 11.5;
+		pNewBoundary->pTimeseries[i].dComponent = 0.0;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
@@ -150,6 +150,7 @@ int loadConfiguration()
 
 	//CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	CSchemePromaides* pScheme = new CSchemePromaides(pManager);
+	pScheme->setDryThreshold(1E-10);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
 	ourCartesianDomain->setScheme(pScheme);
@@ -172,6 +173,10 @@ int loadConfiguration()
 			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, pManager->ucRounding);
 			//Flow States
 			ourCartesianDomain->setFlowStatesValue(ulCellID, flowStates);
+			//Boundary Condition
+			ourCartesianDomain->setBoundaryCondition(ulCellID, 3e-6);
+			//Coupling Condition
+			ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
 
 		}
 	}
