@@ -157,8 +157,7 @@ int loadConfiguration()
 
 
 	unsigned long ulCellID;
-	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false;
-	flowStates.noflow_nx = false; flowStates.noflow_ny = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
+	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
 	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
 		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
 			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);

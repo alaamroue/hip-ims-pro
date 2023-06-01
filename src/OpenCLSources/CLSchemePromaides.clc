@@ -26,12 +26,12 @@ void gts_cacheDisabled (
 	ulIdx = getCellID(lIdxX, lIdxY);
 	
 	// Don't bother if we've gone beyond the domain bounds
-	if ( lIdxX >= DOMAIN_COLS - 1 || 
-		lIdxY >= DOMAIN_ROWS - 1 || 
-		lIdxX <= 0 || 
-		lIdxY <= 0 ){
+	if ( lIdxX > DOMAIN_COLS - 1 || 
+		lIdxY > DOMAIN_ROWS - 1 || 
+		lIdxX < 0 || 
+		lIdxY < 0 ){
 		//printf("Went Beyoooond {%i, %i} {%ld,%ld}\n",DOMAIN_COLS,DOMAIN_ROWS,lIdxX,lIdxY);
-		//return;
+		return;
 		}
 
 
@@ -71,6 +71,8 @@ void gts_cacheDisabled (
 	bool isFlowElement	= flowStateCell.isFlowElement;
 	bool noflow_x		= flowStateCell.noflow_x;
 	bool noflow_y		= flowStateCell.noflow_y;
+	noflow_x			= false;
+	noflow_y			= false;
 	bool opt_pol_x		= flowStateCell.opt_pol_x;
 	bool opt_pol_y		= flowStateCell.opt_pol_y;
 
@@ -132,7 +134,7 @@ void gts_cacheDisabled (
 		//printf("Full dry\n");
 		//TODO: Alaa check this: normaly we would return but there are boundary conditions here
 		//return;
-	}
+	//}
 	//else{
 	//	printf("116\n");
 	//	
@@ -155,37 +157,27 @@ void gts_cacheDisabled (
 	//ds_dt_data = 10.0/dLclTimestep*0;
 
 	//opt_h = pCellData.x  - dCellBedElev;
-	opt_hN = pNeigDataN.x - dNeigBedElevN;
-	opt_hE = pNeigDataE.x - dNeigBedElevE;
-	opt_hS = pNeigDataS.x - dNeigBedElevS;
-	opt_hW = pNeigDataW.x - dNeigBedElevW;
-
-	opt_sN = pNeigDataN.x;
-	opt_sE = pNeigDataE.x;
-	opt_sS = pNeigDataS.x;
-	opt_sW = pNeigDataW.x;
-
-	opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
-	opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
-	opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
-	opt_zWmax = opt_z > dNeigBedElevW ? opt_z : dNeigBedElevW;
 	
-	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
-
-	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
-
-	opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])/pow(DOMAIN_DELTAX,1.5);
-
-	opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])/pow(DOMAIN_DELTAX,1.5);
+	
+	
+	
+	
+	
 
 	//v_x = pCellData.z;
 	//v_y = pCellData.w;
 
-	//if(!isFlowElement || noflow_x || opt_pol_x || noflow_y || opt_pol_y){
-	//	//printf("We shouldn't be here \n");
+	if(opt_pol_x || opt_pol_y){
+		printf("We shouldn't be here xxxxxxxxxxxxxxxxx \n");
 	//	return;
-	//}
+	}
 
+
+	if(!(lIdxX==DOMAIN_ROWS-1)){
+	opt_hE = pNeigDataE.x - dNeigBedElevE;
+	opt_sE = pNeigDataE.x;
+	opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
+	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
 	//in x-direction
 	if(!noflow_x){
 		if(!opt_pol_x){
@@ -231,7 +223,7 @@ void gts_cacheDisabled (
 				}
 			}
 		}else{
-			printf("polini erorr");
+			printf("polini errorE: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
 			flow_depth		 =  opt_s - opt_zEmax;
 			flow_depth_neigh =  opt_sE- opt_zEmax;
 
@@ -290,11 +282,21 @@ void gts_cacheDisabled (
 			}
 		}
 	}
+	}
+	
+	if(!(lIdxX==0)){
+	opt_hW = pNeigDataW.x - dNeigBedElevW;
+	opt_sW = pNeigDataW.x;
+	opt_zWmax = opt_z > dNeigBedElevW ? opt_z : dNeigBedElevW;
+	opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])/pow(DOMAIN_DELTAX,1.5);
 	//in -x-direction
 	if(!noflow_x){
+
 		if(!opt_pol_x){
 			//manning x
 			if(opt_h > VERY_SMALL || opt_hW > VERY_SMALL){
+				
+
 
 				flow_depth = opt_s - opt_zWmax;
 				if(flow_depth <0.0){
@@ -330,7 +332,7 @@ void gts_cacheDisabled (
 				}
 			}
 		}else{
-			printf("polini erorr");
+			printf("polini errorW: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
 			flow_depth		 =  opt_s - opt_zWmax;
 			flow_depth_neigh =  opt_sW- opt_zWmax;
 
@@ -388,8 +390,16 @@ void gts_cacheDisabled (
 				ds_dt_data = ds_dt_data + ds_dt_buff;
 			}
 		}
+	}else{
+	}
 	}
 
+	
+	if(!(lIdxY==DOMAIN_COLS-1)){
+	opt_hN = pNeigDataN.x - dNeigBedElevN;
+	opt_sN = pNeigDataN.x;
+	opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
+	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
 	//in y-direction
 	if(!noflow_y){
 		if(!opt_pol_y){
@@ -430,7 +440,7 @@ void gts_cacheDisabled (
 				}
 			}
 		}else{
-			printf("polini erorr");
+			printf("polini errorN: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
 			flow_depth = opt_s-opt_zNmax;
 			flow_depth_neigh = opt_sN - opt_zNmax;
 		
@@ -487,7 +497,13 @@ void gts_cacheDisabled (
 			}
 		}
 	}
-
+	}
+	
+	if(!(lIdxY==0)){
+	opt_hS = pNeigDataS.x - dNeigBedElevS;
+	opt_sS = pNeigDataS.x;
+	opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
+	opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])/pow(DOMAIN_DELTAX,1.5);
 	//in -y-direction
 	if(!noflow_y){
 		if(!opt_pol_y){
@@ -529,7 +545,7 @@ void gts_cacheDisabled (
 				}
 			}
 		}else{
-			printf("polini erorr");
+			printf("polini errorS: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
 			flow_depth = opt_s-opt_zSmax;
 			flow_depth_neigh = opt_sS - opt_zSmax;
 		
@@ -586,11 +602,13 @@ void gts_cacheDisabled (
 			}
 		}
 	}
+	}
+
 
 	// Update the flow state
 	pCellData.x		= pCellData.x	+ dLclTimestep * ds_dt_data;
-	pCellData.z		= v_x*0.5;
-	pCellData.w		= v_y*0.5;
+	pCellData.z		= v_x;
+	pCellData.w		= v_y;
 
 	//pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
 	//pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
