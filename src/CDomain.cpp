@@ -205,6 +205,7 @@ void	CDomain::createStoreBuffers(
 	void** vArrayManningCoefs,
 	void** vArrayFlowStates,
 	void** vArrayBoundCoup,
+	void** vArrayDsDt,
 	unsigned char	ucFloatSize
 )
 {
@@ -221,12 +222,14 @@ void	CDomain::createStoreBuffers(
 			this->fBedElevations = new cl_float[this->ulCellCount];
 			this->fManningValues = new cl_float[this->ulCellCount];
 			this->fBoundCoup = new cl_float2[this->ulCellCount];
+			this->fdsdt = new cl_float[this->ulCellCount];
 
 			// Double precision
 			this->dCellStates = (cl_double4*)(this->fCellStates);
 			this->dBedElevations = (cl_double*)(this->fBedElevations);
 			this->dManningValues = (cl_double*)(this->fManningValues);
 			this->dBoundCoup = (cl_double2*)(this->fBoundCoup);
+			this->ddsdt = (cl_double*)(this->fdsdt);
 
 			// Both
 			this->cFlowStates = new model::FlowStates[this->ulCellCount];
@@ -236,6 +239,7 @@ void	CDomain::createStoreBuffers(
 			*vArrayManningCoefs = static_cast<void*>(this->fManningValues);
 			*vArrayFlowStates = static_cast<void*>(this->cFlowStates);
 			*vArrayBoundCoup = static_cast<void*>(this->fBoundCoup);
+			*vArrayDsDt = static_cast<void*>(this->fdsdt);
 		}
 		else {
 			// Double precision
@@ -243,12 +247,14 @@ void	CDomain::createStoreBuffers(
 			this->dBedElevations = new cl_double[this->ulCellCount];
 			this->dManningValues = new cl_double[this->ulCellCount];
 			this->dBoundCoup = new cl_double2[this->ulCellCount];
+			this->ddsdt = new cl_double[this->ulCellCount];
 
 
 			this->fCellStates = (cl_float4*)(this->dCellStates);
 			this->fBedElevations = (cl_float*)(this->dBedElevations);
 			this->fManningValues = (cl_float*)(this->dManningValues);
 			this->fBoundCoup = (cl_float2*)(this->dBoundCoup);
+			this->fdsdt = (cl_float*)(this->ddsdt);
 
 			this->cFlowStates = new model::FlowStates[this->ulCellCount];
 
@@ -257,6 +263,7 @@ void	CDomain::createStoreBuffers(
 			*vArrayManningCoefs		= static_cast<void*>(this->dManningValues);
 			*vArrayFlowStates		= static_cast<void*>(this->cFlowStates);
 			*vArrayBoundCoup		= static_cast<void*>(this->dBoundCoup);
+			*vArrayDsDt = static_cast<void*>(this->ddsdt);
 		}
 	}
 	catch (std::bad_alloc)
@@ -362,7 +369,19 @@ void	CDomain::setCouplingCondition(unsigned long ulCellID, double value)
 	}
 }
 
-
+/*
+ *  Sets the dsdt for a given cell
+ */
+void	CDomain::setdsdt(unsigned long ulCellID, double value)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fdsdt[ulCellID] = static_cast<float>(value);
+	}
+	else {
+		this->ddsdt[ulCellID] = value;
+	}
+}
 /*
  *  Sets a state variable for a given cell
  */
@@ -404,6 +423,16 @@ double	CDomain::getStateValue( unsigned long ulCellID, unsigned char ucIndex )
 	if ( this->ucFloatSize == 4 ) 
 		return static_cast<double>( this->fCellStates[ ulCellID ].s[ ucIndex ] );
 	return this->dCellStates[ ulCellID ].s[ ucIndex ];
+}
+
+/*
+ *  Gets a state variable for a given cell
+ */
+double	CDomain::getdsdt(unsigned long ulCellID)
+{
+	if (this->ucFloatSize == 4)
+		return static_cast<double>(this->fdsdt[ulCellID]);
+	return this->ddsdt[ulCellID];
 }
 
 /*

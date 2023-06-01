@@ -18,6 +18,7 @@ void gts_cacheDisabled (
 	__global	cl_double4 *,
 	__global    cl_double const * restrict,
 	__global	FlowStates const * restrict,
-	__global	cl_double2 *
+	__global	cl_double2 *,
+	__global	cl_double *
 );
 

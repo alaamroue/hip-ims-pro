@@ -87,7 +87,7 @@ int loadConfiguration()
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
 	pManager->setOutputFrequency(3600);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
-	pManager->setCourantNumber(30000);												// Set the Courant Number to be used (Godunov)
+	pManager->setCourantNumber(0.9);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
 	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
 	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
@@ -157,7 +157,8 @@ int loadConfiguration()
 
 
 	unsigned long ulCellID;
-	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
+	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false;
+	flowStates.noflow_nx = false; flowStates.noflow_ny = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
 	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
 		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
 			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);
@@ -177,11 +178,14 @@ int loadConfiguration()
 			ourCartesianDomain->setBoundaryCondition(ulCellID, 3e-6);
 			//Coupling Condition
 			ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
+			//dsdt Condition
+			ourCartesianDomain->setdsdt(ulCellID, 0.0);
 
 		}
 	}
 
 	CDomainManager* pManagerDomains = pManager->getDomainSet();
+	pManagerDomains->setSyncMethod(model::syncMethod::kSyncTimestep);
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking

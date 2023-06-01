@@ -6,14 +6,14 @@
 
 __kernel REQD_WG_SIZE_FULL_TS
 void gts_cacheDisabled ( 
-			__constant	cl_double *  				dTimestep,						// Timestep
-			__global	cl_double const * restrict	dBedElevation,					// Bed elevation
-			__global	cl_double4 *  			pCellStateSrc,					// Current cell state data
-			__global	cl_double4 *  			pCellStateDst,					// Current cell state data
-			__global	cl_double const * restrict	dManning,						// Manning values
-			__global	FlowStates const * restrict	flowstates,						// Flow States data
-			__global	cl_double2 *  			pBoundCoup					// Current cell state data
-
+			__constant	cl_double *  				dTimestep,					// Timestep
+			__global	cl_double const * restrict	dBedElevation,				// Bed elevation
+			__global	cl_double4 *  				pCellStateSrc,					// Current cell state data
+			__global	cl_double4 *  				pCellStateDst,					// Current cell state data
+			__global	cl_double const * restrict	dManning,					// Manning values
+			__global	FlowStates const * restrict	flowstates,					// Flow States data
+			__global	cl_double2 *  				pBoundCoup,						// Current Boundary Coupling data
+			__global	cl_double *  				pds_dt							// Current Boundary Coupling data
 		)
 {
 
@@ -31,7 +31,8 @@ void gts_cacheDisabled (
 		lIdxX <= 0 || 
 		lIdxY <= 0 ){
 		//printf("Went Beyoooond {%i, %i} {%ld,%ld}\n",DOMAIN_COLS,DOMAIN_ROWS,lIdxX,lIdxY);
-		return;}
+		//return;
+		}
 
 
 	__private cl_double		dLclTimestep	= *dTimestep;
@@ -49,7 +50,7 @@ void gts_cacheDisabled (
 
 	__private cl_uchar		ucStop				=	0;
 	__private cl_uchar		ucDryCount			=	0;
-	__private cl_double		ds_dt_data			=	pBoundCoup[ulIdx].x * dLclTimestep + pBoundCoup[ulIdx].y * dLclTimestep;
+	__private cl_double		ds_dt_data			=	pBoundCoup[ulIdx].x + pBoundCoup[ulIdx].y;
 	__private cl_double		flow_depth			=	0.0;
 	__private cl_double		flow_depth_neigh	=	0.0;
 	__private cl_double		delta_h				=	0.0;
@@ -60,12 +61,9 @@ void gts_cacheDisabled (
 	__private cl_double		v_y					=   0.0;
 	__private FlowStates	flowStateCell;
 	
+	
 	//TODO: Alaa 
 
-	if ( lIdxX == 3 && lIdxY == 3)
-	{	
-		//printf("pBoundCoup[ulIdx].x %f   \n", pBoundCoup[ulIdx].x);
-	}
 
 	//This would be passed as a variable
 	flowStateCell = flowstates[ ulIdx ];
@@ -86,7 +84,7 @@ void gts_cacheDisabled (
 	// Also don't bother if we've gone beyond the total simulation time
 	if (dLclTimestep <= 0.0)
 	{
-		//printf("90\n");
+		//printf("90, ulIdx: %f dLclTimestep: %f \n",ulIdx*1.0, dLclTimestep);
 		// TODO: Is there a way of avoiding this?!
 		pCellStateDst[ulIdx] = pCellStateSrc[ulIdx];
 		return;
@@ -125,14 +123,15 @@ void gts_cacheDisabled (
 
 
 	//All neighbours are dry? Don't bother calculating
-	if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
-	if ( ucDryCount == 5 ){
+	//if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
+	//if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
+	//if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
+	//if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
+	//if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
+	//if ( ucDryCount == 5 ){
 		//printf("Full dry\n");
-		return;
+		//TODO: Alaa check this: normaly we would return but there are boundary conditions here
+		//return;
 	}
 	//else{
 	//	printf("116\n");
@@ -142,13 +141,13 @@ void gts_cacheDisabled (
 
 	//set data
 	opt_z = dCellBedElev;
-	if((pCellData.x  - opt_z) < VERY_SMALL){
-		opt_h = 0.0;
-		opt_s = opt_z;
-	}else{
+	//if((pCellData.x  - opt_z) < VERY_SMALL){
+	//	opt_h = 0.0;
+	//	opt_s = opt_z;
+	//}else{
 		opt_h = pCellData.x  - opt_z;
 		opt_s = pCellData.x;
-	}
+	//}
 	
 
 	//Add Boundry and couple conditions
@@ -171,18 +170,21 @@ void gts_cacheDisabled (
 	opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
 	opt_zWmax = opt_z > dNeigBedElevW ? opt_z : dNeigBedElevW;
 	
-	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])*0.001;
-	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])*0.001;
-	opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])*0.001;
-	opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])*0.001;
+	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
+
+	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
+
+	opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])/pow(DOMAIN_DELTAX,1.5);
+
+	opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])/pow(DOMAIN_DELTAX,1.5);
 
 	//v_x = pCellData.z;
 	//v_y = pCellData.w;
 
-	if(!isFlowElement || noflow_x || opt_pol_x || noflow_y || opt_pol_y){
-		printf("We shouldn't be here \n");
-		return;
-	}
+	//if(!isFlowElement || noflow_x || opt_pol_x || noflow_y || opt_pol_y){
+	//	//printf("We shouldn't be here \n");
+	//	return;
+	//}
 
 	//in x-direction
 	if(!noflow_x){
@@ -200,9 +202,10 @@ void gts_cacheDisabled (
 				}
 
 				flow_depth=max(flow_depth,flow_depth_neigh);
-
-
-
+				if ( lIdxX == 88 && lIdxY == 88)
+				{	
+					//printf("dLclTimestep %f flow_depth %f flow_depth_neigh %f\n",dLclTimestep, opt_s, opt_sE);
+				}
 
 				ds_dt_buff=0;
 				if(flow_depth > VERY_SMALL){
@@ -386,7 +389,7 @@ void gts_cacheDisabled (
 			}
 		}
 	}
-	
+
 	//in y-direction
 	if(!noflow_y){
 		if(!opt_pol_y){
@@ -411,7 +414,7 @@ void gts_cacheDisabled (
 					abs_delta_h=fabs(delta_h);
 
 					if(abs_delta_h > VERY_SMALL){
-						ds_dt_buff= opt_cN*pow(flow_depth, (5.0/3.0));
+						ds_dt_buff = opt_cN * pow(flow_depth, (5.0/3.0));
 
 						if(abs_delta_h<=0.005078){
 							ds_dt_buff *= 0.10449968880528*atan(159.877741951379*delta_h); //0.0152
@@ -520,6 +523,7 @@ void gts_cacheDisabled (
 
 						//set the result
 						ds_dt_data	+= ds_dt_buff;
+
 						v_y			+= ds_dt_buff * DOMAIN_DELTAY / flow_depth;
 					}
 				}
@@ -582,11 +586,11 @@ void gts_cacheDisabled (
 			}
 		}
 	}
-	
+
 	// Update the flow state
 	pCellData.x		= pCellData.x	+ dLclTimestep * ds_dt_data;
-	pCellData.z		= v_x;
-	pCellData.w		= v_y;
+	pCellData.z		= v_x*0.5;
+	pCellData.w		= v_y*0.5;
 
 	//pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
 	//pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
@@ -596,16 +600,15 @@ void gts_cacheDisabled (
 		pCellData.y = pCellData.x;
 
 	// Crazy low depths?
-	if ( pCellData.x - dCellBedElev < VERY_SMALL )
-		pCellData.x = dCellBedElev;
+	//if ( pCellData.x - dCellBedElev < VERY_SMALL*100000 )
+	//	pCellData.x = dCellBedElev;
 
-	if ( lIdxX == 3 && lIdxY == 3)
-	{	
-		//printf("flow_depth %f   \n", flow_depth);
-		//printf("pCellData.x: %f pCellData.y: %f pCellData.z: %f pCellData.w: %f   \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w);
-	}
 
 	// Commit to global memory
+	pds_dt[ulIdx] += ds_dt_data;
+	
+
+	
 	pCellStateDst[ulIdx] = pCellData;
 
 

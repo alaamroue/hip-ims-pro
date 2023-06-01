@@ -791,6 +791,29 @@ double*	CDomainCartesian::readDomain_opt_h()
 
 }
 
+double* CDomainCartesian::readDomain_opt_dsdt()
+{
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows() * this->getCols()];
+
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getdsdt(ulCellID);
+			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
+		}
+	}
+
+	return values;
+
+}
+
 double* CDomainCartesian::readDomain_vx()
 {
 	unsigned long	ulCellID;

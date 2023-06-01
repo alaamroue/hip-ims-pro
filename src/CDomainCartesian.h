@@ -63,6 +63,7 @@ class CDomainCartesian : public CDomain
 		void			writeOutputs();											// Write output files to disk
 		void			readDomain();											// Read Output from gpu
 		double*			readDomain_opt_h();										// Read Output flow hieght from gpu to double*
+		double*			readDomain_opt_dsdt();									// Read Output dsdt value from gpu to double*
 		double*			readDomain_vx();										// Read Output velocity in x-direction from gpu to double*
 		double*			readDomain_vy();										// Read Output velocity in y-direction from gpu to double*
 		// - Specific to cartesian grids

@@ -192,8 +192,8 @@ void tst_Reduce(
 		
 		if ( dDepth > QUITE_SMALL && pCellState.y > -9999.0 )
 		{
-			#ifndef TIMESTEP_SIMPLIFIED
-
+			#ifdef TIMESTEP_SIMPLIFIED
+			
 			dVelX = pCellState.z / dDepth;
 			dVelY = pCellState.w / dDepth;
 			if ( dVelX < 0.0 ) dVelX = -dVelX;
@@ -203,7 +203,7 @@ void tst_Reduce(
 			dVelY += sqrt( GRAVITY * dDepth );
 
 			#else
-
+			
 			dVelX = sqrt( GRAVITY * dDepth );
 			dVelY = sqrt( GRAVITY * dDepth );
 
