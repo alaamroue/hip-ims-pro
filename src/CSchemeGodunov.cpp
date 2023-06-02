@@ -1083,7 +1083,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		// Have we been asked to import data for our domain links?
 		if (this->bImportLinks)
 		{
-			std::cout << "Ohh hhi mark" << std::endl;
+			std::cout << "Why are we in god scheme?" << std::endl;
 
 			// Create Fake Data
 			double value = 0;
@@ -1109,7 +1109,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			{
 				pDomain->getLink(i)->pushToBuffer(this->getNextCellSourceBuffer());
 			}
-
+			
 			// Last sync time
 			this->dLastSyncTime = this->dCurrentTime;
 			this->uiIterationsSinceSync = 0;

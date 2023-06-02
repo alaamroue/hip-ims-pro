@@ -33,7 +33,6 @@
 #include "Normalplain.h"
 #include <mutex>
 
-
 /*
  *  SCHEME CLASS
  *  CSchemeGodunov

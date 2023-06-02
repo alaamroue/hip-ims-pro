@@ -34,27 +34,6 @@
 #include "CDomainCartesian.h"
 #include "CBoundaryGridded.h"
 
-namespace model {
-
-// Model scheme types
-namespace rasterDatasets { 
-namespace dataValues { enum dataValues {
-	kBedElevation		= 0,		// Bed elevation
-	kDepth				= 1,		// Depth
-	kFreeSurfaceLevel	= 2,		// Free surface level
-	kVelocityX			= 3,		// Initial velocity X
-	kVelocityY			= 4,		// Initial velocity Y
-	kDischargeX			= 5,		// Initial discharge X
-	kDischargeY			= 6,		// Initial discharge Y
-	kManningCoefficient	= 7,		// Manning coefficient
-	kDisabledCells		= 8,		// Disabled cells
-	kMaxDepth			= 9,		// Max depth
-	kMaxFSL				= 10,		// Max FSL
-	kFroudeNumber		= 11		// Froude number
-}; };
-};
-};
-
 /*
  *  RASTER DATASET CLASS
  *  CRasterDataset

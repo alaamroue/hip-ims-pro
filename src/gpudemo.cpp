@@ -28,6 +28,8 @@
  *
  */
 // Includes
+#include <bitset>
+
 #include "gpudemo.h"
 #include "CModel.h"
 #include "CDomainManager.h"
@@ -76,7 +78,7 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
-	double SyncTime = 36000.0;
+	double SyncTime = 3600.0*100;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
 	pManager->setSelectedDevice(1);												// Set GPU device to Use. Important: Has to be called after setExecutor. Default is the faster one.
@@ -85,8 +87,7 @@ int loadConfiguration()
 	pManager->setSimulationLength(SyncTime);										// Set Simulation Length
 	pManager->setOutputFrequency(SyncTime);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
-	pManager->getDomainSet()->setSyncMethod(model::syncMethod::kSyncTimestep);
-	pManager->setCourantNumber(1);												// Set the Courant Number to be used (Godunov)
+	pManager->setCourantNumber(0.9);												// Set the Courant Number to be used (Godunov)
 	pManager->setFrictionStatus(false);												// Flag for activating friction
 	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
 	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
@@ -135,7 +136,7 @@ int loadConfiguration()
 	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
 	for (int i = 0; i < 100; i++) {
 		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 11.5;
+		pNewBoundary->pTimeseries[i].dComponent = 0.0;
 	}
 
 	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
@@ -145,14 +146,17 @@ int loadConfiguration()
 
 	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
 
-	CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
-	//CSchemePromaides* pScheme = new CSchemePromaides(pManager);
+
+	//CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
+	CSchemePromaides* pScheme = new CSchemePromaides(pManager);
+	pScheme->setDryThreshold(1E-10);
 	pScheme->setDomain(ourCartesianDomain);
 	pScheme->prepareAll();
 	ourCartesianDomain->setScheme(pScheme);
 
 
 	unsigned long ulCellID;
+	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
 	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
 		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
 			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);
@@ -166,13 +170,20 @@ int loadConfiguration()
 			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, pManager->ucRounding);
 			//VelocityY
 			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, pManager->ucRounding);
+			//Flow States
+			ourCartesianDomain->setFlowStatesValue(ulCellID, flowStates);
+			//Boundary Condition
+			ourCartesianDomain->setBoundaryCondition(ulCellID, 3e-6);
+			//Coupling Condition
+			ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
+			//dsdt Condition
+			ourCartesianDomain->setdsdt(ulCellID, 0.0);
+
 		}
 	}
 
-
-
-
 	CDomainManager* pManagerDomains = pManager->getDomainSet();
+	pManagerDomains->setSyncMethod(model::syncMethod::kSyncTimestep);
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking

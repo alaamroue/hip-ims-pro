@@ -761,12 +761,106 @@ void	CDomainCartesian::readDomain()
 		}
 	}
 
-	ulCellID = this->getCellID(10, 10);
-	std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) << std::endl;
+	ulCellID = this->getCellID(3, 3);
+	//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) << std::endl;
 	//np->outputShape();
 
 }
 
+double*	CDomainCartesian::readDomain_opt_h()
+{
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows()* this->getCols()];
+
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
+			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
+		}
+	}
+
+	return values;
+
+}
+
+double* CDomainCartesian::readDomain_opt_dsdt()
+{
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows() * this->getCols()];
+
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getdsdt(ulCellID);
+			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
+		}
+	}
+
+	return values;
+
+}
+
+double* CDomainCartesian::readDomain_vx()
+{
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows() * this->getCols()];
+
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+
+	//Normalplain* np = new Normalplain(this->getCols(), this->getRows());
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX);
+		}
+	}
+
+	return values;
+
+}
+
+double* CDomainCartesian::readDomain_vy()
+{
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows() * this->getCols()];
+
+	// Read the data back first...
+	// TODO: Review whether this is necessary, isn't it a sync point anyway?
+	pDevice->blockUntilFinished();
+	pScheme->readDomainAll();
+	pDevice->blockUntilFinished();
+
+
+	//Normalplain* np = new Normalplain(this->getCols(), this->getRows());
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeY);
+		}
+	}
+
+	return values;
+
+}
 
 /*
  *	Fetch summary information for this domain

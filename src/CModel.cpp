@@ -37,6 +37,7 @@
 #include "CScheme.h"
 #include "CRasterDataset.h"
 #include "CSchemeGodunov.h"
+#include "CSchemePromaides.h"
 #include "Normalplain.h"
 
 using std::min;
@@ -68,7 +69,7 @@ CModel::CModel(void)
 	this->ulRealTimeStart = 0;
 
 	this->forcedAbort = false;
-	this->ucRounding = 4;
+	this->ucRounding = 6;
 }
 
 
@@ -797,22 +798,24 @@ void	CModel::runModelMain()
 	double value;
 	unsigned char	ucRounding = 4;			// decimal places
 	CDomainCartesian* cd = (CDomainCartesian*) this->domains->getDomain(0);
-	CSchemeGodunov* myGodScheme = (CSchemeGodunov*)this->domains->getDomain(0)->getScheme();
+	CSchemePromaides* myProScheme = (CSchemePromaides*) this->domains->getDomain(0)->getScheme();
 	Normalplain* np = new Normalplain(100, 100);
 	np->SetBedElevationMountain();
-	myGodScheme->np = np;
+	myProScheme->np = np;
 
-	for (double i = 3600; i <= 3600*10; i+=3600)
+	for (double i = 3600; i <= 3600 * 100; i += 3600)
 	{
-		myGodScheme->bDownloadLinks = true;
+		//myProScheme->bDownloadLinks = true;
 		this->runNext(i);
 
 		//Read simulation results
 		this->getDomainSet()->getDomain(0)->readDomain();
 
-		//if (i == 3600*5 && false) {
+		//if (i == 3600 * 5 && false) {
 		//	std::cout << "Changed" << std::endl;
-		//	myGodScheme->importLinkZoneData();
+		//	myProScheme->importLinkZoneData();
+//
+//
 		//}
 	}
 
@@ -856,10 +859,10 @@ void	CModel::runModelMain()
 }
 
 void CModel::runNext(double	nextPoint) {
-	dTargetTime = nextPoint;
+	this->dTargetTime = nextPoint;
 	CBenchmark* pBenchmarkAll = new CBenchmark(true);
 	CBenchmark::sPerformanceMetrics* sTotalMetrics = pBenchmarkAll->getMetrics();
-	CSchemeGodunov* myscheme = (CSchemeGodunov*) this->domains->getDomain(0)->getScheme();
+	CSchemePromaides* myscheme = (CSchemePromaides*) this->domains->getDomain(0)->getScheme();
 	while ((this->dCurrentTime - nextPoint < 0) || !bAllIdle)
 	{
 		this->dCurrentTime = myscheme->getCurrentTime();
