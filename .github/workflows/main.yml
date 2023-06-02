@@ -12,4 +12,4 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1.4.1
     - name: compile
       run: | 
-        cl main.cpp /Fe:spark /std:c++latest
+        cl src/gpudemo.cpp /Fe:spark /std:c++latest
