@@ -1391,30 +1391,30 @@ void	CSchemePromaides::scheduleIteration(
 	{
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStatesAlt);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStates);
-		oclKernelFriction->assignArgument(1, oclBufferCellStates);
+		//oclKernelFriction->assignArgument(1, oclBufferCellStates);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStates);
 	}
 	else {
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStates);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStatesAlt);
-		oclKernelFriction->assignArgument(1, oclBufferCellStatesAlt);
+		//oclKernelFriction->assignArgument(1, oclBufferCellStatesAlt);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStatesAlt);
 	}
 
 	// Run the boundary kernels (each bndy has its own kernel now)
-	pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
-	pDevice->queueBarrier();
+	//pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
+	//pDevice->queueBarrier();
 
 	// Main scheme kernel
 	oclKernelFullTimestep->scheduleExecution();
 	pDevice->queueBarrier();
 
 	// Friction
-	if (this->bFrictionEffects && !this->bFrictionInFluxKernel)
-	{
-		oclKernelFriction->scheduleExecution();
-		pDevice->queueBarrier();
-	}
+	//if (this->bFrictionEffects && !this->bFrictionInFluxKernel)
+	//{
+	//	oclKernelFriction->scheduleExecution();
+	//	pDevice->queueBarrier();
+	//}
 
 	// Timestep reduction
 	if (this->bDynamicTimestep)

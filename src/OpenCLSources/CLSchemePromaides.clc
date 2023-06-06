@@ -25,7 +25,7 @@ void gts_cacheDisabled (
 	// Identify the cell we're reconstructing (no overlap)
 	__private cl_long					lIdxX			= get_global_id(0);
 	__private cl_long					lIdxY			= get_global_id(1);
-	__private cl_ulong					ulIdx, ulIdxNeigN, ulIdxNeigE, ulIdxNeigS, ulIdxNeigW;
+	__private cl_ulong					ulIdx, ulIdxNeigN, ulIdxNeigE;
 	__private cl_uchar					ucDirection;
 	bool skip = false;
 	
@@ -38,58 +38,41 @@ void gts_cacheDisabled (
 		lIdxY < 0 ){
 		//printf("Went Beyoooond {%i, %i} {%ld,%ld}\n",DOMAIN_COLS,DOMAIN_ROWS,lIdxX,lIdxY);
 		skip = true;
-		}
+	}
 
 
-	__private cl_double		dLclTimestep	= *dTimestep;
 	__private cl_double		dManningCoef;
-	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE,dNeigBedElevS,dNeigBedElevW;
-	__private cl_double		opt_h,opt_hN,opt_hE,opt_hS,opt_hW;
-	__private cl_double		opt_cN, opt_cE, opt_cS, opt_cW;
-	__private cl_double		opt_z, opt_zNmax, opt_zEmax, opt_zSmax, opt_zWmax;
-	__private cl_double		opt_s, opt_sN, opt_sE,opt_sS,opt_sW;
-	__private cl_double4	pCellData,pNeigDataN,pNeigDataE,pNeigDataS,pNeigDataW;					// Z, Zmax, Qx, Qy
-	__private cl_double4	pSourceTerms,		dDeltaValues;										// Z, Qx, Qy
-	__private cl_double4	pFlux[4];																// Z, Qx, Qy
-	__private cl_double8	pLeft,				pRight;												// Z, H, Qx, Qy, U, V, Zb
+	__private cl_double		old_pds_dt;
+	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE;
+	__private cl_double		opt_h,opt_hN,opt_hE;
+	__private cl_double		opt_cN, opt_cE;
+	__private cl_double		opt_z, opt_zNmax, opt_zEmax;
+	__private cl_double		opt_s, opt_sN, opt_sE;
+	__private cl_double4	pCellData,pNeigDataN,pNeigDataE;
+	__private FlowStates	flowStateCell;
+	bool isFlowElement;
+	bool noflow_x;
+	bool noflow_y;
+	bool opt_pol_x;
+	bool opt_pol_y;
 	
 
-	__private cl_uchar		ucStop				=	0;
-	__private cl_uchar		ucDryCount			=	0;
-	__private cl_double		ds_dt_data			=	pBoundCoup[ulIdx].x + pBoundCoup[ulIdx].y;
+	__private cl_double		dLclTimestep	= *dTimestep;
+	__private cl_double		result_data = resultData[ulIdx];
+	__private cl_double		ds_dt_dataN			=	0.0;
+	__private cl_double		ds_dt_dataE			=	0.0;
 	__private cl_double		flow_depth			=	0.0;
 	__private cl_double		flow_depth_neigh	=	0.0;
 	__private cl_double		delta_h				=	0.0;
 	__private cl_double		abs_delta_h			=	0.0;
 	__private cl_double		ds_dt_buff			=	0.0;
 	__private cl_double		reduction_term		=	0.0;
+
 	__private cl_double		v_x					=   0.0;
 	__private cl_double		v_y					=   0.0;
-	__private FlowStates	flowStateCell;
-
-	__private cl_double		result_data = resultData[ulIdx];
-	
-	
-	//TODO: Alaa 
 
 
-	//This would be passed as a variable
-	flowStateCell = flowstates[ ulIdx ];
 
-	bool isFlowElement	= flowStateCell.isFlowElement;
-	bool noflow_x		= flowStateCell.noflow_x;
-	bool noflow_y		= flowStateCell.noflow_y;
-	noflow_x			= false;
-	noflow_y			= false;
-	bool opt_pol_x		= flowStateCell.opt_pol_x;
-	bool opt_pol_y		= flowStateCell.opt_pol_y;
-
-	//if (lIdxX==DOMAIN_COLS-1) {
-	//	noflow_x = true;
-	//}
-	//if (lIdxY==DOMAIN_ROWS-1){
-	//	noflow_y = true;
-	//}
 
 	// Also don't bother if we've gone beyond the total simulation time
 	if (dLclTimestep <= 0.0 && !skip)
@@ -99,543 +82,325 @@ void gts_cacheDisabled (
 		pCellStateDst[ulIdx] = pCellStateSrc[ulIdx];
 		skip = true;
 	}
-
-	// Load cell data
-	dCellBedElev		= dBedElevation[ ulIdx ];
-	pCellData			= pCellStateSrc[ ulIdx ];
-	dManningCoef		= dManning[ ulIdx ];
-
-	// Cell disabled?
-	if ( (pCellData.y <= -9999.0 || pCellData.x == -9999.0 ) && !skip)
-	{
-		printf("104/n");
-		pCellStateDst[ ulIdx ] = pCellData;
-		skip= true;
-	}
-
-
-
-
-
-
-	if(!skip){
-
-	//set data
-	opt_z = dCellBedElev;
-	if(result_data <= VERY_SMALL){
-		opt_h = 0.0;
-		opt_s = opt_z;
-	}else{
-		opt_h = result_data;
-		opt_s = result_data + opt_z;
-		pCellData.x	= result_data+ opt_z;
-	}
 	
-	}
-	// Somehow a barrier is not needed here?!
-	//barrier(CLK_GLOBAL_MEM_FENCE);
-
 	if(!skip){
 
-	ulIdxNeigN = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
-	dNeigBedElevN	= dBedElevation [ ulIdxNeigN ];
-	pNeigDataN		= pCellStateSrc	[ ulIdxNeigN ];
+		// Load cell data
+		dCellBedElev		= dBedElevation[ ulIdx ];
+		pCellData			= pCellStateSrc[ ulIdx ];
+		dManningCoef		= dManning[ ulIdx ];
 
-	ulIdxNeigE = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_E);
-	dNeigBedElevE	= dBedElevation [ ulIdxNeigE ];
-	pNeigDataE		= pCellStateSrc	[ ulIdxNeigE ];
-
-	ulIdxNeigS = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_S);
-	dNeigBedElevS	= dBedElevation [ ulIdxNeigS ];
-	pNeigDataS		= pCellStateSrc	[ ulIdxNeigS ];
-
-	ulIdxNeigW = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_W);
-	dNeigBedElevW	= dBedElevation [ ulIdxNeigW ];
-	pNeigDataW		= pCellStateSrc	[ ulIdxNeigW ];
-
-	//All neighbours are dry? Don't bother calculating
-	if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
-	if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
-	if ( ucDryCount == 5 ){
-		//printf("Full dry\n");
-		//TODO: Alaa check this: normaly we would return but there are boundary conditions here
-	//	return;
-	}
-	//else{
-	//	printf("116\n");
-	//	
-	//}
-
-
-	if(opt_pol_x || opt_pol_y){
-		printf("We shouldn't be here xxxxxxxxxxxxxxxxx \n");
-	//	return;
+		// Cell disabled?
+		if ( (pCellData.y <= -9999.0 || pCellData.x == -9999.0 ))
+		{
+			pCellStateDst[ ulIdx ] = pCellData;
+			skip= true;
+		}
 	}
 
 
-	if(!(lIdxX==DOMAIN_ROWS-1)){
-	opt_hE = pNeigDataE.x - dNeigBedElevE;
-	opt_sE = pNeigDataE.x;
-	opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
-	opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
-	//in x-direction
-	if(!noflow_x){
-		if(!opt_pol_x){
-			//manning x
-			if(opt_h > VERY_SMALL || opt_hE > VERY_SMALL){
+
+	if(!skip){
+		old_pds_dt = pds_dt[ulIdx];
+		flowStateCell = flowstates[ ulIdx ];
+		isFlowElement	= flowStateCell.isFlowElement;
+		noflow_x		= flowStateCell.noflow_x;
+		noflow_y		= flowStateCell.noflow_y;
+		opt_pol_x		= flowStateCell.opt_pol_x;
+		opt_pol_y		= flowStateCell.opt_pol_y;
+
+		if(isFlowElement){
+			//set data
+			opt_z = dCellBedElev;
+			if(result_data <= VERY_SMALL){
+				opt_h = 0.0;
+				opt_s = opt_z;
+				pCellData.x	= opt_z;
+			}else{
+				opt_h = result_data;
+				opt_s = result_data + opt_z;
+				pCellData.x	= result_data + opt_z;
+			}
+		}
+	}
+
+	pds_dt[ulIdx]		+=	pBoundCoup[ulIdx].x + pBoundCoup[ulIdx].y;
+
+	barrier(CLK_GLOBAL_MEM_FENCE);
+
+	if(!skip){
+		
+		if(opt_pol_x || opt_pol_y){
+			printf("We shouldn't be here xxxxxxxxxxxxxxxxx \n");
+		//	return;
+		}
+
+	
+		//in x-direction
+		if(!noflow_x){
+			ulIdxNeigE = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_E);
+			dNeigBedElevE	= dBedElevation [ ulIdxNeigE ];
+			pNeigDataE		= pCellStateSrc	[ ulIdxNeigE ];
+			opt_hE = pNeigDataE.x - dNeigBedElevE;
+			opt_sE = pNeigDataE.x;
+			opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
+			opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
+			if(!opt_pol_x){
+				//manning x
+				if(opt_h > VERY_SMALL || opt_hE > VERY_SMALL){
 				
-				flow_depth = opt_s - opt_zEmax;
-				if(flow_depth <0.0){
-					flow_depth=0.0;
-				}
-				flow_depth_neigh = opt_sE - opt_zEmax;
-				if(flow_depth_neigh<0.0){
-					flow_depth_neigh=0.0;
-				}
+					flow_depth = opt_s - opt_zEmax;
+					if(flow_depth <0.0){
+						flow_depth=0.0;
+					}
+					flow_depth_neigh = opt_sE - opt_zEmax;
+					if(flow_depth_neigh<0.0){
+						flow_depth_neigh=0.0;
+					}
 
-				flow_depth=max(flow_depth,flow_depth_neigh);
-				if ( lIdxX == 88 && lIdxY == 88)
-				{	
-					//printf("dLclTimestep %f flow_depth %f flow_depth_neigh %f\n",dLclTimestep, opt_s, opt_sE);
-				}
+					flow_depth=max(flow_depth,flow_depth_neigh);
+					if ( lIdxX == 88 && lIdxY == 88)
+					{	
+						//printf("dLclTimestep %f flow_depth %f flow_depth_neigh %f\n",dLclTimestep, opt_s, opt_sE);
+					}
 
-				ds_dt_buff=0;
-				if(flow_depth > VERY_SMALL){
-					//diffusive wave
-					delta_h= opt_sE - opt_s;
-					abs_delta_h=fabs(delta_h);
+					ds_dt_buff=0;
+					if(flow_depth > VERY_SMALL){
+						//diffusive wave
+						delta_h= opt_sE - opt_s;
+						abs_delta_h=fabs(delta_h);
 
-					if(abs_delta_h > VERY_SMALL){
-						ds_dt_buff= opt_cE * pow(flow_depth, (5.0/3.0));
+						if(abs_delta_h > VERY_SMALL){
+							ds_dt_buff= opt_cE * pow(flow_depth, (5.0/3.0));
 
-						if(abs_delta_h<=0.005078){
-							ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+							if(abs_delta_h<=0.005078){
+								ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+							}
+							else{
+								ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
+							}
+
+							//set the result
+							ds_dt_dataE	+= ds_dt_buff;
+							//printf("ds_dt_buff: %f \n" ,ds_dt_buff);
+							v_x			= -1* ds_dt_buff * DOMAIN_DELTAX / flow_depth;
 						}
-						else{
-							ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
-						}
-
-						//set the result
-						ds_dt_data	+= ds_dt_buff;
-						//printf("ds_dt_buff: %f \n" ,ds_dt_buff);
-						v_x			+= -1* ds_dt_buff * DOMAIN_DELTAX / flow_depth;
 					}
 				}
-			}
-		}else{
-			printf("polini errorE: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
-			flow_depth		 =  opt_s - opt_zEmax;
-			flow_depth_neigh =  opt_sE- opt_zEmax;
+			}else{
+				printf("polini errorE: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
+				flow_depth		 =  opt_s - opt_zEmax;
+				flow_depth_neigh =  opt_sE- opt_zEmax;
 
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			else{ //Flow
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff = -1.0 * Cfacweir * opt_cE * pow(flow_depth, (3.0/2.0));
-
-					v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
+				//noFlow
+				if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
+					ds_dt_buff=0.0;
 				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-
-					ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
-					v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
+				else{ //Flow
+					//flow out of this element without submerged weirflow reduction into the neihgbouring element
+					if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
+						ds_dt_buff = -1.0 * Cfacweir * opt_cE * pow(flow_depth, (3.0/2.0));
 
 						v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
 					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0 - flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
+					//flow out of the neighbouring element without submerged weirflow reduction into this element
+					else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
 
+						ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
 						v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
 					}
+					//submerged weirflow with reduction
+					else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
+						//flow out of this element into the neihgbouring element
+						if(flow_depth>flow_depth_neigh){
+							ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth,(3.0/2.0));
+							//reduction of the discharge (submerged weirflow)
+							reduction_term = (1.0-flow_depth_neigh/flow_depth);
+							//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+							if(reduction_term <= 0.000463529){
+								ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+							}
+							else{
+								ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
+							}
+
+							v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
+						}
+						//flow out of the neighbouring element into this element
+						else{
+							ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
+							//reduction of the discharge (submerged weirflow)
+							reduction_term = (1.0 - flow_depth/flow_depth_neigh);
+							//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+							if(reduction_term <= 0.000463529){
+								ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+							}
+							else{
+								ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
+							}
+
+							v_x = -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
+						}
+					}
+					//set the result
+					ds_dt_dataE += ds_dt_buff;
 				}
-				//set the result
-				ds_dt_data += ds_dt_buff;
 			}
 		}
-	}
-	}
 	
-	if(!(lIdxX==0)){
-	opt_hW = pNeigDataW.x - dNeigBedElevW;
-	opt_sW = pNeigDataW.x;
-	opt_zWmax = opt_z > dNeigBedElevW ? opt_z : dNeigBedElevW;
-	opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])/pow(DOMAIN_DELTAX,1.5);
-	//in -x-direction
-	if(!noflow_x){
-
-		if(!opt_pol_x){
-			//manning x
-			if(opt_h > VERY_SMALL || opt_hW > VERY_SMALL){
-				
-
-
-				flow_depth = opt_s - opt_zWmax;
-				if(flow_depth <0.0){
-					flow_depth=0.0;
-				}
-				flow_depth_neigh= opt_sW - opt_zWmax;
-				if(flow_depth_neigh<0.0){
-					flow_depth_neigh=0.0;
-				}
-
-				flow_depth=max(flow_depth,flow_depth_neigh);
-
-				ds_dt_buff=0;
-				if(flow_depth > VERY_SMALL){
-					//diffusive wave
-					delta_h= opt_sW - opt_s;
-					abs_delta_h=fabs(delta_h);
-
-					if(abs_delta_h > VERY_SMALL){
-						ds_dt_buff= opt_cW * pow(flow_depth, (5.0/3.0));
-
-						if(abs_delta_h<=0.005078){
-							ds_dt_buff=ds_dt_buff*0.10449968880528*atan(159.877741951379*delta_h); //0.0152
-						}
-						else{
-							ds_dt_buff=ds_dt_buff*(delta_h/pow(abs_delta_h,0.5));
-						}
-
-						//set the result
-						ds_dt_data	+= ds_dt_buff;
-						v_x			+= ds_dt_buff * DOMAIN_DELTAX / flow_depth;
-					}
-				}
-			}
-		}else{
-			printf("polini errorW: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
-			flow_depth		 =  opt_s - opt_zWmax;
-			flow_depth_neigh =  opt_sW- opt_zWmax;
-
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			else{ //Flow
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff = -1.0 * Cfacweir * opt_cW * pow(flow_depth, (3.0/2.0));
-
-					v_x += -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-
-					ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth_neigh,(3.0/2.0));
-					v_x += -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-						v_x += -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth;
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0 - flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-						v_x += -1.0 * ds_dt_buff * DOMAIN_DELTAX / flow_depth_neigh;
-					}
-				}
-				//set the result
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
-		}
-	}else{
-	}
-	}
-
 	
-	if(!(lIdxY==DOMAIN_COLS-1)){
-	opt_hN = pNeigDataN.x - dNeigBedElevN;
-	opt_sN = pNeigDataN.x;
-	opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
-	opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
-	//in y-direction
-	if(!noflow_y){
-		if(!opt_pol_y){
+		//in y-direction
+		if(!noflow_y){
+			ulIdxNeigN = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
+			dNeigBedElevN	= dBedElevation [ ulIdxNeigN ];
+			pNeigDataN		= pCellStateSrc	[ ulIdxNeigN ];
+			opt_hN = pNeigDataN.x - dNeigBedElevN;
+			opt_sN = pNeigDataN.x;
+			opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
+			opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
+			if(!opt_pol_y){
 
-			if( opt_h > VERY_SMALL ||  opt_hN > VERY_SMALL){
-				//calculate the mid of the flow depth
-				flow_depth= opt_s - opt_zNmax;
-				if(flow_depth <0.0){
-					flow_depth=0.0;
-				}
-				flow_depth_neigh= opt_sN - opt_zNmax;
-				if(flow_depth_neigh<0.0){
-					flow_depth_neigh=0.0;
-				}
-				//flow_depth=(flow_depth+flow_depth_neigh)*0.5;
-				flow_depth=max(flow_depth,flow_depth_neigh);
+				if( opt_h > VERY_SMALL ||  opt_hN > VERY_SMALL){
+					//calculate the mid of the flow depth
+					flow_depth= opt_s - opt_zNmax;
+					if(flow_depth <0.0){
+						flow_depth=0.0;
+					}
+					flow_depth_neigh= opt_sN - opt_zNmax;
+					if(flow_depth_neigh<0.0){
+						flow_depth_neigh=0.0;
+					}
+					//flow_depth=(flow_depth+flow_depth_neigh)*0.5;
+					flow_depth=max(flow_depth,flow_depth_neigh);
 			
-				ds_dt_buff=0;
-				if(flow_depth > VERY_SMALL){
-					//diffusive wave
-					delta_h= opt_sN- opt_s;
-					abs_delta_h=fabs(delta_h);
+					ds_dt_buff=0;
+					if(flow_depth > VERY_SMALL){
+						//diffusive wave
+						delta_h= opt_sN- opt_s;
+						abs_delta_h=fabs(delta_h);
 
-					if(abs_delta_h > VERY_SMALL){
-						ds_dt_buff = opt_cN * pow(flow_depth, (5.0/3.0));
+						if(abs_delta_h > VERY_SMALL){
+							ds_dt_buff = opt_cN * pow(flow_depth, (5.0/3.0));
 
-						if(abs_delta_h<=0.005078){
-							ds_dt_buff *= 0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+							if(abs_delta_h<=0.005078){
+								ds_dt_buff *= 0.10449968880528*atan(159.877741951379*delta_h); //0.0152
+							}
+							else{
+								ds_dt_buff *= delta_h/pow(abs_delta_h,0.5);
+							}
+
+							//set the result
+							ds_dt_dataN	+= ds_dt_buff;
+							v_y			= -1* ds_dt_buff * DOMAIN_DELTAY / flow_depth;
 						}
-						else{
-							ds_dt_buff *= delta_h/pow(abs_delta_h,0.5);
-						}
-
-						//set the result
-						ds_dt_data	+= ds_dt_buff;
-						v_y			+= -1* ds_dt_buff * DOMAIN_DELTAY / flow_depth;
 					}
 				}
-			}
-		}else{
-			printf("polini errorN: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
-			flow_depth = opt_s-opt_zNmax;
-			flow_depth_neigh = opt_sN - opt_zNmax;
+			}else{
+				printf("polini errorN: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
+				flow_depth = opt_s-opt_zNmax;
+				flow_depth_neigh = opt_sN - opt_zNmax;
 		
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			//flow
-			else{
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff=-1.0* Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
-					v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
+				//noFlow
+				if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
+					ds_dt_buff=0.0;
 				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-					ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth_neigh,(3.0/2.0));
-					v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
+				//flow
+				else{
+					//flow out of this element without submerged weirflow reduction into the neihgbouring element
+					if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
+						ds_dt_buff=-1.0* Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
 						v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
 					}
-					//flow out of the neighbouring element into this element
-					else{
+					//flow out of the neighbouring element without submerged weirflow reduction into this element
+					else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
 						ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
 						v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
 					}
-				}
+					//submerged weirflow with reduction
+					else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
+						//flow out of this element into the neihgbouring element
+						if(flow_depth>flow_depth_neigh){
+							ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
+							//reduction of the discharge (submerged weirflow)
+							reduction_term=(1.0-flow_depth_neigh/flow_depth);
+							//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+							if(reduction_term<=0.000463529){
+								ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
+							}
+							else{
+								ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
+							}
+							v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
+						}
+						//flow out of the neighbouring element into this element
+						else{
+							ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth_neigh,(3.0/2.0));
+							//reduction of the discharge (submerged weirflow)
+							reduction_term=(1.0-flow_depth/flow_depth_neigh);
+							//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+							if(reduction_term<=0.000463529){
+								ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
+							}
+							else{
+								ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
+							}
+							v_y = -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
+						}
+					}
 
-				//set result data
-				ds_dt_data = ds_dt_data + ds_dt_buff;
+					//set result data
+					ds_dt_dataN += ds_dt_buff;
+				}
 			}
 		}
-	}
-	}
 	
-	if(!(lIdxY==0)){
-	opt_hS = pNeigDataS.x - dNeigBedElevS;
-	opt_sS = pNeigDataS.x;
-	opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
-	opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])/pow(DOMAIN_DELTAX,1.5);
-	//in -y-direction
-	if(!noflow_y){
-		if(!opt_pol_y){
 
-			if( opt_h > VERY_SMALL ||  opt_hS > VERY_SMALL){
-				//calculate the mid of the flow depth
-				flow_depth= opt_s - opt_zSmax;
-				if(flow_depth <0.0){
-					flow_depth=0.0;
-				}
-				flow_depth_neigh= opt_sS - opt_zSmax;
-				if(flow_depth_neigh<0.0){
-					flow_depth_neigh=0.0;
-				}
-				//flow_depth=(flow_depth+flow_depth_neigh)*0.5;
-				flow_depth=max(flow_depth,flow_depth_neigh);
-			
-				ds_dt_buff=0;
-				if(flow_depth > VERY_SMALL){
-					//diffusive wave
-					delta_h= opt_sS - opt_s;
-					abs_delta_h=fabs(delta_h);
 
-					if(abs_delta_h > VERY_SMALL){
-						ds_dt_buff= opt_cS*pow(flow_depth, (5.0/3.0));
+		// Update the flow state
+		//	pCellData.x		= pCellData.x + ds_dt_data*dLclTimestep;
+		if (v_x != 0.0){
+			pCellData.z		= v_x;
+		}
+		if (v_y != 0.0){
+			pCellData.w		= v_y;
+		}
 
-						if(abs_delta_h<=0.005078){
-							ds_dt_buff *= 0.10449968880528*atan(159.877741951379*delta_h); //0.0152
-						}
-						else{
-							ds_dt_buff *= delta_h/pow(abs_delta_h,0.5);
-						}
+		pds_dt[ulIdx] += ds_dt_dataE + ds_dt_dataN;
 
-						//set the result
-						ds_dt_data	+= ds_dt_buff;
+		barrier(CLK_GLOBAL_MEM_FENCE);
 
-						v_y			+= ds_dt_buff * DOMAIN_DELTAY / flow_depth;
-					}
-				}
-			}
-		}else{
-			printf("polini errorS: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
-			flow_depth = opt_s-opt_zSmax;
-			flow_depth_neigh = opt_sS - opt_zSmax;
+		if(!noflow_x){
+			pds_dt[ulIdxNeigE] -= ds_dt_dataE;
+			//pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
+		}
 		
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			//flow
-			else{
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff=-1.0* Cfacweir *opt_cS*pow(flow_depth,(3.0/2.0));
-					v_y += -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-					ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth_neigh,(3.0/2.0));
-					v_y += -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-						v_y += -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth;
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-						v_y += -1.0 * ds_dt_buff * DOMAIN_DELTAY / flow_depth_neigh;
-					}
-				}
+		barrier(CLK_GLOBAL_MEM_FENCE);
 
-				//set result data
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
+		if(!noflow_y){
+			pds_dt[ulIdxNeigN] -= ds_dt_dataN;
+			//pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
 		}
-	}
-	}
+			
+		barrier(CLK_GLOBAL_MEM_FENCE);
 
-
-	// Update the flow state
-	//	pCellData.x		= pCellData.x + ds_dt_data*dLclTimestep;
-		pCellData.z		= v_x;
-		pCellData.w		= v_y;
-
-
-	//pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
-	//pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
-
-	// New max FSL?
-	if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 ){
-		pCellData.y = pCellData.x;
-	}
+		// New max FSL?
+		if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 ){
+			pCellData.y = pCellData.x;
+		}
 	
-	// Crazy low depths?
-	//if ( pCellData.x - dCellBedElev < VERY_SMALL*100000 )
-	//	pCellData.x = dCellBedElev;
+		// Crazy low depths?
+		//if ( pCellData.x - dCellBedElev < VERY_SMALL*100000 )
+		//	pCellData.x = dCellBedElev;
 
 
-	if ( lIdxX == 3 && lIdxY == 3)
-	{	
-		//printf("p.x: %f p.z: %f p.w: %f  T: %f result_data: %f pds_dt %f\n", pCellData.x, pCellData.z, pCellData.w, dLclTimestep, result_data, pds_dt[ulIdx]);
-	}
+		if ( lIdxX == 0 && lIdxY == 0)
+		{	
+			printf("p.x: %f p.z: %f p.w: %f  T: %f result_data: %f pds_dt %f ds_dt_dataN %f\n ", pCellData.x, pCellData.z, pCellData.w, dLclTimestep, result_data, pds_dt[ulIdx], ds_dt_dataN);
+		}
 
-	// Commit to global memory
-	pCellStateDst[ulIdx] = pCellData;
-	resultData[ulIdx] += ds_dt_data*dLclTimestep;
-	pds_dt[ulIdx] += ds_dt_data;
+		// Commit to global memory
+		pCellStateDst[ulIdx] = pCellData;
+		resultData[ulIdx] += (pds_dt[ulIdx] - old_pds_dt)*dLclTimestep;
 	
 	}
 }
