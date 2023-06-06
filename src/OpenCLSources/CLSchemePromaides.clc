@@ -16,15 +16,18 @@ void gts_cacheDisabled (
 			__global	cl_double const * restrict	dManning,					// Manning values
 			__global	FlowStates const * restrict	flowstates,					// Flow States data
 			__global	cl_double2 *  				pBoundCoup,						// Current Boundary Coupling data
-			__global	cl_double *  				pds_dt							// Current Boundary Coupling data
+			__global	cl_double *  				pds_dt,							// Current Boundary Coupling data
+			__global	cl_double *  				resultData							// Current Boundary Coupling data
 		)
 {
+	
 
 	// Identify the cell we're reconstructing (no overlap)
 	__private cl_long					lIdxX			= get_global_id(0);
 	__private cl_long					lIdxY			= get_global_id(1);
 	__private cl_ulong					ulIdx, ulIdxNeigN, ulIdxNeigE, ulIdxNeigS, ulIdxNeigW;
 	__private cl_uchar					ucDirection;
+	bool skip = false;
 	
 	ulIdx = getCellID(lIdxX, lIdxY);
 	
@@ -34,7 +37,7 @@ void gts_cacheDisabled (
 		lIdxX < 0 || 
 		lIdxY < 0 ){
 		//printf("Went Beyoooond {%i, %i} {%ld,%ld}\n",DOMAIN_COLS,DOMAIN_ROWS,lIdxX,lIdxY);
-		return;
+		skip = true;
 		}
 
 
@@ -63,6 +66,8 @@ void gts_cacheDisabled (
 	__private cl_double		v_x					=   0.0;
 	__private cl_double		v_y					=   0.0;
 	__private FlowStates	flowStateCell;
+
+	__private cl_double		result_data = resultData[ulIdx];
 	
 	
 	//TODO: Alaa 
@@ -87,12 +92,12 @@ void gts_cacheDisabled (
 	//}
 
 	// Also don't bother if we've gone beyond the total simulation time
-	if (dLclTimestep <= 0.0)
+	if (dLclTimestep <= 0.0 && !skip)
 	{
 		//printf("90, ulIdx: %f dLclTimestep: %f \n",ulIdx*1.0, dLclTimestep);
 		// TODO: Is there a way of avoiding this?!
 		pCellStateDst[ulIdx] = pCellStateSrc[ulIdx];
-		return;
+		skip = true;
 	}
 
 	// Load cell data
@@ -101,15 +106,37 @@ void gts_cacheDisabled (
 	dManningCoef		= dManning[ ulIdx ];
 
 	// Cell disabled?
-	if ( pCellData.y <= -9999.0 || pCellData.x == -9999.0 )
+	if ( (pCellData.y <= -9999.0 || pCellData.x == -9999.0 ) && !skip)
 	{
 		printf("104/n");
 		pCellStateDst[ ulIdx ] = pCellData;
-		return;
+		skip= true;
 	}
 
 
+
+
+
+
+	if(!skip){
+
+	//set data
+	opt_z = dCellBedElev;
+	if(result_data <= VERY_SMALL){
+		opt_h = 0.0;
+		opt_s = opt_z;
+	}else{
+		opt_h = result_data;
+		opt_s = result_data + opt_z;
+		pCellData.x	= result_data+ opt_z;
+	}
 	
+	}
+	// Somehow a barrier is not needed here?!
+	//barrier(CLK_GLOBAL_MEM_FENCE);
+
+	if(!skip){
+
 	ulIdxNeigN = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
 	dNeigBedElevN	= dBedElevation [ ulIdxNeigN ];
 	pNeigDataN		= pCellStateSrc	[ ulIdxNeigN ];
@@ -126,49 +153,22 @@ void gts_cacheDisabled (
 	dNeigBedElevW	= dBedElevation [ ulIdxNeigW ];
 	pNeigDataW		= pCellStateSrc	[ ulIdxNeigW ];
 
-
 	//All neighbours are dry? Don't bother calculating
-	//if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
-	//if ( ucDryCount == 5 ){
+	if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
+	if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
+	if ( ucDryCount == 5 ){
 		//printf("Full dry\n");
 		//TODO: Alaa check this: normaly we would return but there are boundary conditions here
-		//return;
-	//}
+	//	return;
+	}
 	//else{
 	//	printf("116\n");
 	//	
 	//}
 
-
-	//set data
-	opt_z = dCellBedElev;
-	//if((pCellData.x  - opt_z) < VERY_SMALL){
-	//	opt_h = 0.0;
-	//	opt_s = opt_z;
-	//}else{
-		opt_h = pCellData.x  - opt_z;
-		opt_s = pCellData.x;
-	//}
-	
-
-	//Add Boundry and couple conditions
-	//ds_dt_data = bound_cond_dsdt + coup_cond_dsdt;
-	//ds_dt_data = 10.0/dLclTimestep*0;
-
-	//opt_h = pCellData.x  - dCellBedElev;
-	
-	
-	
-	
-	
-	
-
-	//v_x = pCellData.z;
-	//v_y = pCellData.w;
 
 	if(opt_pol_x || opt_pol_y){
 		printf("We shouldn't be here xxxxxxxxxxxxxxxxx \n");
@@ -281,7 +281,7 @@ void gts_cacheDisabled (
 					}
 				}
 				//set the result
-				ds_dt_data = ds_dt_data + ds_dt_buff;
+				ds_dt_data += ds_dt_buff;
 			}
 		}
 	}
@@ -609,17 +609,19 @@ void gts_cacheDisabled (
 
 
 	// Update the flow state
-	pCellData.x		= pCellData.x	+ dLclTimestep * ds_dt_data;
-	pCellData.z		= v_x;
-	pCellData.w		= v_y;
+	//	pCellData.x		= pCellData.x + ds_dt_data*dLclTimestep;
+		pCellData.z		= v_x;
+		pCellData.w		= v_y;
+
 
 	//pNeigDataN.x		= pNeigDataN.x	- dLclTimestep * ds_dt_dataN;
 	//pNeigDataE.x		= pNeigDataE.x	- dLclTimestep * ds_dt_dataE;
 
 	// New max FSL?
-	if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 )
+	if ( pCellData.x > pCellData.y && pCellData.y > -9990.0 ){
 		pCellData.y = pCellData.x;
-
+	}
+	
 	// Crazy low depths?
 	//if ( pCellData.x - dCellBedElev < VERY_SMALL*100000 )
 	//	pCellData.x = dCellBedElev;
@@ -627,15 +629,13 @@ void gts_cacheDisabled (
 
 	if ( lIdxX == 3 && lIdxY == 3)
 	{	
-		printf("pCellData.x: %f pCellData.y: %f pCellData.z: %f pCellData.w: %f   \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w);
+		//printf("p.x: %f p.z: %f p.w: %f  T: %f result_data: %f pds_dt %f\n", pCellData.x, pCellData.z, pCellData.w, dLclTimestep, result_data, pds_dt[ulIdx]);
 	}
 
 	// Commit to global memory
+	pCellStateDst[ulIdx] = pCellData;
+	resultData[ulIdx] += ds_dt_data*dLclTimestep;
 	pds_dt[ulIdx] += ds_dt_data;
 	
-
-	
-	pCellStateDst[ulIdx] = pCellData;
-
-
+	}
 }

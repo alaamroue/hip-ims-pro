@@ -145,7 +145,7 @@ namespace model
 		};
 	};
 
-	//extern	CModel*			pManager;
+	extern	CModel*			cModel;
 	void					doError( std::string, unsigned char );
 }
 

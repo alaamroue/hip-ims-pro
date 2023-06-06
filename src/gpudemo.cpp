@@ -43,7 +43,7 @@
 #include "CBoundaryUniform.h"
 #include "CBoundaryMap.h"
 
-
+CModel* model::cModel;
 CModel* pManager;
 int loadConfiguration();
 int commenceSimulation();
@@ -78,6 +78,7 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
+	model::cModel = pManager;
 	double SyncTime = 3600.0*100;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
@@ -178,6 +179,8 @@ int loadConfiguration()
 			ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
 			//dsdt Condition
 			ourCartesianDomain->setdsdt(ulCellID, 0.0);
+			//ResultData Condition
+			ourCartesianDomain->setResultData(ulCellID, 0.0);
 
 		}
 	}

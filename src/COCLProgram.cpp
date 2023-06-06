@@ -80,6 +80,8 @@ bool COCLProgram::compileProgram(
 	this->sCompileParameters += " -cl-mad-enable";
 #endif
 
+	this->sCompileParameters += " -Werror";
+
 	// TODO: Alaa Check the effect of these one, 14% inc speed
 	// Allows optimizations for floating-point arithmetic
 	// Requires that the global work-size be a multiple of the work-group size

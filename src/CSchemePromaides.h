@@ -159,6 +159,7 @@ protected:
 	COCLBuffer* oclBufferCellFlowStates;
 	COCLBuffer* oclBufferBoundCoup;
 	COCLBuffer* oclBufferdsdt;
+	COCLBuffer* oclBufferResultData;
 	COCLBuffer* oclBufferCellBed;
 	COCLBuffer* oclBufferTimestep;
 	COCLBuffer* oclBufferTimeHydrological;

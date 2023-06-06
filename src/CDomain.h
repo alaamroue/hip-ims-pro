@@ -83,7 +83,7 @@ class CDomain : public CDomainBase
 		virtual		double*			readDomain_vx() = 0;											// Read Output velocity in x-direction from gpu to double*
 		virtual		double*			readDomain_vy() = 0; 											// Read Output velocity in y-direction from gpu to double*
 		void						createStoreBuffers( void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
-		void						createStoreBuffers(void**, void**, void**, void**, void**, void**, unsigned char);	// Allocates memory and returns pointers to the three arrays (Promaides)
+		void						createStoreBuffers(void**, void**, void**, void**, void**, void**, void**, unsigned char);	// Allocates memory and returns pointers to the three arrays (Promaides)
 		void						initialiseMemory();												// Populate cells with default values
 		void						handleInputData( unsigned long, double, unsigned char, unsigned char );	// Handle input data for varying state/static cell variables 
 		void						setBedElevation( unsigned long, double );						// Sets the bed elevation for a cell
@@ -91,6 +91,7 @@ class CDomain : public CDomainBase
 		void						setBoundaryCondition(unsigned long, double);					// Sets the boundary condition for a cell
 		void						setCouplingCondition(unsigned long, double);					// Sets the coupling condtion for a cell
 		void						setdsdt(unsigned long, double);									// Sets the dsdt value for a cell
+		void						setResultData(unsigned long, double);							// Sets the ResultData value for a cell
 		void						setFlowStatesValue(unsigned long, model::FlowStates);			// Sets the flow states for a cell
 		void						setStateValue( unsigned long, unsigned char, double );			// Sets a state variable
 		bool						isDoublePrecision() { return ( ucFloatSize == 8 ); };				// Are we using double-precision?
@@ -127,12 +128,14 @@ class CDomain : public CDomainBase
 		cl_double*			dBedElevations;															// Heap for bed elevations
 		cl_double*			dManningValues;															// Heap for manning values
 		cl_double2*			dBoundCoup;																// Heap for boundary and coupling condition values
-		cl_double*			ddsdt;																// Heap for dsdt promaides varible
+		cl_double*			ddsdt;																	// Heap for dsdt promaides varible
+		cl_double*			dResultData;															// Heap for result data promaides varible
 		cl_float4*			fCellStates;															// Heap for cell state date (single)
 		cl_float*			fBedElevations;															// Heap for bed elevations (single)
 		cl_float*			fManningValues;															// Heap for manning values (single)
 		cl_float2*			fBoundCoup;																// Heap for boundary and coupling condition values (single)
-		cl_float*			 fdsdt;																// Heap for dsdt promaides varible (single)
+		cl_float*			 fdsdt;																	// Heap for dsdt promaides varible (single)
+		cl_float*			fResultData;															// Heap for result data (single)
 		model::FlowStates*	cFlowStates;															// Heap for Flow States values
 
 		cl_double			dMinFSL;																// Min and max FSLs in the domain used for rendering
