@@ -218,23 +218,6 @@ __kernel void bdy_Uniform(
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 __kernel void bdy_Gridded (
 	__constant		sBdyGriddedConfiguration *	pConfiguration,
 	__global		cl_double const * restrict	pTimeseries,
@@ -293,6 +276,50 @@ __kernel void bdy_Gridded (
 	if ( pConfig.Definition == BOUNDARY_GRIDDED_MASS_FLUX )
 		pCellData.x += dRate / ( (cl_double)DOMAIN_DELTAX * (cl_double)DOMAIN_DELTAY ) * dLclTimestep;
 
+	// Return to global memory
+	pCellState[ulIdx] = pCellData;
+}
+
+
+__kernel void bdy_Promaides (
+	__global		cl_double2 const * restrict	pBoundaryArray,
+	__global		cl_double *					pTime,
+	__global		cl_double4 *				pCellState
+	)
+{
+	// Which global series are we processing, and which cell
+	// Global ID is X, Y cell, then Z for the series
+	__private cl_long		lIdxX = get_global_id(0);
+	__private cl_long		lIdxY = get_global_id(1);
+	__private cl_ulong		ulIdx;
+
+	// Don't bother if we've gone beyond the domain bounds
+	if (lIdxX > DOMAIN_COLS - 1 ||
+		lIdxY > DOMAIN_ROWS - 1 ||
+		lIdxX < 0 ||
+		lIdxY < 0 )
+		return;
+
+	ulIdx = getCellID(lIdxX, lIdxY);
+
+	__private cl_double					dRate			= pBoundaryArray[ulIdx].x;
+	__private cl_double					dLclTimestep	= *pTime;
+	__private cl_double4				pCellData		= pCellState[ulIdx];
+
+	// Hydrological processes have their own timesteps
+	if (dLclTimestep <= 0.0)
+		return;
+
+	// This would already be represented in the series
+	//if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
+	//	return;
+
+	// Apply the value...
+	pCellData.x += dRate * dLclTimestep;
+	if ( lIdxX == 99 && lIdxY == 99)
+	{	
+		//printf("x: %f y: %f z: %f w: %f Rate: %f step: %f \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate, dLclTimestep);
+	}
 	// Return to global memory
 	pCellState[ulIdx] = pCellData;
 }

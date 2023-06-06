@@ -61,6 +61,7 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	// Default null values for OpenCL objects
 	oclModel = NULL;
 	oclKernelFullTimestep = NULL;
+	oclKernelBoundary = NULL;
 	oclKernelFriction = NULL;
 	oclKernelTimestepReduction = NULL;
 	oclKernelTimeAdvance = NULL;
@@ -286,10 +287,21 @@ bool CSchemePromaides::prepareCode()
  */
 bool CSchemePromaides::prepareBoundaries()
 {
-	CBoundaryMap* pBoundaries = this->pDomain->getBoundaries();
-	pBoundaries->prepareBoundaries(oclModel, oclBufferCellBed, oclBufferCellManning, oclBufferTime, oclBufferTimeHydrological, oclBufferTimestep);
+	bool						bReturnState = true;
+	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
+	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
+	COCLDevice* pDevice = pExecutor->getDevice();
 
-	return true;
+
+	oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
+	oclKernelBoundary->setGlobalSize(ceil(pDomain->getCols() / 8.0) * 8, ceil(pDomain->getRows() / 8.0) * 8);
+	oclKernelBoundary->setGroupSize(8, 8);
+
+	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates};
+	
+	oclKernelBoundary->assignArguments(aryArgsBdy);
+
+	return bReturnState;
 }
 
 /*
@@ -787,6 +799,7 @@ void CSchemePromaides::release1OResources()
 
 	if (this->oclModel != NULL)								delete oclModel;
 	if (this->oclKernelFullTimestep != NULL)				delete oclKernelFullTimestep;
+	if (this->oclKernelBoundary != NULL)				delete oclKernelBoundary;
 	if (this->oclKernelFriction != NULL)					delete oclKernelFriction;
 	if (this->oclKernelTimestepReduction != NULL)			delete oclKernelTimestepReduction;
 	if (this->oclKernelTimeAdvance != NULL)					delete oclKernelTimeAdvance;
@@ -807,6 +820,7 @@ void CSchemePromaides::release1OResources()
 
 	oclModel = NULL;
 	oclKernelFullTimestep = NULL;
+	oclKernelBoundary = NULL;
 	oclKernelFriction = NULL;
 	oclKernelTimestepReduction = NULL;
 	oclKernelTimeAdvance = NULL;
@@ -1015,7 +1029,7 @@ void CSchemePromaides::Threaded_runBatch()
 		// Have we been asked to import data for our domain links?
 		if (this->bImportLinks )
 		{
-			std::cout << "Importing data" << std::endl;
+			//std::cout << "Importing data" << std::endl;
 			/*
 			// Create Fake Data
 			double value = 0;
@@ -1382,30 +1396,26 @@ void	CSchemePromaides::scheduleIteration(
 	{
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStatesAlt);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStates);
+		oclKernelBoundary->assignArgument(2, oclBufferCellStatesAlt);
 		oclKernelFriction->assignArgument(1, oclBufferCellStates);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStates);
 	}
 	else {
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStates);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStatesAlt);
+		oclKernelBoundary->assignArgument(2, oclBufferCellStates);
 		oclKernelFriction->assignArgument(1, oclBufferCellStatesAlt);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStatesAlt);
 	}
 
-	// Run the boundary kernels (each bndy has its own kernel now)
-	pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
+	// Main scheme kernel
+	oclKernelBoundary->scheduleExecution();
 	pDevice->queueBarrier();
 
 	// Main scheme kernel
 	oclKernelFullTimestep->scheduleExecution();
 	pDevice->queueBarrier();
 
-	// Friction
-	if (this->bFrictionEffects && !this->bFrictionInFluxKernel)
-	{
-		oclKernelFriction->scheduleExecution();
-		pDevice->queueBarrier();
-	}
 
 	// Timestep reduction
 	if (this->bDynamicTimestep)

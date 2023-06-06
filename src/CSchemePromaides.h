@@ -101,6 +101,7 @@ public:
 	COCLBuffer* oclBufferTimeTarget;
 	bool				bUseForcedTimeAdvance;									// Force the timestep to be advanced next time?
 	COCLKernel* oclKernelFullTimestep;
+	COCLKernel* oclKernelBoundary;
 	COCLKernel* oclKernelFriction;
 	COCLKernel* oclKernelTimeAdvance;
 	Normalplain* np;

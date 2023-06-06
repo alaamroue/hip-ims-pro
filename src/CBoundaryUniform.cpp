@@ -303,7 +303,7 @@ void CBoundaryUniform::prepareBoundary(
 
 	// TODO: Need a more sensible group size!
 	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
-	this->oclKernel->setGlobalSize(ceil(pDomain->getCols() / 8) * 8, ceil(pDomain->getRows() / 8) * 8);
+	this->oclKernel->setGlobalSize(ceil(pDomain->getCols() / 8.0) * 8, ceil(pDomain->getRows() / 8.0) * 8);
 	this->oclKernel->setGroupSize(8, 8);
 }
 

@@ -2,8 +2,6 @@
 //#define DEBUG_CELLX 10
 //#define DEBUG_CELLY 10
 
-#define Cfacweir 2.9524528409
-
 /*
  *  Calculate everything without using LDS caching
  */
@@ -45,15 +43,12 @@ void gts_cacheDisabled (
 	__private cl_double		opt_cN, opt_cE, opt_cS, opt_cW;
 	__private cl_double		opt_z, opt_zNmax, opt_zEmax, opt_zSmax, opt_zWmax;
 	__private cl_double		opt_s, opt_sN, opt_sE,opt_sS,opt_sW;
-	__private cl_double4	pCellData,pNeigDataN,pNeigDataE,pNeigDataS,pNeigDataW;					// Z, Zmax, Qx, Qy
-	__private cl_double4	pSourceTerms,		dDeltaValues;										// Z, Qx, Qy
-	__private cl_double4	pFlux[4];																// Z, Qx, Qy
-	__private cl_double8	pLeft,				pRight;												// Z, H, Qx, Qy, U, V, Zb
+	__private cl_double4	pCellData,pNeigDataN,pNeigDataE,pNeigDataS,pNeigDataW;
 	
 
 	__private cl_uchar		ucStop				=	0;
 	__private cl_uchar		ucDryCount			=	0;
-	__private cl_double		ds_dt_data			=	pBoundCoup[ulIdx].x + pBoundCoup[ulIdx].y;
+	__private cl_double		ds_dt_data			=	0.0;
 	__private cl_double		flow_depth			=	0.0;
 	__private cl_double		flow_depth_neigh	=	0.0;
 	__private cl_double		delta_h				=	0.0;
@@ -103,7 +98,7 @@ void gts_cacheDisabled (
 	// Cell disabled?
 	if ( pCellData.y <= -9999.0 || pCellData.x == -9999.0 )
 	{
-		printf("104/n");
+		//printf("104/n");
 		pCellStateDst[ ulIdx ] = pCellData;
 		return;
 	}
@@ -125,23 +120,6 @@ void gts_cacheDisabled (
 	ulIdxNeigW = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_W);
 	dNeigBedElevW	= dBedElevation [ ulIdxNeigW ];
 	pNeigDataW		= pCellStateSrc	[ ulIdxNeigW ];
-
-
-	//All neighbours are dry? Don't bother calculating
-	//if ( pCellData.x  - dCellBedElev  < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataN.x - dNeigBedElevN < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataE.x - dNeigBedElevE < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataW.x - dNeigBedElevW < VERY_SMALL ) ucDryCount++;
-	//if ( pNeigDataS.x - dNeigBedElevS < VERY_SMALL ) ucDryCount++;
-	//if ( ucDryCount == 5 ){
-		//printf("Full dry\n");
-		//TODO: Alaa check this: normaly we would return but there are boundary conditions here
-		//return;
-	//}
-	//else{
-	//	printf("116\n");
-	//	
-	//}
 
 
 	//set data
@@ -625,13 +603,13 @@ void gts_cacheDisabled (
 	//	pCellData.x = dCellBedElev;
 
 
-	if ( lIdxX == 3 && lIdxY == 3)
+	if ( lIdxX == 0 && lIdxY == 0)
 	{	
-		printf("pCellData.x: %f pCellData.y: %f pCellData.z: %f pCellData.w: %f   \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w);
+		//printf("x: %f y: %f z: %f w: %f ds_dt_data %f  ts %f\n", pCellData.x-opt_z, pCellData.y-opt_z, pCellData.z, pCellData.w, ds_dt_data, dLclTimestep);
 	}
 
 	// Commit to global memory
-	pds_dt[ulIdx] += ds_dt_data;
+	pds_dt[ulIdx] += ds_dt_data + pBoundCoup[ulIdx].x;
 	
 
 	

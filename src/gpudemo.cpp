@@ -40,10 +40,9 @@
 #include "CSchemeGodunov.h"
 #include "CSchemePromaides.h"
 #include "Normalplain.h"
-#include "CBoundaryUniform.h"
-#include "CBoundaryMap.h"
 
 
+CModel* model::cModel;
 CModel* pManager;
 int loadConfiguration();
 int commenceSimulation();
@@ -78,6 +77,7 @@ int loadConfiguration()
 	np->SetBedElevationMountain();
 
 	pManager	= new CModel();
+	model::cModel = pManager;
 	double SyncTime = 3600.0*100;
 	pManager->setExecutorToDefaultGPU();											// Set Executor to a default GPU Config
 
@@ -120,32 +120,6 @@ int loadConfiguration()
 		pDataset.dOffsetY,
 		pDataset.dOffsetX
 	);
-
-
-	CBoundaryMap* ourBoundryMap = ourCartesianDomain->getBoundaries();
-	//CBoundary* pNewBoundary = NULL;
-	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryCell(ourBoundryMap->pDomain));
-	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryUniform(ourBoundryMap->pDomain));
-	//pNewBoundary = static_cast<CBoundary*>(new CBoundaryGridded(ourBoundryMap->pDomain));
-
-	//Set Up Boundry
-	CBoundaryUniform* pNewBoundary = new CBoundaryUniform(ourBoundryMap->pDomain);
-	pNewBoundary->logger = pManager->log;
-	pNewBoundary->sName = std::string("TimeSeriesName");
-	pNewBoundary->setValue(model::boundaries::uniformValues::kValueRainIntensity);
-	pNewBoundary->pTimeseries = new CBoundaryUniform::sTimeseriesUniform[100];
-	for (int i = 0; i < 100; i++) {
-		pNewBoundary->pTimeseries[i].dTime = i * 3600;
-		pNewBoundary->pTimeseries[i].dComponent = 0.0;
-	}
-
-	pNewBoundary->dTimeseriesInterval = pNewBoundary->pTimeseries[1].dTime - pNewBoundary->pTimeseries[0].dTime;
-	pNewBoundary->uiTimeseriesLength = 100;
-	pNewBoundary->dTimeseriesLength = pNewBoundary->pTimeseries[100 - 1].dTime;
-	pNewBoundary->dTotalVolume = 0.0;
-
-	ourBoundryMap->mapBoundaries[pNewBoundary->getName()] = pNewBoundary;
-
 
 	//CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	CSchemePromaides* pScheme = new CSchemePromaides(pManager);
