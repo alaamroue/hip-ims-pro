@@ -21,15 +21,34 @@ using std::max;
 /*
  *  Default constructor
  */
-CSchemePromaides::CSchemePromaides(void)
-{
-
-}
 
 CSchemePromaides::CSchemePromaides(CModel* cmodel)
 {
-	this->logger = cmodel->getLogger();
-	logger->writeLine("Godunov-type scheme loaded for execution on OpenCL platform.");
+	this->logger = cmodel->log;
+
+
+	this->bCellStatesSynced = false;
+	this->bDownloadLinks = false;
+	this->bImportLinks = false;
+	this->bOverrideTimestep = false;
+	this->bUpdateTargetTime = false;
+	this->bUseAlternateKernel = false;
+	this->bUseForcedTimeAdvance = false;
+	this->dLastSyncTime = 0.0;
+	this->np = nullptr;
+	this->oclBufferBatchSkipped = NULL;
+	this->oclBufferBatchSuccessful = NULL;
+	this->oclBufferBatchTimesteps = NULL;
+	this->ucSyncMethod = model::syncMethod::kSyncForecast;
+	this->ulBoundaryCellGlobalSize = 0;
+	this->ulBoundaryCellWorkgroupSize = 0;
+	this->ulCachedGlobalSizeX = 0;
+	this->ulCachedGlobalSizeY = 0;
+	this->ulNonCachedGlobalSizeX = 0;
+	this->ulNonCachedGlobalSizeY = 0;
+	this->ulReductionGlobalSize = 0;
+	this->ulReductionWorkgroupSize = 0;
+
 
 	// Default setup values
 	this->bRunning = false;
@@ -291,7 +310,7 @@ bool CSchemePromaides::prepareBoundaries()
 
 
 	oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
-	oclKernelBoundary->setGlobalSize(ceil(pDomain->getCols() / 8.0) * 8, ceil(pDomain->getRows() / 8.0) * 8);
+	oclKernelBoundary->setGlobalSize((cl_ulong) ceil(pDomain->getCols() / 8.0) * 8, (cl_ulong) ceil(pDomain->getRows() / 8.0) * 8);
 	oclKernelBoundary->setGroupSize(8, 8);
 
 	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed};
@@ -922,7 +941,9 @@ void CSchemePromaides::runBatchThread()
 		0,
 		NULL
 	);
-	CloseHandle(hThread);
+	if (hThread ) {
+		CloseHandle(hThread);
+	}
 }
 
 /*
@@ -931,7 +952,6 @@ void CSchemePromaides::runBatchThread()
  */
 void CSchemePromaides::Threaded_runBatch()
 {
-	unsigned long ulCellID;
 	// Keep the thread in existence because of the overhead
 	// associated with creating a thread.
 	while (this->bThreadRunning)
@@ -1020,25 +1040,6 @@ void CSchemePromaides::Threaded_runBatch()
 		// Have we been asked to import data for our domain links?
 		if (this->bImportLinks )
 		{
-			//std::cout << "Importing data" << std::endl;
-			/*
-			// Create Fake Data
-			double value = 0;
-			cl_double4* vStateData = new cl_double4[10000];
-			for (unsigned long iRow = 0; iRow < 100; ++iRow) {
-				for (unsigned long iCol = 0; iCol < 100; ++iCol) {
-					ulCellID = pDomain->getCellID(iCol, iRow);
-					value = np->getBedElevation(ulCellID);
-					vStateData[ulCellID].s[0] = np->getBedElevation(ulCellID)*2;
-					vStateData[ulCellID].s[1] = np->getBedElevation(ulCellID);
-					vStateData[ulCellID].s[2] = 0.0;
-					vStateData[ulCellID].s[3] = 0.0;
-				}
-			}
-			*/
-			//oclBufferCellStates->queueWritePartial(0, 320000, vStateData);
-			//oclBufferCellStatesAlt->queueWritePartial(0, 320000, vStateData);
-
 
 			//this->getNextCellSourceBuffer()->queueWriteAll();
 			//this->oclBufferdsdt->queueWriteAll();

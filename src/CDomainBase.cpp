@@ -60,28 +60,6 @@ CDomainBase::~CDomainBase(void)
 
 
 /*
- *  Helper function that create a new class of the appropriate type
- *  for the domain we have.
- *
- *  Create a domain of the specified type
- */
-CDomainBase* CDomainBase::createDomain(unsigned char cType)
-{
-
-	// Cartesian grid?
-	if ( cType == model::domainStructureTypes::kStructureCartesian )
-	{
-		return static_cast<CDomainBase*>(new CDomainCartesian);
-	}
-
-	model::doError(
-		"Unrecognised domain data store type identifier passed for creation",
-		model::errorCodes::kLevelFatal
-	);
-	return NULL;
-}
-
-/*
  *  Is this domain ready to be used for a model run?
  */
 bool	CDomainBase::isInitialised()

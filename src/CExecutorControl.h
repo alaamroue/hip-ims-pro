@@ -71,7 +71,6 @@ class CExecutorControl
 		bool						isReady( void );					// Is the executor ready?
 		void						setDeviceFilter( unsigned int );	// Filter to specific types of device
 		unsigned int				getDeviceFilter();					// Fetch back the current device filter
-		virtual void				setupFromConfig() = 0;	// Set up the executor
 		virtual bool				createDevices() = 0;	// Set up the executor
 
 		// Static functions

@@ -46,20 +46,6 @@ CExecutorControlOpenCL::CExecutorControlOpenCL(void)
 
 }
 
-/*
- *  Setup the executor using parameters specified in the configuration file
- */
-void CExecutorControlOpenCL::setupFromConfig()
-{
-	unsigned int	uiDeviceFilter		= model::filters::devices::devicesCPU | 
-										  model::filters::devices::devicesGPU |
-										  model::filters::devices::devicesAPU;
-
-
-	uiDeviceFilter |= model::filters::devices::devicesGPU;
-	this->setDeviceFilter( uiDeviceFilter );
-	if ( !this->createDevices() ) return;
-}
 
 /*
  *  Destructor

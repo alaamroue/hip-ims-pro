@@ -293,6 +293,20 @@ void	CDomain::setBoundaryCondition(unsigned long ulCellID, double value)
 /*
  *  Sets the Manning coefficient for a given cell
  */
+void	CDomain::resetBoundaryCondition()
+{
+	if (this->ucFloatSize == 4)
+	{
+		memset(fBoundCoup, 0, sizeof(cl_float2)* this->ulCellCount);
+	}
+	else {
+		memset(dBoundCoup, 0, sizeof(cl_double2) * this->ulCellCount);
+	}
+}
+
+/*
+ *  Sets the Manning coefficient for a given cell
+ */
 void	CDomain::setCouplingCondition(unsigned long ulCellID, double value)
 {
 	if (this->ucFloatSize == 4)

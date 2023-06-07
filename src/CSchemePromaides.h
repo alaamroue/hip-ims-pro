@@ -43,8 +43,7 @@ class CSchemePromaides : public CScheme
 {
 
 public:
-	CSchemePromaides(void);
-	CSchemePromaides(CModel* cmodel);															// Default constructor
+	CSchemePromaides(CModel* cmodel);											// Default constructor
 	virtual ~CSchemePromaides(void);											// Destructor
 
 	// Public functions

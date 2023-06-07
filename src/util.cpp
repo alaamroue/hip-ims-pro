@@ -70,14 +70,14 @@ namespace Util
 		if ( dTime > 1 )
 		{
 			// Normal format including miliseconds when less than 10 minutes
-			sprintf( cTime,			"%02d:%02d:%02d", cHours, cMinutes, cSeconds );
-			sprintf( cFractionSeconds, ".%.4f",	  fFractionSeconds );
+			sprintf_s( cTime,50 ,"%02d:%02d:%02d", cHours, cMinutes, cSeconds);
+			sprintf_s( cFractionSeconds, 50, ".%.4f",	  fFractionSeconds);
 			sTime += std::string( cTime );
 			if ( fFractionSeconds > 0.0 && cMinutes < 10 && cHours < 1 && uiDays < 1 ) 
 				sTime += std::string( cFractionSeconds ).substr(2);
 		} else {
-			sprintf( cTime,				"%01d",		cSeconds );
-			sprintf( cFractionSeconds,  ".%.5f",	fFractionSeconds );
+			sprintf_s( cTime,50,"%01d",		cSeconds );
+			sprintf_s( cFractionSeconds, 50, ".%.5f",	fFractionSeconds );
 			sTime += std::string( cTime );
 			sTime += std::string( cFractionSeconds ).substr(2) + "s";
 		}
@@ -104,126 +104,5 @@ namespace Util
 		return dMultipliedValue / uiMultiplier;
 	}
 
-	/*
-	 *  Convert a char array to lowercase
-	 *  WARNING: This function is probably unsafe
-	 *  		 and might cause stack corruption.
-	 */
-	char*	toLowercase( const char* cString )
-	{
-		if ( cString == NULL ) return NULL;
-
-		std::locale loc;
-
-		char*	cNewString = new char[ strlen( cString ) ];
-		strcpy( cNewString, cString );
-
-		for( unsigned int i = 0; cNewString[ i ] != '\0'; i++ )
-		{
-			cNewString[ i ] = std::tolower( cNewString[ i ], loc );
-		}
-
-		return cNewString;
-	}
-
-	/*
-	 *  Convert a char array to lowercase
-	 */
-	void toLowercase( char** cTarget, const char* cString )
-	{
-		if ( cString == NULL ) 
-		{
-			*cTarget = NULL;
-			return;
-		} 
-
-		std::locale loc;
-
-		// TODO: This is almost certainly causing a memory leak, but I can't be bothered to fix it yet
-		//if ( *cTarget != NULL )
-		//	delete [] (*cTarget);
-
-		*cTarget = new char[ strlen( cString ) + 1 ];
-		strcpy( *cTarget, cString );
-		(*cTarget)[ strlen( cString ) ] = '\0';
-
-		for( unsigned int i = 0; cString[ i ] != '\0'; i++ )
-		{
-			(*cTarget)[ i ] = std::tolower( cString[ i ], loc );
-		}
-	}
-
-	/*
-	 *  Copy a string
-	 */
-	void toNewString( char** cTarget, const char* cString )
-	{
-		if ( cString == NULL ) 
-		{
-			*cTarget = NULL;
-			return;
-		}
-
-		// TODO: This is almost certainly causing a memory leak, but I can't be bothered to fix it yet
-		//if ( *cTarget != NULL )
-		//	delete [] (*cTarget);
-
-		*cTarget = new char[ strlen( cString ) + 1 ];
-		strcpy( *cTarget, cString );
-		(*cTarget)[ strlen( cString ) ] = '\0';
-	}
-
-	/*
-	 *	Timestamp conversion routines - from string to timestamp (1970-base)
-
-	unsigned long toTimestamp(const char* cTime, const char* cFormat)
-	{
-		std::tm timeinfo = {};
-		std::istringstream ssTime(cTime);
-		ssTime >> std::get_time(&timeinfo, cFormat);
-		if (ssTime.fail()) {
-			throw std::runtime_error("Failed to parse time string");
-		}
-		auto tp = std::chrono::system_clock::from_time_t(std::mktime(&timeinfo));
-		return std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
-	}
-		 */
-	/*
-	 *	Timestamp conversion routines - from timestamp to time string
-
-	const char* fromTimestamp(unsigned long ulTimestamp, const char* cFormat) {
-		const std::size_t bufferSize = 32; // Enough for YYYY-MM-DD HH:MM:SS format
-		char buffer[bufferSize];
-
-		const std::time_t time = static_cast<std::time_t>(ulTimestamp);
-		std::tm timeInfo;
-		std::gmtime(&time);
-
-		if (cFormat == nullptr) {
-			std::strftime(buffer, bufferSize, "%Y-%m-%d %H:%M:%S", &timeInfo);
-		}
-		else {
-			std::strftime(buffer, bufferSize, cFormat, &timeInfo);
-		}
-
-		return strdup(buffer);
-	}
-		 */
-	/*
-	 *	Check if a file exists -- strictly speaking if it's accessible
-	 */
-	bool fileExists(const char * cFilename)
-	{
-		std::ifstream f(cFilename);
-
-		if (f.good())
-		{
-			f.close();
-			return true;
-		} else {
-			f.close();
-			return false;
-		}
-	}
 }
 

@@ -42,10 +42,6 @@
 /*
  *  Constructor
  */
-CDomainCartesian::CDomainCartesian(void)
-{
-
-}
 
 CDomainCartesian::CDomainCartesian(CModel* cModel)
 {
@@ -270,7 +266,7 @@ void	CDomainCartesian::setUnits(char* cUnits)
 	}
 
 	// Store the units (2 char max!)
-	std::strcpy(&this->cUnits[0], cUnits);
+	strcpy_s(&this->cUnits[0],sizeof(&this->cUnits[0]), cUnits);
 }
 
 /*
@@ -356,56 +352,6 @@ unsigned long	CDomainCartesian::getCellID(unsigned long ulX, unsigned long ulY)
 	return (ulY * this->getCols()) + ulX;
 }
 
-/*
- *  Get a cell ID from an X and Y coordinate
- */
-unsigned long	CDomainCartesian::getCellFromCoordinates(double dX, double dY)
-{
-	unsigned long ulX = floor((dX - dRealOffset[0]) / dCellResolution);
-	unsigned long ulY = floor((dY - dRealOffset[2]) / dCellResolution);
-	return getCellID(ulX, ulY);
-}
-
-#ifdef _WINDLL
-/*
- *  Send the topography to the renderer for visualisation purposes
- */
-void	CDomainCartesian::sendAllToRenderer()
-{
-	// TODO: This needs fixing and changing to account for multi-domain stuff...
-	if (pManager->getDomainSet()->getDomainCount() > 1)
-		return;
-
-	if (!this->isInitialised() ||
-		(this->ucFloatSize == 8 && this->dBedElevations == NULL) ||
-		(this->ucFloatSize == 4 && this->fBedElevations == NULL) ||
-		(this->ucFloatSize == 8 && this->dCellStates == NULL) ||
-		(this->ucFloatSize == 4 && this->fCellStates == NULL))
-		return;
-
-	#ifdef _WINDLL
-	if (model::fSendTopography != NULL)
-		model::fSendTopography(
-			this->ucFloatSize == 8 ?
-			static_cast<void*>(this->dBedElevations) :
-			static_cast<void*>(this->fBedElevations),
-			this->ucFloatSize == 8 ?
-			static_cast<void*>(this->dCellStates) :
-			static_cast<void*>(this->fCellStates),
-			this->ucFloatSize,
-			this->ulCols,
-			this->ulRows,
-			this->dCellResolution,
-			this->dCellResolution,
-			this->dMinDepth,
-			this->dMaxDepth,
-			this->dMinTopo,
-			this->dMaxTopo
-		);
-	#endif
-}
-#endif
-
 
 /*
  *  Calculate the total volume present in all of the cells
@@ -436,77 +382,6 @@ double	CDomainCartesian::getVolume()
 void	CDomainCartesian::addOutput(sDataTargetInfo pOutput)
 {
 	this->pOutputs.push_back(pOutput);
-}
-
-/*
- *  Manipulate the topography to impose boundary conditions
- */
-void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, unsigned char ucType)
-{
-	unsigned long ulMinX, ulMaxX, ulMinY, ulMaxY;
-
-	if (ucDirection == edge::kEdgeE)
-	{
-		ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = this->ulCols - 1; ulMaxX = this->ulCols - 1;
-	};
-	if (ucDirection == edge::kEdgeW)
-	{
-		ulMinY = 0; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = 0;
-	};
-	if (ucDirection == edge::kEdgeN)
-	{
-		ulMinY = this->ulRows - 1; ulMaxY = this->ulRows - 1; ulMinX = 0; ulMaxX = this->ulCols - 1;
-	};
-	if (ucDirection == edge::kEdgeS)
-	{
-		ulMinY = 0; ulMaxY = 0; ulMinX = 0; ulMaxX = this->ulCols - 1;
-	};
-
-	for (unsigned long x = ulMinX; x <= ulMaxX; x++)
-	{
-		for (unsigned long y = ulMinY; y <= ulMaxY; y++)
-		{
-			if (ucType == CDomainCartesian::boundaryTreatment::kBoundaryClosed)
-			{
-				this->setBedElevation(
-					this->getCellID(x, y),
-					9999.9
-				);
-			}
-		}
-	}
-}
-
-/*
- *  Write output files to disk
- */
-void	CDomainCartesian::writeOutputs()
-{
-	// Read the data back first...
-	// TODO: Review whether this is necessary, isn't it a sync point anyway?
-	pDevice->blockUntilFinished();
-	pScheme->readDomainAll();
-	pDevice->blockUntilFinished();
-
-	for (unsigned int i = 0; i < this->pOutputs.size(); ++i)
-	{
-		// Replaces %t with the time in the filename, if required
-		// TODO: Allow for decimal output filenames
-		std::string sFilename = this->pOutputs[i].sTarget;
-		std::string sTime = std::to_string( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
-		unsigned int uiTimeLocation = sFilename.find( "%t" );
-		if ( uiTimeLocation != std::string::npos )
-			sFilename.replace( uiTimeLocation, 2, sTime );
-
-		//TODO: Alaa:HIGH Write replacement
-		//
-		//CRasterDataset::domainToRaster(
-		//	this->pOutputs[i].cFormat,
-		//	sFilename,
-		//	this,
-		//	this->pOutputs[i].ucValue
-		//);
-	}
 }
 
 

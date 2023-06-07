@@ -40,6 +40,8 @@
  */
 CDomainManager::CDomainManager(void)
 {
+	this->cExecutorControlOpenCL = NULL;
+	this->logger = NULL;
 	this->ucSyncMethod = model::syncMethod::kSyncForecast;
 	this->uiSyncSpareIterations = 3;
 }
@@ -55,21 +57,7 @@ CDomainManager::~CDomainManager(void)
 
 }
 
-/*
- *  Add a new domain to the set
- */
-CDomainBase*	CDomainManager::createNewDomain( unsigned char ucType )
-{
-	CDomainBase*	pNewDomain = CDomainBase::createDomain(ucType);
-	unsigned int	uiID		= getDomainCount() + 1;
 
-	domains.push_back( pNewDomain );
-	pNewDomain->setID( uiID );
-
-	logger->writeLine( "A new domain has been created within the model." );
-
-	return pNewDomain;
-}
 
 /*
 *  Is a domain local to this node?
@@ -108,7 +96,7 @@ CDomain*	CDomainManager::getDomain(double dX, double dY)
  */
 unsigned int	CDomainManager::getDomainCount()
 {
-	return domains.size();
+	return (unsigned int) domains.size();
 }
 
 /*
@@ -125,19 +113,6 @@ CDomainManager::Bounds		CDomainManager::getTotalExtent()
 	return b;
 }
 
-/*
- *  Write all of the domain data to disk
- */
-void	CDomainManager::writeOutputs()
-{
-	for( unsigned int i = 0; i < domains.size(); i++ )
-	{
-		if (!domains[i]->isRemote())
-		{
-			getDomain(i)->writeOutputs();
-		}
-	}
-}
 
 /*
 *	Fetch the current sync method being employed
@@ -261,8 +236,9 @@ void	CDomainManager::logDetails()
 		std::string resolutionShort = std::to_string(pSummary.dResolution);
 		resolutionShort.resize(5);
 
-		sprintf(
+		sprintf_s(
 			cDomainLine,
+			sizeof(cDomainLine),
 			"| %6s | %4s | %6s | %6s | %6s | %5s | %5s | %5s |",
 			std::to_string(pSummary.uiDomainID + 1).c_str(),
 			#ifdef MPI_ON

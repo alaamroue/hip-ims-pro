@@ -88,10 +88,11 @@ void COCLKernel::scheduleExecution()
 
 	pDevice->markBusy();
 	
+	//TODO: Alaa. Why is the working dimension 3 ??????!!!!! It has no impact but makes no sense!? is it for safety
 	iErrorID = clEnqueueNDRangeKernel(
 		this->clQueue,
 		clKernel,
-		3,
+		2,
 		szGlobalOffset,
 		szGlobalSize,
 		szGroupSize,
@@ -99,6 +100,12 @@ void COCLKernel::scheduleExecution()
 		NULL,
 		( fCallback != NULL && fCallback != COCLDevice::defaultCallback ? &clEvent : NULL )
 	);
+	if (fCallback != NULL && fCallback != COCLDevice::defaultCallback) {
+		std::cout<< "clEvent" << std::endl;
+	}
+	else {
+		std::cout << "NULL" << std::endl;
+	}
 
 	if ( iErrorID != CL_SUCCESS )
 	{

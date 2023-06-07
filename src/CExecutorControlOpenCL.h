@@ -62,7 +62,6 @@ class CExecutorControlOpenCL: public CExecutorControl
 		friend class			COCLDevice;							// Allow the devices access to these private vars
 
 		// Public functions
-		virtual void			setupFromConfig();		// Set up the executor
 		COCLDevice*				getDevice();						// Fetch the currently selected device
 		COCLDevice*				getDevice( unsigned int );			// Fetch a device pointer
 		void					selectDevice();						// Automatically select the best device

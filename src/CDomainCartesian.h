@@ -42,8 +42,6 @@ class CDomainCartesian : public CDomain
 {
 
 	public:
-
-		CDomainCartesian( void );												// Constructor
 		CDomainCartesian(CModel* cModel);													// 
 		~CDomainCartesian( void );												// Destructor
 
@@ -59,7 +57,6 @@ class CDomainCartesian : public CDomain
 		bool			loadOutputDefinitions();					// Load the output file definitions
 		void			prepareDomain();										// Create memory structures etc.
 		void			logDetails();											// Log details about the domain
-		void			writeOutputs();											// Write output files to disk
 		void			readDomain();											// Read Output from gpu
 		double*			readDomain_opt_h();										// Read Output flow hieght from gpu to double*
 		double*			readDomain_opt_dsdt();									// Read Output dsdt value from gpu to double*
@@ -82,7 +79,6 @@ class CDomainCartesian : public CDomain
 		unsigned long	getRows();												// Get the number of rows in the domain
 		unsigned long	getCols();												// Get the number of columns in the domain
 		virtual unsigned long	getCellID( unsigned long, unsigned long );		// Get the cell ID using an X and Y index
-		unsigned long	getCellFromCoordinates( double, double );				// Get the cell ID using real coords
 		double			getVolume();											// Calculate the amount of volume in all the cells
 		#ifdef _WINDLL
 		virtual void	sendAllToRenderer();									// Allows the renderer to read off the bed elevations

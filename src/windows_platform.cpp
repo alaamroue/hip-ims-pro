@@ -128,10 +128,4 @@ void	Util::setCursorPosition( cursorCoords pLocation )
 	SetConsoleCursorPosition( hOut, newCoords );
 }
 
-/*
- *  Get the system hostname
- */
-void Util::getHostname(char* cHostname)
-{
-	std::strcpy(cHostname, "Unknown");
-}
+

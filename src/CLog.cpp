@@ -38,7 +38,7 @@ CLog::CLog(void)
 {
 	this->setPath();
 	this->openFile();
-	//this->writeHeader();
+	this->writeHeader();
 	this->uiDebugFileID = 1;
 	this->uiLineCount = 0;
 	setlocale( LC_ALL, "" );
@@ -119,9 +119,11 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 {
 	time_t tNow;
 	time(&tNow);
+	struct tm timeInfo;
+	localtime_s(&timeInfo, &tNow);
 
 	char caTimeBuffer[50];
-	strftime(caTimeBuffer, sizeof(caTimeBuffer), "%H:%M:%S", localtime(&tNow));
+	strftime(caTimeBuffer, 50, "%H:%M:%S", &timeInfo);
 
 	std::stringstream ssLine;
 
@@ -184,7 +186,11 @@ void CLog::writeHeader(void)
 
 	time_t tNow;
 	time( &tNow );
-	localtime( &tNow );
+	struct tm timeInfo;
+	localtime_s(&timeInfo, &tNow);
+
+	char buffer[26];
+	asctime_s(buffer, 26, &timeInfo);
 
 	ssHeader << "---------------------------------------------" << std::endl;
 	ssHeader << " " << model::appName << std::endl;
@@ -201,7 +207,7 @@ void CLog::writeHeader(void)
 	if ( sLogPath.length() > 25 ) 
 		sLogPath = "..." + sLogPath.substr( sLogPath.length() - 25, 25 );
 
-	ssHeader << " Started:     " << ctime( &tNow );
+	ssHeader << " Started:     " << buffer;
 	ssHeader << " Log file:    " << sLogPath << std::endl;
 	ssHeader << " Platform:    " << "Windows" << std::endl;
 	ssHeader << "---------------------------------------------";
@@ -218,7 +224,7 @@ void CLog::setPath()
 	std::string sPath = std::string("./_modelzz.log");
 	char*		cPath = new char[ sPath.length() + 1 ];
 
-	std::strcpy( cPath, sPath.c_str() );
+	strcpy_s( cPath, sPath.length() + 1, sPath.c_str() );
 	this->setPath( cPath, sPath.length() );
 
 	delete[] cPath;
@@ -230,7 +236,7 @@ void CLog::setPath()
 void CLog::setPath( char* sPath, size_t uiLength )
 {
 	this->logPath = new char[ uiLength + 1 ];
-	std::strcpy( this->logPath, sPath );
+	strcpy_s( this->logPath, uiLength + 1,  sPath );
 
 	// Is it already open? Swap if so
 	// TODO: Implement this

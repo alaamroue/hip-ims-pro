@@ -74,7 +74,6 @@ class CDomain : public CDomainBase
 		virtual		void			prepareDomain() = 0;											// Create memory structures etc.
 		virtual		void			logDetails() = 0;												// Log details about the domain
 		virtual		void			updateCellStatistics() = 0;										// Update the total number of cells calculation
-		virtual		void			writeOutputs() = 0;												// Write output files to disk
 		virtual		void			readDomain() = 0;												// Read Domain From Gpu
 		virtual		double*			readDomain_opt_h() = 0;											// Read Output flow height from gpu to double*
 		virtual		double*			readDomain_opt_dsdt() = 0;										// Read Output dsdt value from gpu to double*
@@ -87,6 +86,7 @@ class CDomain : public CDomainBase
 		void						setBedElevation( unsigned long, double );						// Sets the bed elevation for a cell
 		void						setManningCoefficient( unsigned long, double );					// Sets the manning coefficient for a cell
 		void						setBoundaryCondition(unsigned long, double);					// Sets the boundary condition for a cell
+		void						resetBoundaryCondition();										// Resets the boundary condition for a cell
 		void						setCouplingCondition(unsigned long, double);					// Sets the coupling condtion for a cell
 		void						setdsdt(unsigned long, double);									// Sets the dsdt value for a cell
 		void						setFlowStatesValue(unsigned long, model::FlowStates);			// Sets the flow states for a cell

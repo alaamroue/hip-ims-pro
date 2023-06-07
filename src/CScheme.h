@@ -86,14 +86,9 @@ class CScheme
 	public:
 
 		CScheme();																					// Default constructor
-		CScheme(CLog* logger);																					// Default constructor
 		virtual ~CScheme( void );																	// Destructor
 
 		// Public functions
-		static CScheme*		createScheme( unsigned char, CModel* cModel);											// Instantiate a scheme
-		static CScheme*		createFromConfig();										// Parse and configure a scheme class
-
-		virtual void		setupFromConfig();							// Set up the scheme
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
 		virtual void		logDetails() = 0;														// Write some details about the scheme

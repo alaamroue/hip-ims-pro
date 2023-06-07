@@ -292,11 +292,12 @@ void COCLDevice::createQueue()
 		);
 		return;
 	}
+	cl_queue_properties properties[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE,0};
 
-	this->clQueue = clCreateCommandQueue(
+	this->clQueue = clCreateCommandQueueWithProperties(
 		this->clContext,
 		this->clDevice,
-		CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE,
+		properties,
 		&iErrorID
 	);
 
@@ -386,11 +387,15 @@ bool COCLDevice::isFiltered()
  */
 void	COCLDevice::queueBarrier()
 {
+	cl_event event;
+	clEnqueueMarker(this->clQueue, &event);
+	clEnqueueBarrierWithWaitList(this->clQueue, 1, &event, NULL);
+
 	#ifdef USE_SIMPLE_ARCH_OPENCL
 	// Causes crashes... for some reason... Review later.
 	return;
 	#endif
-	clEnqueueBarrier(this->clQueue);
+	//clEnqueueBarrier(this->clQueue);
 }
 
 /*
@@ -557,8 +562,8 @@ void COCLDevice::getSummary(  COCLDevice::sDeviceSummary & pSummary )
 	if (this->clDeviceType & CL_DEVICE_TYPE_GPU)			sType = "GPU";
 	if (this->clDeviceType & CL_DEVICE_TYPE_ACCELERATOR)	sType = "APU";
 
-	std::strncpy(pSummary.cDeviceName, this->clDeviceName, 99 );
-	std::strncpy(pSummary.cDeviceType, sType.c_str(), 9 );
+	strncpy_s(pSummary.cDeviceName, sizeof(pSummary.cDeviceName), this->clDeviceName, 99 );
+	strncpy_s(pSummary.cDeviceType, sizeof(pSummary.cDeviceType), sType.c_str(), 9 );
 	pSummary.uiDeviceID = this->uiDeviceNo;
 	pSummary.uiDeviceNumber = this->uiDeviceNo + 1;
 }

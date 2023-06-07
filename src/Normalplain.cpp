@@ -6,9 +6,9 @@ Normalplain::Normalplain(unsigned long sizex, unsigned long sizey) {
 	this->size = sizex * sizey;
 
 	// Allocate memory for the data array
-	this->bedElevation = new float* [sizex];
+	this->bedElevation = new double* [sizex];
 	for (unsigned long i = 0; i < sizex; i++) {
-		this->bedElevation[i] = new float[sizey];
+		this->bedElevation[i] = new double[sizey];
 	}
 
 }
@@ -29,15 +29,15 @@ double Normalplain::getBedElevation(unsigned long index) {
 	return this->bedElevation[(unsigned long)floor(index / this->getSizeX())][(unsigned long) index % this->getSizeY()];
 }
 
-float Normalplain::getBedElevation(unsigned long indexX, unsigned long indexY) {
+double Normalplain::getBedElevation(unsigned long indexX, unsigned long indexY) {
 	return this->bedElevation[indexX][indexY];
 }
 
-void Normalplain::setBedElevation(unsigned long indexX, unsigned long indexY, float value) {
+void Normalplain::setBedElevation(unsigned long indexX, unsigned long indexY, double value) {
 	this->bedElevation[indexX][indexY] = value;
 }
 
-void Normalplain::setBedElevation(unsigned long index, float value) {
+void Normalplain::setBedElevation(unsigned long index, double value) {
 	this->bedElevation[(unsigned long)floor(index / this->getSizeX())][(unsigned long)index % this->getSizeY()] = value;
 }
 
@@ -51,11 +51,11 @@ void Normalplain::setBedElevation(cl_double4* src) {
 
 void Normalplain::SetBedElevationMountain() {
 	unsigned long SizeX = this->getSizeX();
-	float value;
+	double value;
 	unsigned long const SIZE = this->getSize() / SizeX;
 	for (unsigned long i = 0; i < SIZE; i++) {
 		for (unsigned long j = 0; j < SIZE; j++) {
-			value =  sqrt(i * i + j*j) / SizeX/10;
+			value =  sqrt(i * i + j*j) / SizeX /10;
 			if (i > SizeX * 0.7 && i< SizeX * 0.8 && j > SizeX * 0.7 && j < SizeX * 0.8)
 				value = sqrt(2) / 10;
 

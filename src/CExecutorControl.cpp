@@ -71,24 +71,6 @@ CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType)
 	return NULL;
 }
 
-/*
- *  Create and configure an executor using an XML configuration node
- */
-CExecutorControl*	CExecutorControl::createFromConfig(CLog* log)
-{
-	CExecutorControl*	pExecutor		= NULL;
-	char*				cExecutorName	= NULL;
-
-
-	log->writeLine( "OpenCL executor specified in configuration." );
-	pExecutor = CExecutorControl::createExecutor(
-			model::executorTypes::executorTypeOpenCL
-		);
-	
-	pExecutor->setupFromConfig();
-
-	return pExecutor;
-}
 
 /*
  *  Is this executor ready to run models?

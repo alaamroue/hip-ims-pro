@@ -92,7 +92,6 @@ class CDomainBase
 		// ...
 
 		// Public functions
-		static		CDomainBase*	createDomain(unsigned char);									// Create a new domain of the specified type
 		virtual		DomainSummary	getSummary();													// Fetch summary information for this domain
 		virtual		bool			isRemote()				{ return true; };						// Is this domain on this node?
 		virtual		unsigned char	getType()				{ return model::domainStructureTypes::kStructureInvalid; };	// Fetch a type code
@@ -103,8 +102,8 @@ class CDomainBase
 		unsigned int				getRollbackLimit()		{ return uiRollbackLimit; }				// How many iterations before a rollback is required?
 		unsigned int				getID()					{ return uiID; }						// Get the ID number
 		void						setID( unsigned int i ) { uiID = i; }							// Set the ID number
-		unsigned int				getLinkCount()			{ return links.size(); }				// Get the number of links in this domain
-		unsigned int				getDependentLinkCount()	{ return dependentLinks.size(); }		// Get the number of dependent links
+		unsigned int				getLinkCount()			{ return (unsigned int) links.size(); }				// Get the number of links in this domain
+		unsigned int				getDependentLinkCount()	{ return (unsigned int) dependentLinks.size(); }		// Get the number of dependent links
 		CDomainLink*				getLink(unsigned int i) { return links[i]; };					// Fetch a link
 		CDomainLink*				getDependentLink(unsigned int i) { return dependentLinks[i]; };	// Fetch a dependent link
 		CDomainLink*				getLinkFrom(unsigned int);										// Fetch a link with a specific domain

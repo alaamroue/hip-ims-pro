@@ -49,6 +49,33 @@ CModel* cModelClass;
 CModel::CModel(void)
 {
 	this->log = new CLog();
+
+	this->bAllIdle = false;
+	this->bFrictionEffects = false;
+	this->bIdle = false;
+	this->bRollbackRequired = false;
+	this->bSyncReady = false;
+	this->bSynchronised = false;
+	this->bWaitOnLinks = false;
+	this->dCellRate = 0.0;
+	this->dCourantNumber = 0.5;
+	this->dEarliestTime = 0.0;
+	this->dGlobalTimestep = 0.0;
+	this->dLastOutputTime = 0.0;
+	this->dLastProgressUpdate = 0.0;
+	this->dLastSyncTime = 0.0;
+	this->dProcessingTime = 0.0;
+	this->dTargetTime = 0.0;
+	this->dVisualisationTime = 0.0;
+	this->domainCount = 0;
+	this->selectedDevice = 1;
+	this->ucFloatSize = model::floatPrecision::kDouble;
+	this->ulCachedWorkgroupSizeX = 0;
+	this->ulCachedWorkgroupSizeY = 0;
+	this->ulNonCachedWorkgroupSizeX = 0;
+	this->ulNonCachedWorkgroupSizeY = 0;
+
+
 	cModelClass = this;
 
 	this->execController	= NULL;
@@ -260,13 +287,6 @@ double	CModel::getOutputFrequency()
 	return this->dOutputFrequency;
 }
 
-/*
- *  Write periodical output files to disk
- */
-void	CModel::writeOutputs()
-{
-	this->getDomainSet()->writeOutputs();
-}
 
 /*
  *  Set floating point precision
@@ -554,7 +574,6 @@ void	CModel::runModelSync()
 		return;
 		
 	// Write outputs if possible
-	this->runModelOutputs();
 		
 	this->setModelUpdateTarget(this->dTargetTime * 10);
 
@@ -575,61 +594,6 @@ void	CModel::runModelSync()
 
 	// Wait for all nodes and devices
 	// TODO: This should become global across all nodes 
-	//this->runModelBlockGlobal();
-}
-
-/*
-*  Synchronise the whole model across all domains at a point in time
-*/
-void	CModel::runModelSyncUntil(double nextTime)
-{
-	if (bRollbackRequired ||
-		!bSynchronised ||
-		!bAllIdle)
-		return;
-
-	// No rollback required, thus we know the simulation time can now be increased
-	// to match the target we'd defined
-	this->dCurrentTime = dEarliestTime;
-	dLastSyncTime = this->dCurrentTime;
-
-	// TODO: Review if this is needed? Shouldn't earliest time get updated anyway?
-	if (domainCount <= 1)
-		this->dCurrentTime = dEarliestTime;
-
-	this->runModelOutputs();
-
-	this->setModelUpdateTarget(nextTime);
-
-	for (unsigned int i = 0; i < domainCount; ++i)
-	{
-		if (domains->isDomainLocal(i))
-		{
-			// Update with the new target time
-			// Can no longer do this here - may have to wait for MPI to return with the value
-			//domains->getDomain(i)->getScheme()->setTargetTime(dTargetTime);
-
-			// Save the current state back to host memory, but only if necessary
-			// for either domain sync/rollbacks or to write outputs
-			if (
-				(domainCount > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast) ||
-				(fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime)
-				)
-			{
-				domains->getDomain(i)->getScheme()->saveCurrentState();
-			}
-		}
-	}
-
-	// Let devices finish
-	this->runModelBlockNode();
-
-	// Exchange domain data
-	this->runModelDomainExchange();
-
-	// Wait for all nodes and devices
-	// TODO: This should become global across all nodes 
-	this->runModelBlockNode();
 	//this->runModelBlockGlobal();
 }
 
@@ -656,31 +620,6 @@ void	CModel::runModelBlockGlobal()
 #endif
 }
 
-/*
- *  Write output files if required.
- */
-void	CModel::runModelOutputs()
-{
-	if ( bRollbackRequired ||
-		 !bSynchronised ||
-		 !bAllIdle ||
-		 !( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
-		return;
-
-	this->writeOutputs();
-	dLastOutputTime = this->dCurrentTime;
-	
-	for (unsigned int i = 0; i < domainCount; ++i)
-	{
-		if (domains->isDomainLocal(i))
-			domains->getDomain(i)->getScheme()->forceTimeAdvance();
-	}
-	
-#ifdef DEBUG_MPI
-	this->log->writeLine( "[DEBUG] Global block until all output files have been written..." );
-#endif
-	this->runModelBlockGlobal();
-}
 
 /*
 *  Process incoming and pending MPI messages etc.
@@ -792,8 +731,6 @@ void	CModel::runModelMain()
 	//dTargetTime = 360000.0;
 
 	log->writeLine("Simulation Started...");
-	unsigned long ulCellID;
-	double value;
 	unsigned char	ucRounding = 4;			// decimal places
 	CDomainCartesian* cd = (CDomainCartesian*) this->domains->getDomain(0);
 	CSchemePromaides* myProScheme = (CSchemePromaides*) this->domains->getDomain(0)->getScheme();

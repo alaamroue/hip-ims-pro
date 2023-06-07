@@ -57,7 +57,6 @@ class CModel
 		CModel(void);															// Constructor
 		~CModel(void);															// Destructor
 
-		void					setupFromConfig();							// Setup the simulation
 		bool					setExecutor(CExecutorControl*);					// Sets the type of executor to use for the model
 		bool					setExecutorToDefaultGPU();						// Sets the type of executor to a Default GPU One
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
@@ -73,7 +72,6 @@ class CModel
 		void					runModelUpdateTarget(double);					// Calculate a new target time
 		void					runModelSync(void);								// Synchronise domain and timestep data
 		void					runModelSyncUntil(double);						// Synchronise domain until selected point in time
-		void					runModelOutputs(void);							// Process outputs
 		void					runModelMPI(void);								// Process MPI queue etc.
 		void					runModelSchedule(bool * );	// Schedule work
 		void					runModelUI( CBenchmark::sPerformanceMetrics * );// Update progress data etc.
@@ -94,7 +92,6 @@ class CModel
 		unsigned char			getFloatPrecision();							// Get floating point precision
 		void					setName( std::string );							// Sets the name
 		void					setDescription( std::string );					// Sets the description
-		void					writeOutputs();												// Produce output files
 		void					logProgress( CBenchmark::sPerformanceMetrics* );			// Write the progress bar etc.
 		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );				// Callback event used when memory reads complete, for visualisation updates
 		void					setCourantNumber(double);									// Set the Courant number

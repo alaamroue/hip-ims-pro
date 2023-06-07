@@ -5,11 +5,6 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HiPIMS Simulator", "HiPIMS-OCL.vcxproj", "{FA97D6E4-0814-4983-9252-EB9C2D5A4216}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Work", "..\Work\Work.vcxproj", "{600B772D-531C-4DFB-B96A-6AD371E23763}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FA97D6E4-0814-4983-9252-EB9C2D5A4216} = {FA97D6E4-0814-4983-9252-EB9C2D5A4216}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -26,14 +21,6 @@ Global
 		{FA97D6E4-0814-4983-9252-EB9C2D5A4216}.Release|Win32.Build.0 = Release|Win32
 		{FA97D6E4-0814-4983-9252-EB9C2D5A4216}.Release|x64.ActiveCfg = Release|x64
 		{FA97D6E4-0814-4983-9252-EB9C2D5A4216}.Release|x64.Build.0 = Release|x64
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Debug|Win32.ActiveCfg = Debug|Win32
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Debug|Win32.Build.0 = Debug|Win32
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Debug|x64.ActiveCfg = Debug|x64
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Debug|x64.Build.0 = Debug|x64
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Release|Win32.ActiveCfg = Release|Win32
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Release|Win32.Build.0 = Release|Win32
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Release|x64.ActiveCfg = Release|x64
-		{600B772D-531C-4DFB-B96A-6AD371E23763}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

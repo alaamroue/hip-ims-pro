@@ -65,9 +65,7 @@ class CDomainManager
 		// ...
 
 		// Public functions
-		bool					setupFromConfig();													// Set up the domain set
 		bool					checkDomainLinks();													//Check Domain Links
-		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
 		CDomain*				getDomain( unsigned int );											// Fetch a domain by ID
@@ -96,8 +94,6 @@ class CDomainManager
 		unsigned int			uiSyncSpareIterations;												// Aim for # spare iterations when synchronising
 
 		// Private functions
-		CDomainBase*			createNewDomain( unsigned char );									// Add a new domain
-		//CDomainBase*			createNewDomain( unsigned char, XMLElement* );						// Add a new domain and configure it
 
 };
 

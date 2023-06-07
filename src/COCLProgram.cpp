@@ -362,7 +362,7 @@ OCL_RAW_CODE COCLProgram::getConstantsHeader()
 	}
 
 	char*	cHeader = new char[ ssHeader.str().length() + 1 ];
-	std::strcpy( cHeader, ssHeader.str().c_str() );
+	strcpy_s( cHeader, ssHeader.str().length() + 1, ssHeader.str().c_str() );
 	return cHeader;
 }
 
@@ -415,7 +415,7 @@ OCL_RAW_CODE	COCLProgram::getExtensionsHeader()
 	}
 
 	char*	cHeader = new char[ ssHeader.str().length() + 1 ];
-	std::strcpy( cHeader, ssHeader.str().c_str() );
+	strcpy_s( cHeader, ssHeader.str().length() + 1, ssHeader.str().c_str() );
 	return cHeader;
 }
 
