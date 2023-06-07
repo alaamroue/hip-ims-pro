@@ -284,7 +284,8 @@ __kernel void bdy_Gridded (
 __kernel void bdy_Promaides (
 	__global		cl_double2 const * restrict	pBoundaryArray,
 	__global		cl_double *					pTime,
-	__global		cl_double4 *				pCellState
+	__global		cl_double4 *				pCellState,
+	__global		cl_double *					pCellBed
 	)
 {
 	// Which global series are we processing, and which cell
@@ -305,6 +306,7 @@ __kernel void bdy_Promaides (
 	__private cl_double					dRate			= pBoundaryArray[ulIdx].x;
 	__private cl_double					dLclTimestep	= *pTime;
 	__private cl_double4				pCellData		= pCellState[ulIdx];
+	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
 
 	// Hydrological processes have their own timesteps
 	if (dLclTimestep <= 0.0)
@@ -314,8 +316,9 @@ __kernel void bdy_Promaides (
 	//if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 	//	return;
 
+	//Todo: Alaa this goes under the bed elevation. Add a max function
 	// Apply the value...
-	pCellData.x += dRate * dLclTimestep;
+	pCellData.x = max(dCellBedElev, pCellData.x + dRate * dLclTimestep);
 	if ( lIdxX == 99 && lIdxY == 99)
 	{	
 		//printf("x: %f y: %f z: %f w: %f Rate: %f step: %f \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate, dLclTimestep);

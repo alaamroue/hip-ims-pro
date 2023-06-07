@@ -35,8 +35,6 @@
 #include "CDomainManager.h"
 #include "CDomain.h"
 #include "CScheme.h"
-#include "CRasterDataset.h"
-#include "CSchemeGodunov.h"
 #include "CSchemePromaides.h"
 #include "Normalplain.h"
 

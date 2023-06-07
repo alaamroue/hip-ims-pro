@@ -36,19 +36,7 @@
     <ClCompile Include="src\Normalplain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\CSchemeMUSCLHancock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CSchemeInertial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CSchemeGodunov.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\CScheme.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CRasterDataset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\COCLBuffer.cpp">
@@ -67,21 +55,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CBenchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryCell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryGridded.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryUniform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CDomain.cpp">
@@ -140,22 +113,7 @@
     <ClInclude Include="src\Normalplain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CSchemeMUSCLHancock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CSchemeInertial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CSchemeGodunov.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\CScheme.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CRasterDataset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\colormod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\COCLBuffer.h">
@@ -177,21 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CBenchmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryCell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryGridded.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryUniform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CDomain.h">

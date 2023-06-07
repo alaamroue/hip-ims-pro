@@ -10,8 +10,6 @@
 #include <algorithm>
 
 #include "common.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
 #include "CDomainLink.h"
@@ -46,7 +44,7 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	this->dThresholdQuiteSmall = this->dThresholdVerySmall * 10;
 	this->bFrictionInFluxKernel = false;
 	this->bIncludeBoundaries = false;
-	this->uiTimestepReductionWavefronts = 200;
+	this->uiTimestepReductionWavefronts = 1000;
 
 	this->ucSolverType = model::solverTypes::kHLLC;
 	this->ucConfiguration = model::schemeConfigurations::godunovType::kCacheNone;
@@ -147,7 +145,6 @@ void CSchemePromaides::logDetails()
 	logger->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? std::to_string(this->dCourantNumber) : "N/A"), true, wColour);
 	logger->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
 	logger->writeLine("  Data reduction:     " + std::to_string(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
-	logger->writeLine("  Boundaries:         " + std::to_string(this->pDomain->getBoundaries()->getBoundaryCount()), true, wColour);
 	logger->writeLine("  Riemann solver:     " + sSolver, true, wColour);
 	logger->writeLine("  Configuration:      " + sConfiguration, true, wColour);
 	logger->writeLine("  Friction effects:   " + (std::string)(this->bFrictionEffects ? "Enabled" : "Disabled"), true, wColour);
@@ -297,7 +294,7 @@ bool CSchemePromaides::prepareBoundaries()
 	oclKernelBoundary->setGlobalSize(ceil(pDomain->getCols() / 8.0) * 8, ceil(pDomain->getRows() / 8.0) * 8);
 	oclKernelBoundary->setGroupSize(8, 8);
 
-	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates};
+	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed};
 	
 	oclKernelBoundary->assignArguments(aryArgsBdy);
 
@@ -568,7 +565,6 @@ bool CSchemePromaides::prepare1OMemory()
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
 	CDomain* pDomain = this->pDomain;
-	CBoundaryMap* pBoundaries = pDomain->getBoundaries();
 	COCLDevice* pDevice = pExecutor->getDevice();
 
 	unsigned char ucFloatSize = (this->floatPrecision == model::floatPrecision::kSingle ? sizeof(cl_float) : sizeof(cl_double));
@@ -697,7 +693,6 @@ bool CSchemePromaides::prepareGeneralKernels()
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
 	CDomain* pDomain = this->pDomain;
-	CBoundaryMap* pBoundaries = pDomain->getBoundaries();
 	COCLDevice* pDevice = pExecutor->getDevice();
 
 	// --
@@ -861,10 +856,6 @@ void CSchemePromaides::release1OResources()
  */
 void	CSchemePromaides::prepareSimulation()
 {
-	// Adjust cell bed elevations if necessary for boundary conditions
-	logger->writeLine("Adjusting domain data for boundaries...");
-	this->pDomain->getBoundaries()->applyDomainModifications();
-
 	// Initial volume in the domain
 	logger->writeLine("Initial domain volume: " + std::to_string(abs((int)(this->pDomain->getVolume()))) + "m3");
 
@@ -1050,7 +1041,7 @@ void CSchemePromaides::Threaded_runBatch()
 
 
 			//this->getNextCellSourceBuffer()->queueWriteAll();
-			this->oclBufferdsdt->queueWriteAll();
+			//this->oclBufferdsdt->queueWriteAll();
 			this->oclBufferBoundCoup->queueWriteAll();
 
 			// Last sync time

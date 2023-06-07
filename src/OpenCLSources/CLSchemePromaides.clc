@@ -58,10 +58,6 @@ void gts_cacheDisabled (
 	__private cl_double		v_x					=   0.0;
 	__private cl_double		v_y					=   0.0;
 	__private FlowStates	flowStateCell;
-	
-	
-	//TODO: Alaa 
-
 
 	//This would be passed as a variable
 	flowStateCell = flowstates[ ulIdx ];

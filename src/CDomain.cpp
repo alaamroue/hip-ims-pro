@@ -30,8 +30,6 @@
 #include "common.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CRasterDataset.h"
-#include "CBoundaryMap.h"
 #include "CScheme.h"
 #include "COCLDevice.h"
 
@@ -56,7 +54,6 @@ CDomain::CDomain(void)
 	this->cSourceDir				= NULL;
 	this->logger = nullptr;
 
-	this->pBoundaries = new CBoundaryMap( this );
 }
 
 /*
@@ -75,7 +72,6 @@ CDomain::~CDomain(void)
 		delete [] this->dManningValues;
 	}
 
-	if ( this->pBoundaries != NULL ) delete pBoundaries;
 	if ( this->pScheme != NULL )     delete pScheme;
 
 	delete [] this->cSourceDir;
@@ -84,68 +80,7 @@ CDomain::~CDomain(void)
 	logger->writeLine("All domain memory has been released.");
 }
 
-/*
- *  Configure the domain using the XML file
 
-bool CDomain::configureDomain( XMLElement* pXDomain )
-{
-	XMLElement*		pXData;
-
-	// Device number(s) are now declared as part of the domain to allow for
-	// split workloads etc.
-	char			*cDomainDevice		= NULL;
-	Util::toLowercase( &cDomainDevice, pXDomain->Attribute( "deviceNumber" ) );
-
-	// TODO: For now we're only working with 1 device. If we need more than one device,
-	// the domain manager must handle splitting...
-	// TODO: Device selection/assignment should take place in the domain manager class.
-
-	/*
-	// Validate the device number
-	if ( cDomainDevice == NULL )
-	{
-		// Select a device automatically
-		pDevice = pManager->getExecutor()->getDevice();
-	} else {
-		if ( CXMLDataset::isValidUnsignedInt( std::string(cDomainDevice) ) )
-		{
-			pDevice = pManager->getExecutor()->getDevice( boost::lexical_cast<unsigned int>(cDomainDevice) );
-		} else {
-			model::doError(
-				"The domain device specified is invalid.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-	}
-	///
-
-	if ( pDevice == NULL )
-	{
-		model::doError(
-			"No valid device was identified for the domain.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	pXData = pXDomain->FirstChildElement( "data" );
-	const char*	cDataSourceDir = pXData->Attribute( "sourceDir" );
-	const char*	cDataTargetDir = pXData->Attribute( "targetDir" );
-
-	if ( cDataSourceDir != NULL )
-	{
-		this->cSourceDir = new char[ std::strlen( cDataSourceDir ) + 1 ];
-		std::strcpy( this->cSourceDir, cDataSourceDir );
-	}
-	if ( cDataTargetDir != NULL )
-	{
-		this->cTargetDir = new char[ std::strlen( cDataTargetDir ) + 1 ];
-		std::strcpy( this->cTargetDir, cDataTargetDir );
-	}
-
-	return true;
-}
-*/
 /*
  *  Creates an OpenCL memory buffer for the specified data store
  */

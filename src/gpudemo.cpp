@@ -35,9 +35,7 @@
 #include "CDomainManager.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CRasterDataset.h"
 #include "COCLDevice.h"
-#include "CSchemeGodunov.h"
 #include "CSchemePromaides.h"
 #include "Normalplain.h"
 
@@ -95,9 +93,9 @@ int loadConfiguration()
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
 
-	CRasterDataset	pDataset;
+	CDomainCartesian::pDataset pDataset;
 
-	pDataset.setLogger(pManager->log);
+	pDataset.logger = pManager->log;
 	pDataset.bAvailable = true;
 	pDataset.ulRows = np->getSizeX();
 	pDataset.ulColumns = np->getSizeY();

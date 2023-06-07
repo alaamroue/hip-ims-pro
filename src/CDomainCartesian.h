@@ -52,7 +52,6 @@ class CDomainCartesian : public CDomain
 
 		// Public functions
 		// - Replacements for CDomain stubs
-		bool			configureDomain();								// Configure a domain, loading data etc.
 		virtual	unsigned char	getType()										{ return model::domainStructureTypes::kStructureCartesian; };	// Fetch a type code
 		virtual	CDomainBase::DomainSummary getSummary();						// Fetch summary information for this domain
 		bool			validateDomain( bool );									// Verify required data is available
@@ -109,6 +108,26 @@ class CDomainCartesian : public CDomain
 			kBoundaryClosed = 1
 		};
 
+		struct pDataset {
+			CLog* logger;
+			bool bAvailable;
+			unsigned long	ulColumns;			
+			unsigned long	ulRows;				
+			unsigned int	uiBandCount;		
+			double			dResolutionX;		
+			double			dResolutionY;		
+			double			dOffsetX;								
+			double			dOffsetY;
+			void logDetails() {
+				logger->writeDivide();
+				logger->writeLine("Dataset band count:  " + std::to_string(this->uiBandCount));
+				logger->writeLine("Cell dimensions:     [" + std::to_string(this->ulColumns) + ", " + std::to_string(this->ulRows) + "]");
+				logger->writeLine("Cell resolution:     [" + std::to_string(this->dResolutionX) + ", " + std::to_string(this->dResolutionY) + "]");
+				logger->writeLine("Lower-left offset:   [" + std::to_string(this->dOffsetX) + ", " + std::to_string(this->dOffsetY) + "]");
+				logger->writeDivide();
+			}
+		};
+
 	private:
 
 		// Private structures
@@ -138,7 +157,6 @@ class CDomainCartesian : public CDomain
 
 		// Private functions
 		void			addOutput( sDataTargetInfo );								// Adds a new output 
-		bool			loadInitialConditionSource( sDataSourceInfo, char* );		// Load a constant/raster condition to the domain
 		void			updateCellStatistics();										// Update the number of rows, cols, etc.
 
 };

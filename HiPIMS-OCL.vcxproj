@@ -168,11 +168,6 @@
   <ItemGroup>
     <ClCompile Include="src\CSchemePromaides.cpp" />
     <ClCompile Include="src\CBenchmark.cpp" />
-    <ClCompile Include="src\CBoundary.cpp" />
-    <ClCompile Include="src\CBoundaryCell.cpp" />
-    <ClCompile Include="src\CBoundaryGridded.cpp" />
-    <ClCompile Include="src\CBoundaryMap.cpp" />
-    <ClCompile Include="src\CBoundaryUniform.cpp" />
     <ClCompile Include="src\CDomain.cpp" />
     <ClCompile Include="src\CDomainBase.cpp" />
     <ClCompile Include="src\CDomainCartesian.cpp" />
@@ -186,11 +181,7 @@
     <ClCompile Include="src\COCLDevice.cpp" />
     <ClCompile Include="src\COCLKernel.cpp" />
     <ClCompile Include="src\COCLProgram.cpp" />
-    <ClCompile Include="src\CRasterDataset.cpp" />
     <ClCompile Include="src\CScheme.cpp" />
-    <ClCompile Include="src\CSchemeGodunov.cpp" />
-    <ClCompile Include="src\CSchemeInertial.cpp" />
-    <ClCompile Include="src\CSchemeMUSCLHancock.cpp" />
     <ClCompile Include="src\gpudemo.cpp" />
     <ClCompile Include="src\Normalplain.cpp" />
     <ClCompile Include="src\util.cpp" />
@@ -199,11 +190,6 @@
   <ItemGroup>
     <ClInclude Include="src\CSchemePromaides.h" />
     <ClInclude Include="src\CBenchmark.h" />
-    <ClInclude Include="src\CBoundary.h" />
-    <ClInclude Include="src\CBoundaryCell.h" />
-    <ClInclude Include="src\CBoundaryGridded.h" />
-    <ClInclude Include="src\CBoundaryMap.h" />
-    <ClInclude Include="src\CBoundaryUniform.h" />
     <ClInclude Include="src\CDomain.h" />
     <ClInclude Include="src\CDomainBase.h" />
     <ClInclude Include="src\CDomainCartesian.h" />
@@ -217,13 +203,8 @@
     <ClInclude Include="src\COCLDevice.h" />
     <ClInclude Include="src\COCLKernel.h" />
     <ClInclude Include="src\COCLProgram.h" />
-    <ClInclude Include="src\colormod.h" />
     <ClInclude Include="src\common.h" />
-    <ClInclude Include="src\CRasterDataset.h" />
     <ClInclude Include="src\CScheme.h" />
-    <ClInclude Include="src\CSchemeGodunov.h" />
-    <ClInclude Include="src\CSchemeInertial.h" />
-    <ClInclude Include="src\CSchemeMUSCLHancock.h" />
     <ClInclude Include="src\gpudemo.h" />
     <ClInclude Include="src\model.h" />
     <ClInclude Include="src\Normalplain.h" />

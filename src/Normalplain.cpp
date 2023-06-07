@@ -67,10 +67,6 @@ void Normalplain::SetBedElevationMountain() {
 void Normalplain::outputShape() {
 	unsigned long size = this->getSize()/10;
 	double value;
-	Color::Modifier red(Color::FG_RED);
-	Color::Modifier green(Color::FG_GREEN);
-	Color::Modifier sgreen(Color::sFG_GREEN);
-	Color::Modifier def(Color::FG_DEFAULT);
 	std::cout << std::fixed;
 	std::cout << std::setprecision(2);
 	std::cout << std::endl;
@@ -78,20 +74,8 @@ void Normalplain::outputShape() {
 	for (unsigned long i = 0; i < this->getSizeX() ; i++) {
 		for (unsigned long j = 0; j < this->getSizeY(); j++) {
 			value = this->getBedElevation(i, j);
-			if (value-2 > 100+i*10+j) {
-				std::cout << sgreen << value << def << " ";
-			}
-			else if (value > 100 + i * 10 + j) {
-				std::cout << green << value << def << " ";
+			std::cout << value << " ";
 			
-			}
-			else if (value < 100 + i * 10 + j) {
-				std::cout << red << value << def << " ";
-			}
-			else {
-				std::cout << value << " ";
-			
-			}
 
 		}
 		std::cout << std::endl;

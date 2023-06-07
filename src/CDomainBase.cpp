@@ -59,17 +59,6 @@ CDomainBase::~CDomainBase(void)
 }
 
 
-//Configure the domain using the XML file
- //Alaa: This is creating confusion and is not even needed
-bool CDomainBase::configureDomain()
-{
-	// We don't really care if the domain isn't on this node
-	// and can just ignore all the configuration stuff for it...
-	return true;
-}
- 
-
-
 /*
  *  Helper function that create a new class of the appropriate type
  *  for the domain we have.

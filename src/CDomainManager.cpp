@@ -33,8 +33,6 @@
 #include "CDomainCartesian.h"
 #include "CDomainLink.h"
 #include "CScheme.h"
-#include "CRasterDataset.h"
-#include "CBoundaryMap.h"
 #include "COCLDevice.h"
 
 /*
@@ -55,37 +53,6 @@ CDomainManager::~CDomainManager(void)
 	for (unsigned int uiID = 0; uiID < domains.size(); ++uiID)
 		delete domains[uiID];
 
-}
-
-/*
- *  Set up the domain manager using the configuration file
- */
-bool CDomainManager::setupFromConfig()
-{
-	/*
-	//this->setSyncMethod(model::syncMethod::kSyncTimestep);
-	//this->setSyncMethod(model::syncMethod::kSyncForecast);
-	//this->setSyncBatchSpares(boost::lexical_cast<unsigned int>(??));
-
-	CDomainBase* pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
-	logger->writeLine("ocal device IDs are relative to # 1." );
-	logger->writeLine("Assigning domain to device #1 ."  );
-	static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(1));
-
-	//Domain Data
-	if (!pDomainNew->configureDomain()){
-		return false;
-	}
-
-	pDomainNew->setID( getDomainCount() );	// Should not be needed, but somehow is?
-	domains.push_back( pDomainNew );
-
-	this->logDomainMultiOrSingle();
-	this->generateLinks();
-	this->logDetails();
-	if (!this->checkDomainLinks()) return false;
-	*/
-	return true;
 }
 
 /*

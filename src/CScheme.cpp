@@ -28,15 +28,9 @@
  */
 
 #include "common.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CScheme.h"
-#include "CSchemeGodunov.h"
-#include "CSchemeMUSCLHancock.h"
-#include "CSchemeInertial.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CRasterDataset.h"
 
 /*
  *  Default constructor
@@ -123,7 +117,6 @@ CScheme* CScheme::createScheme( unsigned char ucType, CModel* cModel)
 		//	return static_cast<CScheme*>( new CSchemeInertial(logger) );
 		//break;
 	//}
-	return static_cast<CScheme*>(new CSchemeGodunov(cModel));
 	return NULL;
 }
 

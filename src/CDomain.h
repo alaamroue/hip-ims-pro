@@ -46,7 +46,6 @@ namespace domainValueIndices{ enum domainValueIndices {
 
 // TODO: Make a CLocation class
 class CDomainCartesian;
-class CBoundaryMap;
 class COCLDevice;
 class COCLBuffer;
 class CScheme;
@@ -70,7 +69,6 @@ class CDomain : public CDomainBase
 		// ...
 
 		// Public functions
-		//virtual 	bool			configureDomain( XMLElement* );									// Configure a domain, loading data etc.
 		virtual		bool			isRemote()				{ return false; };						// Is this domain on this node?
 		virtual		bool			validateDomain( bool ) = 0;										// Verify required data is available
 		virtual		void			prepareDomain() = 0;											// Create memory structures etc.
@@ -101,7 +99,6 @@ class CDomain : public CDomainBase
 		double						getMaxFSL()				{ return dMaxFSL; }						// Fetch the maximum FSL in the domain
 		double						getMinFSL()				{ return dMinFSL; }						// Fetch the minimum FSL in the domain
 		virtual double				getVolume();													// Calculate the total volume in all the cells
-		CBoundaryMap*				getBoundaries()			{ return pBoundaries; }					// Return the boundary map class
 		unsigned int				getID()					{ return uiID; }						// Get the ID number
 		void						setID( unsigned int i ) { uiID = i; }							// Set the ID number
 		virtual mpiSignalDataProgress getDataProgress();											// Fetch some data on this domain's progress
@@ -142,7 +139,6 @@ class CDomain : public CDomainBase
 		cl_double			dMinDepth;																// Min and max depths 
 		cl_double			dMaxDepth;
 
-		CBoundaryMap*		pBoundaries;															// Boundary map (management)
 		CScheme*			pScheme;																// Scheme we are running for this particular domain
 		COCLDevice*			pDevice;																// Device responsible for running this domain
 		CLog* logger;																				// Pointer to the logger class 

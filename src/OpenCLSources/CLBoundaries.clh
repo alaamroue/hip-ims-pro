@@ -118,7 +118,8 @@ __kernel void bdy_Uniform (
 __kernel void bdy_Promaides ( 
 	__global		cl_double2 const * restrict,
 	__global		cl_double *,
-	__global		cl_double4 *
+	__global		cl_double4 *,
+	__global		cl_double *
 );
 
 #endif
