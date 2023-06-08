@@ -30,7 +30,6 @@
 #define HIPIMS_SCHEMES_CSCHEME_H_
 
 #include "CBenchmark.h"
-#include "CDomain.h"
 #include "CExecutorControlOpenCL.h"
 #include "COCLProgram.h"
 #include "COCLDevice.h"
@@ -108,8 +107,8 @@ class CScheme
 		virtual double		getAverageTimestep() = 0;												// Get batch average timestep
 		virtual void		setTargetTime( double );												// Set the target sync time
 		double				getTargetTime();														// Get the target sync time
-		void				setDomain( CDomain *d )			{ pDomain = d; }						// Set the domain we're working on
-		CDomain*			getDomain()						{ return pDomain; }						// Fetch the domain we're working on
+		void				setDomain(CDomainCartesian* d )			{ pDomain = d; }						// Set the domain we're working on
+		CDomainCartesian*			getDomain()						{ return pDomain; }						// Fetch the domain we're working on
 		unsigned long long	getCellsCalculated()			{ return ulCurrentCellsCalculated; }	// Number of cells calculated so far
 		double				getCurrentTimestep()			{ return dCurrentTimestep; }			// Current timestep
 		bool				getCurrentSuspendedState()		{ return ( dCurrentTimestep < 0.0 ); }	// Is the simulation suspended?
@@ -174,7 +173,7 @@ class CScheme
 		cl_uint				uiBatchSkipped;															// Number of skipped batch iterations
 		cl_uint				uiBatchSuccessful;														// Number of successful batch iterations
 		cl_uint				uiBatchRate;															// Number of successful iterations per second
-		CDomain*			pDomain;																// Domain which this scheme is attached to
+		CDomainCartesian*			pDomain;																// Domain which this scheme is attached to
 		
 };
 

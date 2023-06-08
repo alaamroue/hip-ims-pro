@@ -141,7 +141,6 @@ class COCLDevice
 		void						createQueue( void );													// Create the device context and queue
 
 		// Friendships (for access to data structure pointers mainly)
-		friend class				CDomain;
 		friend class				CCell;
 		friend class				CDomainCartesian;
 		friend class				CCellCartesian;

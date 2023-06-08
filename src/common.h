@@ -131,6 +131,26 @@ namespace model
 		};
 	};
 
+	// Model domain structure types
+	namespace domainValueIndices {
+		enum domainValueIndices {
+			kValueFreeSurfaceLevel = 0,	// Free-surface level
+			kValueMaxFreeSurfaceLevel = 1,	// Max free-surface level
+			kValueDischargeX = 2,	// Discharge X
+			kValueDischargeY = 3		// Discharge Y
+		};
+	}
+	// Model domain structure types
+	namespace domainStructureTypes {
+		enum domainStructureTypes {
+			kStructureCartesian = 0,	// Cartesian
+			kStructureRemote = 1,	// Remotely held domain
+			kStructureInvalid = 255	// Error state, cannot work with this type of domain
+		};
+	}
+
+
+
 	extern	CModel*			cModel;
 	void					doError( std::string, unsigned char );
 }

@@ -32,7 +32,6 @@
 #include "opencl.h"
 #include <vector>
 
-class CDomain;
 class CDomainCartesian;
 class COCLDevice;
 class CScheme;
@@ -59,15 +58,15 @@ class CDomainManager
 		};
 
 		// Public variables
-		std::vector<CDomain*> domains;															// Vector of all the domains we hold
+		std::vector<CDomainCartesian*> domains;															// Vector of all the domains we hold
 
 		// ...
 
 		// Public functions
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
-		CDomain*			getDomainBase(unsigned int);										// Fetch a domain base by ID
-		CDomain*				getDomain( unsigned int );											// Fetch a domain by ID
-		CDomain*				getDomain( double, double );										// Fetch a domain by coordinate
+		CDomainCartesian*			getDomainBase(unsigned int);										// Fetch a domain base by ID
+		CDomainCartesian*				getDomain( unsigned int );											// Fetch a domain by ID
+		CDomainCartesian*				getDomain( double, double );										// Fetch a domain by coordinate
 		unsigned int			getDomainCount();													// Get the total number of domains
 		Bounds					getTotalExtent();													// Fetch the total extent of all domains
 		//bool					addRasterDataset( CRasterDataset*, unsigned char );					// Load a raster dataset

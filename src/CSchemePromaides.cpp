@@ -11,7 +11,6 @@
 
 #include "common.h"
 #include "CDomainManager.h"
-#include "CDomain.h"
 #include "CDomainCartesian.h"
 #include "CSchemePromaides.h"
 
@@ -546,7 +545,7 @@ bool CSchemePromaides::prepare1OMemory()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
-	CDomain* pDomain = this->pDomain;
+	CDomainCartesian* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
 	unsigned char ucFloatSize = (this->floatPrecision == model::floatPrecision::kSingle ? sizeof(cl_float) : sizeof(cl_double));
@@ -674,7 +673,7 @@ bool CSchemePromaides::prepareGeneralKernels()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
-	CDomain* pDomain = this->pDomain;
+	CDomainCartesian* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
 	// --
@@ -726,7 +725,7 @@ bool CSchemePromaides::prepare1OKernels()
 {
 	bool						bReturnState = true;
 	CExecutorControlOpenCL* pExecutor = cExecutorControlOpenCL;
-	CDomain* pDomain = this->pDomain;
+	CDomainCartesian* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
 	// --
@@ -1316,7 +1315,7 @@ bool	CSchemePromaides::isSimulationSyncReady(double dExpectedTargetTime)
 void	CSchemePromaides::scheduleIteration(
 	bool			bUseAlternateKernel,
 	COCLDevice* pDevice,
-	CDomain* pDomain
+	CDomainCartesian* pDomain
 )
 {
 	// Re-set the kernel arguments to use the correct cell state buffer

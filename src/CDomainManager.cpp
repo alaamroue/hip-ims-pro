@@ -28,7 +28,6 @@
  */
 #include "common.h"
 #include "CDomainManager.h"
-#include "CDomain.h"
 #include "CDomainCartesian.h"
 #include "CScheme.h"
 #include "COCLDevice.h"
@@ -68,7 +67,7 @@ bool	CDomainManager::isDomainLocal(unsigned int uiID)
 /*
 *  Fetch a specific domain by ID
 */
-CDomain*	CDomainManager::getDomainBase(unsigned int uiID)
+CDomainCartesian*	CDomainManager::getDomainBase(unsigned int uiID)
 {
 	return domains[uiID];
 }
@@ -76,15 +75,15 @@ CDomain*	CDomainManager::getDomainBase(unsigned int uiID)
 /*
  *  Fetch a specific domain by ID
  */
-CDomain*	CDomainManager::getDomain(unsigned int uiID)
+CDomainCartesian*	CDomainManager::getDomain(unsigned int uiID)
 {
-	return static_cast<CDomain*>(domains[ uiID ]);
+	return static_cast<CDomainCartesian*>(domains[ uiID ]);
 }
 
 /*
  *  Fetch a specific domain by a point therein
  */
-CDomain*	CDomainManager::getDomain(double dX, double dY)
+CDomainCartesian*	CDomainManager::getDomain(double dX, double dY)
 {
 	return NULL;
 }
@@ -201,7 +200,7 @@ void	CDomainManager::logDetails()
 	for (unsigned int i = 0; i < this->getDomainCount(); i++)
 	{
 		char cDomainLine[70] = "                                                                    X";
-		CDomain::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
+		CDomainCartesian::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
 		std::string resolutionShort = std::to_string(pSummary.dResolution);
 		resolutionShort.resize(5);
 

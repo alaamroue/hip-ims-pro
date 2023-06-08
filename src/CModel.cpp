@@ -33,7 +33,7 @@
 #include "common.h"
 #include "CExecutorControlOpenCL.h"
 #include "CDomainManager.h"
-#include "CDomain.h"
+#include "CDomainCartesian.h"
 #include "CScheme.h"
 #include "CSchemePromaides.h"
 #include "Normalplain.h"
@@ -341,7 +341,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 			ulCurrentCellsCalculated += domains->getDomain(i)->getScheme()->getCellsCalculated();
 		}
 
-		CDomain::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+		CDomainCartesian::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
 
 		if (uiBatchSizeMax < pProgress.uiBatchSize)
 			uiBatchSizeMax = pProgress.uiBatchSize;
@@ -384,7 +384,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	for( unsigned int i = 0; i < domainCount; i++ )
 	{
 		char cDomainLine[70] = "                                                                    X";
-		CDomain::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+		CDomainCartesian::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
 		
 		// TODO: Give this it's proper name...
 		std::string sDeviceName = "REMOTE";
@@ -424,7 +424,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
  */
 void CModel::visualiserUpdate()
 {
-	CDomain*	pDomain = this->domains->getDomain(0);
+	CDomainCartesian*	pDomain = this->domains->getDomain(0);
 	COCLDevice*	pDevice	= this->domains->getDomain(0)->getDevice();
 
 	#ifdef _WINDLL

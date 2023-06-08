@@ -33,7 +33,6 @@
 #include "gpudemo.h"
 #include "CModel.h"
 #include "CDomainManager.h"
-#include "CDomain.h"
 #include "CDomainCartesian.h"
 #include "COCLDevice.h"
 #include "CSchemePromaides.h"

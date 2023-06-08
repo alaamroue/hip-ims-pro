@@ -51,7 +51,7 @@ public:
 	virtual void		prepareAll();											// Prepare absolutely everything for a model run
 	virtual void		scheduleIteration(bool,								// Schedule an iteration of the scheme
 		COCLDevice*,
-		CDomain*);
+		CDomainCartesian*);
 	double				proposeSyncPoint(double);								// Propose a synchronisation point
 	void				forceTimestep(double);								// Force a specific timestep
 	void				setDryThreshold(double);								// Set the dry cell threshold depth
