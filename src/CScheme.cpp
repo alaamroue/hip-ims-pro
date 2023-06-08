@@ -48,7 +48,6 @@ CScheme::CScheme()
 	this->dCourantNumber = 0.5;
 	this->dTimestep = 0.001;
 	this->bDynamicTimestep = true;
-	this->bFrictionEffects = true;
 	this->dTargetTime = 0.0;
 	this->uiBatchSkipped = 0;
 	this->uiBatchSuccessful = 0;
@@ -170,22 +169,6 @@ void	CScheme::setTimestep( double dTimestep )
 double	CScheme::getTimestep()
 {
 	return fabs(this->dTimestep);
-}
-
-/*
- *  Enable/disable friction effects
- */
-void	CScheme::setFrictionStatus( bool bEnabled )
-{
-	this->bFrictionEffects = bEnabled;
-}
-
-/*
- *  Get enabled/disabled for friction
- */
-bool	CScheme::getFrictionStatus()
-{
-	return this->bFrictionEffects;
 }
 
 /*

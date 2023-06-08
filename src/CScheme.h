@@ -106,8 +106,6 @@ class CScheme
 		void				setTimestep( double );													// Set the timestep
 		double				getTimestep();															// Get the timestep
 		virtual double		getAverageTimestep() = 0;												// Get batch average timestep
-		void				setFrictionStatus( bool );												// Enable/disable friction effects
-		bool				getFrictionStatus();													// Get enabled/disabled for friction
 		virtual void		setTargetTime( double );												// Set the target sync time
 		double				getTargetTime();														// Get the target sync time
 		void				setDomain( CDomain *d )			{ pDomain = d; }						// Set the domain we're working on
@@ -163,7 +161,6 @@ class CScheme
 		bool				bReady;																	// Is the scheme ready?
 		bool				bBatchComplete;															// Is the batch done?
 		bool				bBatchError;															// Have we run out of room?
-		bool				bFrictionEffects;														// Activate friction effects?
 		unsigned long long	ulCurrentCellsCalculated;												// Total number of cells calculated
 		double				dCurrentTimestep;														// Current simulation timestep
 		double				dTargetTime;															// Target time for synchronisation

@@ -102,7 +102,6 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	//Set Variables Based on CModel
 	this->cExecutorControlOpenCL = cmodel->getExecutor();
 	this->dCourantNumber = cmodel->getCourantNumber();
-	this->bFrictionEffects = cmodel->getFrictionStatus();
 	this->ulCachedWorkgroupSizeX = cmodel->ulCachedWorkgroupSizeX;
 	this->ulCachedWorkgroupSizeY = cmodel->ulCachedWorkgroupSizeX;
 	this->ulNonCachedWorkgroupSizeX = cmodel->ulNonCachedWorkgroupSizeX;
@@ -139,33 +138,11 @@ void CSchemePromaides::logDetails()
 	logger->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
 
-	std::string sSolver = "Undefined";
-	switch (this->ucSolverType)
-	{
-	case model::solverTypes::kHLLC:
-		sSolver = "HLLC (Approximate)";
-		break;
-	}
-
-	std::string sConfiguration = "Undefined";
-	switch (this->ucConfiguration)
-	{
-	case model::schemeConfigurations::godunovType::kCacheNone:
-		sConfiguration = "No local caching";
-		break;
-	case model::schemeConfigurations::godunovType::kCacheEnabled:
-		sConfiguration = "Original state caching";
-		break;
-	}
-
-	logger->writeLine("GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME", true, wColour);
+	logger->writeLine("Promaides SCHEME", true, wColour);
 	logger->writeLine("  Timestep mode:      " + (std::string)(this->bDynamicTimestep ? "Dynamic" : "Fixed"), true, wColour);
 	logger->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? std::to_string(this->dCourantNumber) : "N/A"), true, wColour);
 	logger->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
 	logger->writeLine("  Data reduction:     " + std::to_string(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
-	logger->writeLine("  Riemann solver:     " + sSolver, true, wColour);
-	logger->writeLine("  Configuration:      " + sConfiguration, true, wColour);
-	logger->writeLine("  Friction effects:   " + (std::string)(this->bFrictionEffects ? "Enabled" : "Disabled"), true, wColour);
 	logger->writeLine("  Kernel queue mode:  " + (std::string)(this->bAutomaticQueue ? "Automatic" : "Fixed size"), true, wColour);
 	logger->writeLine((std::string)(this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        ") + std::to_string(this->uiQueueAdditionSize) + " iteration(s)", true, wColour);
 	logger->writeLine("  Debug output:       " + (std::string)(this->bDebugOutput ? "Enabled" : "Disabled"), true, wColour);
@@ -535,19 +512,6 @@ bool CSchemePromaides::prepare1OConstants()
 	else {
 		oclModel->registerConstant("TIMESTEP_FIXED", std::to_string(this->dTimestep));
 		oclModel->removeConstant("TIMESTEP_DYNAMIC");
-	}
-
-	if (this->bFrictionEffects)
-	{
-		oclModel->registerConstant("FRICTION_ENABLED", "1");
-	}
-	else {
-		oclModel->removeConstant("FRICTION_ENABLED");
-	}
-
-	if (this->bFrictionInFluxKernel)
-	{
-		oclModel->registerConstant("FRICTION_IN_FLUX_KERNEL", "1");
 	}
 
 	// --

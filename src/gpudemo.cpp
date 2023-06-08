@@ -86,11 +86,10 @@ int loadConfiguration()
 	pManager->setOutputFrequency(SyncTime);										// Set Output Frequency
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);					// Set Precision
 	pManager->setCourantNumber(0.9);												// Set the Courant Number to be used (Godunov)
-	pManager->setFrictionStatus(false);												// Flag for activating friction
 	pManager->setCachedWorkgroupSize(8, 8);											// Set the work group size of the GPU for cached mode
 	pManager->setNonCachedWorkgroupSize(8, 8);										// Set the work group size of the GPU for non-cached mode
 	//pManager->setRealStart("2022-05-06 13:30", "%Y-%m-%d %H:%M");					//Sets Realtime
-
+	pManager->
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
 
 	ourCartesianDomain->setCellResolution(10.0);
@@ -133,14 +132,14 @@ int loadConfiguration()
 		}
 	}
 
+	pManager->setDomain(ourCartesianDomain);
+
 	CDomainManager* pManagerDomains = pManager->getDomainSet();
 	pManagerDomains->setSyncMethod(model::syncMethod::kSyncTimestep);
 	ourCartesianDomain->setID(pManagerDomains->getDomainCount());	// Should not be needed, but somehow is?
 
 	//Set newly created domain to the model and do logging and checking
 	pManagerDomains->domains.push_back(ourCartesianDomain);
-
-	pManagerDomains->logDetails();
 
 	pManager->log->writeLine("The computational engine is now ready.");
 	return model::appReturnCodes::kAppSuccess;
