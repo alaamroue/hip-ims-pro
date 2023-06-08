@@ -93,31 +93,10 @@ int loadConfiguration()
 
 	CDomainCartesian* ourCartesianDomain = new CDomainCartesian(pManager);				//Creeate a new Domain
 
-	CDomainCartesian::pDataset pDataset;
-
-	pDataset.logger = pManager->log;
-	pDataset.bAvailable = true;
-	pDataset.ulRows = np->getSizeX();
-	pDataset.ulColumns = np->getSizeY();
-	pDataset.uiBandCount = 1;
-	pDataset.dResolutionX = 10.0;
-	pDataset.dResolutionY = 10.00;
-	pDataset.dOffsetX = 0.00;
-	pDataset.dOffsetY = 0.00;
-
-	//pDataset.logDetails();
-
-	ourCartesianDomain->setProjectionCode(0);					// Unknown
-	ourCartesianDomain->setUnits("m");
-	ourCartesianDomain->setCellResolution(pDataset.dResolutionX);
-	ourCartesianDomain->setRealDimensions(pDataset.dResolutionX * pDataset.ulColumns, pDataset.dResolutionY * pDataset.ulRows);
-	ourCartesianDomain->setRealOffset(pDataset.dOffsetX, pDataset.dOffsetY);
-	ourCartesianDomain->setRealExtent(
-		pDataset.dOffsetY + pDataset.dResolutionY * pDataset.ulRows,
-		pDataset.dOffsetX + pDataset.dResolutionX * pDataset.ulColumns,
-		pDataset.dOffsetY,
-		pDataset.dOffsetX
-	);
+	ourCartesianDomain->setCellResolution(10.0);
+	ourCartesianDomain->setColsCount(np->getSizeY());
+	ourCartesianDomain->setRowsCount(np->getSizeX());
+	ourCartesianDomain->logDetails();
 
 	//CSchemeGodunov* pScheme = new CSchemeGodunov(pManager);
 	CSchemePromaides* pScheme = new CSchemePromaides(pManager);
@@ -131,7 +110,7 @@ int loadConfiguration()
 	model::FlowStates flowStates; flowStates.isFlowElement = true; flowStates.noflow_x = false; flowStates.noflow_y = false; flowStates.opt_pol_x = false; flowStates.opt_pol_y = false;
 	for (unsigned long iRow = 0; iRow < np->getSizeX(); iRow++) {
 		for (unsigned long iCol = 0; iCol < np->getSizeY(); iCol++) {
-			ulCellID = ourCartesianDomain->getCellID(iCol, pDataset.ulRows - iRow - 1);
+			ulCellID = ourCartesianDomain->getCellID(iCol, ourCartesianDomain->getRows() - iRow - 1);
 			//Elevations
 			ourCartesianDomain->handleInputData(ulCellID, np->getBedElevation(ulCellID), model::rasterDatasets::dataValues::kBedElevation, pManager->ucRounding);
 			//Manning Coefficient

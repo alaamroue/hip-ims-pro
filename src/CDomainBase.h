@@ -67,10 +67,6 @@ class CDomainBase
 			unsigned int	uiDomainID;
 			unsigned int	uiNodeID;
 			unsigned int	uiLocalDeviceID;
-			double			dEdgeNorth;
-			double			dEdgeEast;
-			double			dEdgeSouth;
-			double			dEdgeWest;
 			double			dResolution;
 			unsigned long	ulRowCount;
 			unsigned long	ulColCount;
@@ -94,24 +90,12 @@ class CDomainBase
 		// Public functions
 		virtual		DomainSummary	getSummary();													// Fetch summary information for this domain
 		virtual		bool			isRemote()				{ return true; };						// Is this domain on this node?
-		virtual		unsigned char	getType()				{ return model::domainStructureTypes::kStructureInvalid; };	// Fetch a type code
 
 		bool						isInitialised();												// X Is the domain ready to be used
 		unsigned	long			getCellCount();													// X Return the total number of cells
-		bool						isPrepared()			{ return bPrepared; }					// Is the domain prepared?
 		unsigned int				getRollbackLimit()		{ return uiRollbackLimit; }				// How many iterations before a rollback is required?
 		unsigned int				getID()					{ return uiID; }						// Get the ID number
 		void						setID( unsigned int i ) { uiID = i; }							// Set the ID number
-		unsigned int				getLinkCount()			{ return (unsigned int) links.size(); }				// Get the number of links in this domain
-		unsigned int				getDependentLinkCount()	{ return (unsigned int) dependentLinks.size(); }		// Get the number of dependent links
-		CDomainLink*				getLink(unsigned int i) { return links[i]; };					// Fetch a link
-		CDomainLink*				getDependentLink(unsigned int i) { return dependentLinks[i]; };	// Fetch a dependent link
-		CDomainLink*				getLinkFrom(unsigned int);										// Fetch a link with a specific domain
-		bool						sendLinkData();													// Send link data to other nodes
-		bool						isLinkSetAtTime( double );										// Are all this domain's links at the specified time?
-		void						clearLinks()			{ links.clear(); dependentLinks.clear(); }	// Remove pre-existing links
-		void						addLink(CDomainLink*);											// Add a new link to another domain
-		void						addDependentLink(CDomainLink*);									// Add a new dependent link to another domain
 		void						markLinkStatesInvalid();										// When a rollback is initiated, link data becomes invalid
 		void						setRollbackLimit();												// Automatically identify a rollback limit
 		void						setRollbackLimit( unsigned int i ) { uiRollbackLimit = i; }		// Set the number of iterations before a rollback is required
@@ -126,13 +110,10 @@ class CDomainBase
 	protected:
 
 		// Private variables
-		bool				bPrepared;																// Is the domain prepared?
 		unsigned int		uiID;																	// Domain ID
 		unsigned int		uiRollbackLimit;														// Iterations after which a rollback is required
 		unsigned long		ulCellCount;															// Total number of cells
 		mpiSignalDataProgress pDataProgress;														// Data on this domain's progress
-		std::vector<CDomainLink*>	links;															// Vector of domain links
-		std::vector<CDomainLink*>	dependentLinks;													// Vector of dependent domain links
 
 
 };

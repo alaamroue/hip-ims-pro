@@ -40,7 +40,6 @@ CDomain::CDomain(void)
 {
 	this->pScheme			= NULL;
 	this->pDevice			= NULL;
-	this->bPrepared			= false;
 	this->ucFloatSize		= 0;
 	this->dMinFSL			= 9999.0;
 	this->dMaxFSL			= -9999.0;
@@ -91,8 +90,6 @@ void	CDomain::createStoreBuffers(
 			unsigned char	ucFloatSize
 		)
 {
-	if ( !bPrepared )
-		prepareDomain();
 
 	this->ucFloatSize = ucFloatSize;
 
@@ -144,8 +141,6 @@ void	CDomain::createStoreBuffers(
 	unsigned char	ucFloatSize
 )
 {
-	if (!bPrepared)
-		prepareDomain();
 
 	this->ucFloatSize = ucFloatSize;
 
@@ -394,8 +389,6 @@ void	CDomain::handleInputData(
 			unsigned char	ucRounding
 		)
 {
-	if ( !bPrepared )
-		prepareDomain();
 
 	switch( ucValue )
 	{
@@ -552,47 +545,6 @@ CDomainBase::mpiSignalDataProgress	CDomain::getDataProgress()
 	pResponse.uiBatchSuccessful = pScheme->getIterationsSuccessful();
 
 	return pResponse;
-}
-
-/*
- *  Fetch the code for a string descrption of an input/output
- */
-unsigned char	CDomain::getDataValueCode( char* cSourceValue )
-{
-	if ( strstr( cSourceValue, "dem" ) != NULL )		
-		return model::rasterDatasets::dataValues::kBedElevation;
-	if ( strstr( cSourceValue, "maxdepth" ) != NULL )		
-	{
-		return model::rasterDatasets::dataValues::kMaxDepth;
-	}
-	else if ( strstr( cSourceValue, "depth" ) != NULL )		
-	{
-		return model::rasterDatasets::dataValues::kDepth;
-	}
-	if ( strstr( cSourceValue, "disabled" ) != NULL )		
-		return model::rasterDatasets::dataValues::kDisabledCells;
-	if ( strstr( cSourceValue, "dischargex" ) != NULL )		
-		return model::rasterDatasets::dataValues::kDischargeX;
-	if ( strstr( cSourceValue, "dischargey" ) != NULL )		
-		return model::rasterDatasets::dataValues::kDischargeY;
-	if ( strstr( cSourceValue, "maxfsl" ) != NULL )
-	{
-		return model::rasterDatasets::dataValues::kMaxFSL;
-	}
-	else if ( strstr( cSourceValue, "fsl" ) != NULL )
-	{
-		return model::rasterDatasets::dataValues::kFreeSurfaceLevel;
-	}
-	if ( strstr( cSourceValue, "manningcoefficient" ) != NULL )		
-		return model::rasterDatasets::dataValues::kManningCoefficient;
-	if ( strstr( cSourceValue, "velocityx" ) != NULL )		
-		return model::rasterDatasets::dataValues::kVelocityX;
-	if ( strstr( cSourceValue, "velocityy" ) != NULL )		
-		return model::rasterDatasets::dataValues::kVelocityY;
-	if ( strstr( cSourceValue, "froude" ) != NULL )		
-		return model::rasterDatasets::dataValues::kFroudeNumber;
-
-	return 255;
 }
 
 void CDomain::setLogger(CLog* log) {

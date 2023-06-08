@@ -31,7 +31,6 @@
 #include "CDomainBase.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CDomainLink.h"
 #include "CScheme.h"
 #include "COCLDevice.h"
 
@@ -171,35 +170,6 @@ bool	CDomainManager::isSetReady()
 }
 
 /*
- *	Generate links between domains where possible
- */
-void	CDomainManager::generateLinks()
-{
-	logger->writeLine("Generating link data for each domain");
-
-	for (unsigned int i = 0; i < domains.size(); i++)
-	{
-		// Remove any pre-existing links
-		domains[i]->clearLinks();
-	}
-
-	for (unsigned int i = 0; i < domains.size(); i++)
-	{
-		for (unsigned int j = 0; j < domains.size(); j++)
-		{
-			// Must overlap and meet our various constraints
-			if (i != j && CDomainLink::canLink(domains[i], domains[j]))
-			{
-				// Make a new link...
-				CDomainLink* pNewLink = new CDomainLink(domains[i], domains[j], logger);
-				domains[i]->addLink(pNewLink);
-				domains[j]->addDependentLink(pNewLink);
-			}
-		}
-	}
-}
-
-/*
  *  Write some details to the console about our domain set
  */
 void	CDomainManager::logDetails()
@@ -238,19 +208,15 @@ void	CDomainManager::logDetails()
 
 		sprintf_s(
 			cDomainLine,
-			sizeof(cDomainLine),
+			70,
 			"| %6s | %4s | %6s | %6s | %6s | %5s | %5s | %5s |",
 			std::to_string(pSummary.uiDomainID + 1).c_str(),
-			#ifdef MPI_ON
-			std::to_string(pSummary.uiNodeID).c_str(),
-			#else
 			"N/A",
-			#endif
 			std::to_string(pSummary.uiLocalDeviceID).c_str(),
 			std::to_string(pSummary.ulRowCount).c_str(),
 			std::to_string(pSummary.ulColCount).c_str(),
 			(pSummary.ucFloatPrecision == model::floatPrecision::kSingle ? std::string("32bit") : std::string("64bit")).c_str(),
-			std::to_string(this->getDomainBase(i)->getLinkCount()).c_str(),
+			std::to_string(0).c_str(),
 			resolutionShort.c_str()
 		);
 
@@ -260,24 +226,6 @@ void	CDomainManager::logDetails()
 	logger->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
 
 	logger->writeDivide();
-}
-
-bool CDomainManager::checkDomainLinks()
-{
-	// If we have more than one domain then we also need at least one link per domain
-	// otherwise something is wrong...
-	if (domains.size() > 1) {
-		for (unsigned int i = 0; i < domains.size(); i++) {
-			if (domains[i]->getLinkCount() < 1) {
-				model::doError(
-					"One or more domains are not linked.",
-					model::errorCodes::kLevelModelStop
-				);
-				return false;
-			}
-		}
-	}
-	return true;
 }
 
 void CDomainManager::logDomainMultiOrSingle()

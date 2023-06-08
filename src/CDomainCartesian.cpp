@@ -47,23 +47,12 @@ CDomainCartesian::CDomainCartesian(CModel* cModel)
 {
 	this->logger = cModel->getLogger();
 	this->cExecutorControlOpenCL = cModel->getExecutor();
-	this->pDevice = cModel->getExecutor()->getDevice();       //TODO: Alaa:HIGH why is it device 1, and wouldn't this cause problems? Maybe review the old code, I changed a lot in this.
-	// Default values will trigger errors on validation
+	this->pDevice = cModel->getExecutor()->getDevice();
+
 	this->dCellResolution			= std::numeric_limits<double>::quiet_NaN();
-	this->dRealDimensions[kAxisX]	= std::numeric_limits<double>::quiet_NaN();
-	this->dRealDimensions[kAxisY]	= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeN]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeE]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeS]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeW]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealOffset[kAxisX]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealOffset[kAxisY]		= std::numeric_limits<double>::quiet_NaN();
-	this->cUnits[0]					= 0;
-	this->ulProjectionCode			= 0;
-	this->cTargetDir				= NULL;
-	this->cSourceDir				= NULL;
-	this->setProjectionCode(0);					// Unknown
-	this->setUnits((char*)"m");
+
+	this->ulRows = 0;
+	this->ulCols = 0;
 }
 
 /*
@@ -76,79 +65,6 @@ CDomainCartesian::~CDomainCartesian(void)
 
 
 /*
- *  Does the domain contain all of the required data yet?
- */
-bool	CDomainCartesian::validateDomain( bool bQuiet )
-{
-	// Got a resolution?
-	if ( this->dCellResolution == NAN )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain cell resolution not defined",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Got a size?
-	if ( ( isnan( this->dRealDimensions[ kAxisX ] ) || 
-		   isnan( this->dRealDimensions[ kAxisY ] ) ) &&
-		 ( isnan( this->dRealExtent[ kEdgeN ] ) || 
-		   isnan( this->dRealExtent[ kEdgeE ] ) || 
-		   isnan( this->dRealExtent[ kEdgeS ] ) || 
-		   isnan( this->dRealExtent[ kEdgeW ] ) ) )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain extent not defined",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Got an offset?
-	if ( isnan( this->dRealOffset[ kAxisX ] ) ||
-		 isnan( this->dRealOffset[ kAxisY ] ) )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain offset not defined",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Valid extent?
-	if ( this->dRealExtent[ kEdgeE ] <= this->dRealExtent[ kEdgeW ] ||
-		 this->dRealExtent[ kEdgeN ] <= this->dRealExtent[ kEdgeS ] )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain extent is not valid",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	return true;
-}
-
-/*
- *  Create the required data structures etc.
- */
-void	CDomainCartesian::prepareDomain()
-{
-	if ( !this->validateDomain( true ) ) 
-	{
-		model::doError(
-			"Cannot prepare the domain. Invalid specification.",
-			model::errorCodes::kLevelModelStop
-		);
-		return;
-	}
-
-	this->bPrepared = true;
-	this->logDetails();
-}
-
-/*
  *  Write useful information about this domain to the log file
  */
 void	CDomainCartesian::logDetails()
@@ -157,81 +73,31 @@ void	CDomainCartesian::logDetails()
 	unsigned short	wColour			= model::cli::colourInfoBlock;
 
 	logger->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
-	if ( this->ulProjectionCode > 0 ) 
-	{
-		logger->writeLine( "  Projection:        EPSG:" + std::to_string( this->ulProjectionCode ), true, wColour );
-	} else {
-		logger->writeLine( "  Projection:        Unknown", true, wColour );
-	}
 	logger->writeLine("  Device number:     " + std::to_string(this->pDevice->uiDeviceNo), true, wColour);
 	logger->writeLine("  Cell count:        " + std::to_string(this->ulCellCount), true, wColour);
-	logger->writeLine("  Cell resolution:   " + std::to_string(this->dCellResolution) + this->cUnits, true, wColour);
+	logger->writeLine("  Cell resolution:   " + std::to_string(this->dCellResolution) + "m", true, wColour);
 	logger->writeLine("  Cell dimensions:   [" + std::to_string(this->ulCols) + ", " +
 		std::to_string(this->ulRows) + "]", true, wColour);
-	logger->writeLine("  Real dimensions:   [" + std::to_string(this->dRealDimensions[kAxisX]) + this->cUnits + ", " +
-		std::to_string(this->dRealDimensions[kAxisY]) + this->cUnits + "]", true, wColour);
 
 	logger->writeDivide();
 }
 
 /*
- *  Set real domain dimensions (X, Y)
+ *  Set the number of cell in a row
  */
-void	CDomainCartesian::setRealDimensions(double dSizeX, double dSizeY)
+void	CDomainCartesian::setRowsCount(unsigned long count)
 {
-	this->dRealDimensions[kAxisX] = dSizeX;
-	this->dRealDimensions[kAxisY] = dSizeY;
-	this->updateCellStatistics();
+	this->ulRows = count;
+	this->ulCellCount = this->ulRows * this->ulCols;
 }
 
 /*
- *  Fetch real domain dimensions (X, Y)
+ *  Set the number of cell in a columns
  */
-void	CDomainCartesian::getRealDimensions(double* dSizeX, double* dSizeY)
+void	CDomainCartesian::setColsCount(unsigned long count)
 {
-	*dSizeX = this->dRealDimensions[kAxisX];
-	*dSizeY = this->dRealDimensions[kAxisY];
-}
-
-/*
- *  Set real domain offset (X, Y) for lower-left corner
- */
-void	CDomainCartesian::setRealOffset(double dOffsetX, double dOffsetY)
-{
-	this->dRealOffset[kAxisX] = dOffsetX;
-	this->dRealOffset[kAxisY] = dOffsetY;
-}
-
-/*
- *  Fetch real domain offset (X, Y) for lower-left corner
- */
-void	CDomainCartesian::getRealOffset(double* dOffsetX, double* dOffsetY)
-{
-	*dOffsetX = this->dRealOffset[kAxisX];
-	*dOffsetY = this->dRealOffset[kAxisY];
-}
-
-/*
- *  Set real domain extent (Clockwise: N, E, S, W)
- */
-void	CDomainCartesian::setRealExtent(double dEdgeN, double dEdgeE, double dEdgeS, double dEdgeW)
-{
-	this->dRealExtent[kEdgeN] = dEdgeN;
-	this->dRealExtent[kEdgeE] = dEdgeE;
-	this->dRealExtent[kEdgeS] = dEdgeS;
-	this->dRealExtent[kEdgeW] = dEdgeW;
-	//this->updateCellStatistics();
-}
-
-/*
- *  Fetch real domain extent (Clockwise: N, E, S, W)
- */
-void	CDomainCartesian::getRealExtent(double* dEdgeN, double* dEdgeE, double* dEdgeS, double* dEdgeW)
-{
-	*dEdgeN = this->dRealExtent[kEdgeN];
-	*dEdgeE = this->dRealExtent[kEdgeE];
-	*dEdgeS = this->dRealExtent[kEdgeS];
-	*dEdgeW = this->dRealExtent[kEdgeW];
+	this->ulCols = count;
+	this->ulCellCount = this->ulRows * this->ulCols;
 }
 
 /*
@@ -240,7 +106,6 @@ void	CDomainCartesian::getRealExtent(double* dEdgeN, double* dEdgeE, double* dEd
 void	CDomainCartesian::setCellResolution(double dResolution)
 {
 	this->dCellResolution = dResolution;
-	this->updateCellStatistics();
 }
 
 /*
@@ -251,82 +116,6 @@ void	CDomainCartesian::getCellResolution(double* dResolution)
 	*dResolution = this->dCellResolution;
 }
 
-/*
- *  Set domain units
- */
-void	CDomainCartesian::setUnits(char* cUnits)
-{
-	if (std::strlen(cUnits) > 2)
-	{
-		model::doError(
-			"Domain units can only be two characters",
-			model::errorCodes::kLevelWarning
-		);
-		return;
-	}
-
-	// Store the units (2 char max!)
-	strcpy_s(&this->cUnits[0],sizeof(&this->cUnits[0]), cUnits);
-}
-
-/*
- *  Return a couple of characters representing the units in use
- */
-char* CDomainCartesian::getUnits()
-{
-	return &this->cUnits[0];
-}
-
-/*
- *  Set the EPSG projection code currently in use
- *  0 = Not defined
- */
-void	CDomainCartesian::setProjectionCode(unsigned long ulProjectionCode)
-{
-	this->ulProjectionCode = ulProjectionCode;
-}
-
-/*
- *  Return the EPSG projection code currently in use
- */
-unsigned long	CDomainCartesian::getProjectionCode()
-{
-	return this->ulProjectionCode;
-}
-
-/*
- *  Update basic statistics on the number of cells etc.
- */
-void	CDomainCartesian::updateCellStatistics()
-{
-	// Do we have enough information to proceed?...
-
-	// Got a resolution?
-	if (this->dCellResolution == NAN)
-	{
-		return;
-	}
-
-	// Got a size?
-	if ((isnan(this->dRealDimensions[kAxisX]) ||
-		isnan(this->dRealDimensions[kAxisY])) &&
-		(isnan(this->dRealExtent[kEdgeN]) ||
-			isnan(this->dRealExtent[kEdgeE]) ||
-			isnan(this->dRealExtent[kEdgeS]) ||
-			isnan(this->dRealExtent[kEdgeW])))
-	{
-		return;
-	}
-
-	// We've got everything we need...
-	this->ulRows = static_cast<unsigned long>(
-		this->dRealDimensions[kAxisY] / this->dCellResolution
-		);
-	this->ulCols = static_cast<unsigned long>(
-		this->dRealDimensions[kAxisX] / this->dCellResolution
-		);
-	this->ulCellCount = this->ulRows * this->ulCols;
-}
 
 /*
  *  Return the total number of rows in the domain
@@ -374,14 +163,6 @@ double	CDomainCartesian::getVolume()
 	}
 
 	return dVolume;
-}
-
-/*
- *  Add a new output
- */
-void	CDomainCartesian::addOutput(sDataTargetInfo pOutput)
-{
-	this->pOutputs.push_back(pOutput);
 }
 
 
@@ -524,10 +305,6 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	pSummary.uiNodeID = 0;
 #endif
 	pSummary.uiLocalDeviceID = this->getDevice()->getDeviceID();
-	pSummary.dEdgeNorth		= this->dRealExtent[kEdgeN];
-	pSummary.dEdgeEast		= this->dRealExtent[kEdgeE];
-	pSummary.dEdgeSouth		= this->dRealExtent[kEdgeS];
-	pSummary.dEdgeWest		= this->dRealExtent[kEdgeW];
 	pSummary.ulColCount		= this->ulCols;
 	pSummary.ulRowCount		= this->ulRows;
 	pSummary.ucFloatPrecision = ( this->isDoublePrecision() ? model::floatPrecision::kDouble : model::floatPrecision::kSingle );

@@ -70,10 +70,7 @@ class CDomain : public CDomainBase
 
 		// Public functions
 		virtual		bool			isRemote()				{ return false; };						// Is this domain on this node?
-		virtual		bool			validateDomain( bool ) = 0;										// Verify required data is available
-		virtual		void			prepareDomain() = 0;											// Create memory structures etc.
 		virtual		void			logDetails() = 0;												// Log details about the domain
-		virtual		void			updateCellStatistics() = 0;										// Update the total number of cells calculation
 		virtual		void			readDomain() = 0;												// Read Domain From Gpu
 		virtual		double*			readDomain_opt_h() = 0;											// Read Output flow height from gpu to double*
 		virtual		double*			readDomain_opt_dsdt() = 0;										// Read Output dsdt value from gpu to double*
@@ -143,8 +140,6 @@ class CDomain : public CDomainBase
 		COCLDevice*			pDevice;																// Device responsible for running this domain
 		CLog* logger;																				// Pointer to the logger class 
 
-		// Private functions
-		unsigned char		getDataValueCode( char* );												// Get a raster dataset code from text description
 
 };
 

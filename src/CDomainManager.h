@@ -65,7 +65,6 @@ class CDomainManager
 		// ...
 
 		// Public functions
-		bool					checkDomainLinks();													//Check Domain Links
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
 		CDomain*				getDomain( unsigned int );											// Fetch a domain by ID

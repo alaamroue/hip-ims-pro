@@ -12,7 +12,6 @@
 #include "common.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
-#include "CDomainLink.h"
 #include "CDomainCartesian.h"
 #include "CSchemePromaides.h"
 
@@ -1129,13 +1128,7 @@ void CSchemePromaides::Threaded_runBatch()
 			this->pDomain->getDevice()->blockUntilFinished();
 			this->readKeyStatistics();
 
-			#ifdef DEBUG_MPI
-			logger->writeLine("[DEBUG] Downloading link data at " + Util::secondsToTime(this->dCurrentTime));
-			#endif
-			for (unsigned int i = 0; i < this->pDomain->getDependentLinkCount(); i++)
-			{
-				this->pDomain->getDependentLink(i)->pullFromBuffer(this->dCurrentTime, this->getNextCellSourceBuffer());
-			}
+			//pullFromBuffer was here
 		}
 
 		// Flush the command queue so we can wait for it to finish

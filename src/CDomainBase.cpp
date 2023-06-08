@@ -30,14 +30,12 @@
 #include "common.h"
 #include "CDomainBase.h"
 #include "CDomainCartesian.h"
-#include "CDomainLink.h"
 
 /*
  *  Constructor
  */
 CDomainBase::CDomainBase(void)
 {
-	this->bPrepared			= false;
 	this->uiRollbackLimit	= 999999999;
 
 	pDataProgress.dBatchTimesteps = 0;
@@ -53,8 +51,6 @@ CDomainBase::CDomainBase(void)
  */
 CDomainBase::~CDomainBase(void)
 {
-	for (unsigned int uiID = 0; uiID < links.size(); ++uiID)
-		delete links[uiID];
 
 }
 
@@ -88,102 +84,10 @@ CDomainBase::DomainSummary CDomainBase::getSummary()
 }
 
 /*
- *	Add a new link to another domain
- */
-void CDomainBase::addLink(CDomainLink* pLink)
-{
-	links.push_back(pLink);
-}
-
-/*
- *	Add a new link which is dependent on this domain
- */
-void CDomainBase::addDependentLink(CDomainLink* pLink)
-{
-	dependentLinks.push_back(pLink);
-}
-
-/*
- *	Fetch a link with a specific domain
- */
-CDomainLink* CDomainBase::getLinkFrom( unsigned int uiSourceDomainID )
-{
-	for (unsigned int i = 0; i < links.size(); i++)
-	{
-		if ( links[i]->getSourceDomainID() == uiSourceDomainID )
-			return links[i];
-	}
-	
-	return NULL;
-}
-
-
-/*
  *	Fetch a cell ID based on Cartesian assumption and data held in the summary
  */
 unsigned long	CDomainBase::getCellID(unsigned long ulX, unsigned long ulY)
 {
 	DomainSummary pSummary = this->getSummary();
 	return (ulY * pSummary.ulColCount) + ulX;
-}
-
-/*
- * Identify a suitable rollback limit automatically
- */
-void CDomainBase::setRollbackLimit()
-{
-	unsigned int uiLimit = 999999999;
-
-	for (unsigned int i = 0; i < links.size(); i++)
-	{
-		if (uiLimit >= 999999999 || links[i]->getSmallestOverlap() - 1 < uiLimit)
-			uiLimit = links[i]->getSmallestOverlap() - 1;
-	}
-
-	uiRollbackLimit = uiLimit;
-}
-
-/*
- *	When a domain is told to rollback, any link state data becomes invalid
- */
-void CDomainBase::markLinkStatesInvalid()
-{
-	for (unsigned int i = 0; i < links.size(); i++)
-	{
-		links[i]->markInvalid();
-	}
-}
-
-/*
- *	Are all our links at the specified time?
- */
-bool CDomainBase::isLinkSetAtTime( double dCheckTime )
-{
-	for (unsigned int i = 0; i < links.size(); i++)
-	{
-		if ( !links[i]->isAtTime( dCheckTime ) )
-			return false;
-	}
-	
-	return true;
-}
-
-/*
- *	Send our link data to other nodes
- */
-bool CDomainBase::sendLinkData()
-{
-	bool bAlreadySent = true;
-
-	for (unsigned int i = 0; i < links.size(); i++)
-	{
-		if ( !links[i]->sendOverMPI() )
-			bAlreadySent = false;
-	}
-	
-	return bAlreadySent;
-}
-
-void CDomainBase::setLogger(CLog* log) {
-	logger = log;
 }

@@ -474,7 +474,6 @@ void	CModel::runModelPrepareDomains()
 			continue;
 
 		domains->getDomain(i)->getScheme()->prepareSimulation();
-		domains->getDomain(i)->setRollbackLimit();		// Auto calculate from links...
 
 		if (domainCount > 1)
 		{

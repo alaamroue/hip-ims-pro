@@ -171,7 +171,6 @@
     <ClCompile Include="src\CDomain.cpp" />
     <ClCompile Include="src\CDomainBase.cpp" />
     <ClCompile Include="src\CDomainCartesian.cpp" />
-    <ClCompile Include="src\CDomainLink.cpp" />
     <ClCompile Include="src\CDomainManager.cpp" />
     <ClCompile Include="src\CExecutorControl.cpp" />
     <ClCompile Include="src\CExecutorControlOpenCL.cpp" />
@@ -193,7 +192,6 @@
     <ClInclude Include="src\CDomain.h" />
     <ClInclude Include="src\CDomainBase.h" />
     <ClInclude Include="src\CDomainCartesian.h" />
-    <ClInclude Include="src\CDomainLink.h" />
     <ClInclude Include="src\CDomainManager.h" />
     <ClInclude Include="src\CExecutorControl.h" />
     <ClInclude Include="src\CExecutorControlOpenCL.h" />
