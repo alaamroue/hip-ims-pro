@@ -100,12 +100,6 @@ void COCLKernel::scheduleExecution()
 		NULL,
 		( fCallback != NULL && fCallback != COCLDevice::defaultCallback ? &clEvent : NULL )
 	);
-	if (fCallback != NULL && fCallback != COCLDevice::defaultCallback) {
-		std::cout<< "clEvent" << std::endl;
-	}
-	else {
-		std::cout << "NULL" << std::endl;
-	}
 
 	if ( iErrorID != CL_SUCCESS )
 	{
