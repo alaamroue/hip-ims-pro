@@ -32,7 +32,6 @@
 
 #include "common.h"
 #include "CModel.h"
-#include "CDomainManager.h"
 #include "CScheme.h"
 #include "CExecutorControlOpenCL.h"
 #include "CDomainCartesian.h"

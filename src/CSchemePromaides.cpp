@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "common.h"
-#include "CDomainManager.h"
 #include "CDomainCartesian.h"
 #include "CSchemePromaides.h"
 
@@ -107,10 +106,9 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	this->ulNonCachedWorkgroupSizeY = cmodel->ulNonCachedWorkgroupSizeY;
 	this->floatPrecision = cmodel->getFloatPrecision();
 	this->simulationLength = cmodel->getSimulationLength();
-	this->outputFrequency = cmodel->getOutputFrequency();;
-	this->syncMethod = cmodel->getDomainSet()->getSyncMethod();
-	this->domainCount = cmodel->getDomainSet()->getDomainCount();
-	this->syncBatchSpares = cmodel->getDomainSet()->getSyncBatchSpares();
+	this->outputFrequency = cmodel->getOutputFrequency();
+	this->syncMethod = model::syncMethod::kSyncForecast;
+	this->syncBatchSpares = 0;
 
 
 	//logger->writeLine("Populated scheme with default settings.");
@@ -1294,10 +1292,6 @@ bool	CSchemePromaides::isSimulationSyncReady(double dExpectedTargetTime)
 			return false;
 		}
 	}
-
-	// Have we downloaded the data we need for each domain link?
-	if (!bCellStatesSynced && this->domainCount > 1)
-		return false;
 
 	// Are we synchronising the timesteps?
 	if (this->syncMethod == model::syncMethod::kSyncTimestep &&

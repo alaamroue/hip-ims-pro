@@ -35,9 +35,9 @@
 #include <vector>
 
 // Some classes we need to know about...
+class CDomainCartesian;
 class CExecutorControl;
 class CExecutorControlOpenCL;
-class CDomainManager;
 class CScheme;
 class CLog;
 class CMPIManager;
@@ -60,7 +60,6 @@ class CModel
 		bool					setExecutor(CExecutorControl*);					// Sets the type of executor to use for the model
 		bool					setExecutorToDefaultGPU();						// Sets the type of executor to a Default GPU One
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
-		CDomainManager*			getDomainSet(void);								// Gets the domain set
 		CMPIManager*			getMPIManager(void);							// Gets the MPI manager
 
 		bool					runModel(void);									// Execute the model
@@ -71,7 +70,6 @@ class CModel
 		void					runModelDomainExchange(void);					// Exchange domain data
 		void					runModelUpdateTarget(double);					// Calculate a new target time
 		void					runModelSync(void);								// Synchronise domain and timestep data
-		void					runModelSyncUntil(double);						// Synchronise domain until selected point in time
 		void					runModelMPI(void);								// Process MPI queue etc.
 		void					runModelSchedule(bool * );	// Schedule work
 		void					runModelUI( CBenchmark::sPerformanceMetrics * );// Update progress data etc.
@@ -106,6 +104,8 @@ class CModel
 		void					setSelectedDevice(unsigned int id);							// Select a gpu device to build the kernel on
 		unsigned int			getSelectedDevice();							// Select a gpu device to build the kernel on
 		void					setModelUpdateTarget(double newTarget);			//Set a target time for the simulation to run to
+		void					setDomain(CDomainCartesian*);
+		CDomainCartesian*		getDomain();
 
 		// Public variables
 		CLog*					log;											// Handle for the log singular class
@@ -115,11 +115,10 @@ class CModel
 		cl_ulong				ulCachedWorkgroupSizeX, ulCachedWorkgroupSizeY;
 		cl_ulong				ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
 		unsigned int			selectedDevice;
-		unsigned int			domainCount;
 		double					dGlobalTimestep;								//
 
-		bool* bSyncReady;
-		bool* bIdle;
+		bool bSyncReady;
+		bool bIdle;
 		double dCellRate;
 		unsigned char ucRounding;
 
@@ -130,7 +129,7 @@ class CModel
 
 		// Private variables
 		CExecutorControlOpenCL*	execController;									// Handle for the executor controlling class
-		CDomainManager*			domains;										// Handle for the domain management class
+		CDomainCartesian*		domain;
 		CMPIManager*			mpiManager;										// Handle for the MPI manager class
 		std::string				sModelName;										// Short name for the model
 		std::string				sModelDescription;								// Short description of the model

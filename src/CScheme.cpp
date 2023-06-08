@@ -57,7 +57,6 @@ CScheme::CScheme()
 	this->simulationLength = 0.0;
 	this->outputFrequency = 0.0;
 	this->syncMethod = model::syncMethod::kSyncForecast;
-	this->domainCount = 0;
 	this->syncBatchSpares = 0;
 	this->dCurrentTime = 0.0;
 	this->dBatchStartedTime = 0.0;

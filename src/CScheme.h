@@ -141,7 +141,6 @@ class CScheme
 		double simulationLength;
 		double outputFrequency;
 		unsigned char syncMethod;
-		unsigned int domainCount;
 		unsigned int syncBatchSpares;
 
 

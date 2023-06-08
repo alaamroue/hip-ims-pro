@@ -169,7 +169,6 @@
     <ClCompile Include="src\CSchemePromaides.cpp" />
     <ClCompile Include="src\CBenchmark.cpp" />
     <ClCompile Include="src\CDomainCartesian.cpp" />
-    <ClCompile Include="src\CDomainManager.cpp" />
     <ClCompile Include="src\CExecutorControl.cpp" />
     <ClCompile Include="src\CExecutorControlOpenCL.cpp" />
     <ClCompile Include="src\CLog.cpp" />
@@ -188,7 +187,6 @@
     <ClInclude Include="src\CSchemePromaides.h" />
     <ClInclude Include="src\CBenchmark.h" />
     <ClInclude Include="src\CDomainCartesian.h" />
-    <ClInclude Include="src\CDomainManager.h" />
     <ClInclude Include="src\CExecutorControl.h" />
     <ClInclude Include="src\CExecutorControlOpenCL.h" />
     <ClInclude Include="src\CLog.h" />

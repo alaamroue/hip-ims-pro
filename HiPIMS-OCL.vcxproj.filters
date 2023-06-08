@@ -60,9 +60,6 @@
     <ClCompile Include="src\CDomainCartesian.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\CDomainManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\CExecutorControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -120,9 +117,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CDomainCartesian.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CDomainManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CExecutorControl.h">

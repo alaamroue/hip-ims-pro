@@ -32,7 +32,6 @@
 #include <math.h>
 #include "common.h"
 #include "CExecutorControlOpenCL.h"
-#include "CDomainManager.h"
 #include "CDomainCartesian.h"
 #include "CScheme.h"
 #include "CSchemePromaides.h"
@@ -67,7 +66,6 @@ CModel::CModel(void)
 	this->dProcessingTime = 0.0;
 	this->dTargetTime = 0.0;
 	this->dVisualisationTime = 0.0;
-	this->domainCount = 0;
 	this->selectedDevice = 1;
 	this->ucFloatSize = model::floatPrecision::kDouble;
 	this->ulCachedWorkgroupSizeX = 0;
@@ -79,8 +77,7 @@ CModel::CModel(void)
 	cModelClass = this;
 
 	this->execController	= NULL;
-	this->domains			= new CDomainManager();
-	this->domains->logger	= this->log;
+	this->domain			= NULL;
 	this->mpiManager		= NULL;
 
 	this->dCurrentTime		= 0.0;
@@ -103,22 +100,10 @@ CModel::CModel(void)
  */
 CModel::~CModel(void)
 {
-	if (this->domains != NULL)
-		delete this->domains;
 	if ( this->execController != NULL )
 		delete this->execController;
 	this->log->writeLine("The model engine is completely unloaded.");
 	this->log->writeDivide();
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
-	this->log->writeLine("                                                                  ", false);
 	delete this->log;
 }
 
@@ -169,14 +154,6 @@ CExecutorControlOpenCL* CModel::getExecutor( void )
 }
 
 /*
- *  Returns a pointer to the domain class
- */
-CDomainManager* CModel::getDomainSet( void )
-{
-	return this->domains;
-}
-
-/*
 *  Returns a pointer to the MPI manager class
 */
 CMPIManager* CModel::getMPIManager(void)
@@ -209,7 +186,6 @@ void CModel::logDetails()
 bool CModel::runModel( void )
 {
 	this->log->writeLine("Verifying the required data before model run...");
-	if (!this->domains || !this->domains->isSetReady()) { model::doError("The domain is not ready.", model::errorCodes::kLevelModelStop); return false; }
 	if (!this->execController || !this->execController->isReady()) { model::doError("The executor is not ready.", model::errorCodes::kLevelModelStop); return false; }
 	this->log->writeLine("Verification is complete.");
 	this->log->writeDivide();
@@ -332,24 +308,16 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	double				dSmallestTimestep				   = 9999.0;
 
 	// Get the total number of cells calculated
-	for( unsigned int i = 0; i < domainCount; ++i )
-	{
-		if (domains->isDomainLocal(i))
-		{
-			// Get the number of cells calculated (for the rate mainly)
-			// TODO: Deal with this for MPI...
-			ulCurrentCellsCalculated += domains->getDomain(i)->getScheme()->getCellsCalculated();
-		}
+	ulCurrentCellsCalculated += domain->getScheme()->getCellsCalculated();
 
-		CDomainCartesian::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+	CDomainCartesian::mpiSignalDataProgress pProgress = domain->getDataProgress();
 
-		if (uiBatchSizeMax < pProgress.uiBatchSize)
-			uiBatchSizeMax = pProgress.uiBatchSize;
-		if (uiBatchSizeMin > pProgress.uiBatchSize)
-			uiBatchSizeMin = pProgress.uiBatchSize;
-		if (dSmallestTimestep > pProgress.dBatchTimesteps)
-			dSmallestTimestep = pProgress.dBatchTimesteps;
-	}
+	if (uiBatchSizeMax < pProgress.uiBatchSize)
+		uiBatchSizeMax = pProgress.uiBatchSize;
+	if (uiBatchSizeMin > pProgress.uiBatchSize)
+		uiBatchSizeMin = pProgress.uiBatchSize;
+	if (dSmallestTimestep > pProgress.dBatchTimesteps)
+		dSmallestTimestep = pProgress.dBatchTimesteps;
 
 	unsigned long ulRate = static_cast<unsigned long>(ulCurrentCellsCalculated / sTotalMetrics->dSeconds);
 
@@ -381,32 +349,26 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	this->log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
 	this->log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
 	
-	for( unsigned int i = 0; i < domainCount; i++ )
-	{
-		char cDomainLine[70] = "                                                                    X";
-		CDomainCartesian::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+
+	char cDomainLine[70] = "                                                                    X";
 		
-		// TODO: Give this it's proper name...
-		std::string sDeviceName = "REMOTE";
+	// TODO: Give this it's proper name...
+	std::string sDeviceName = "REMOTE";
 
-		if (domains->isDomainLocal(i))
-		{
-			sDeviceName = domains->getDomain(i)->getDevice()->getDeviceShortName();
-		}
+	sDeviceName = domain->getDevice()->getDeviceShortName();
 
-		sprintf_s(
-			cDomainLine,
-			70,
-			"| Domain #%-2s | %8s | %14s | %10s | %8s |",
-			std::to_string(i + 1).c_str(),
-			sDeviceName.c_str(),
-			Util::secondsToTime(pProgress.dBatchTimesteps).c_str(),
-			std::to_string(pProgress.uiBatchSuccessful).c_str(),
-			std::to_string(pProgress.uiBatchSkipped).c_str()
-		);
+	sprintf_s(
+		cDomainLine,
+		70,
+		"| Domain #%-2s | %8s | %14s | %10s | %8s |",
+		std::to_string(1).c_str(),
+		sDeviceName.c_str(),
+		Util::secondsToTime(pProgress.dBatchTimesteps).c_str(),
+		std::to_string(pProgress.uiBatchSuccessful).c_str(),
+		std::to_string(pProgress.uiBatchSkipped).c_str()
+	);
 
-		this->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
-	}
+	this->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
 
 	this->log->writeLine( "+------------+----------+----------------+------------+----------+" , false, wColour);	// 14
 	this->log->writeDivide();																						// 15
@@ -414,7 +376,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	this->pProgressCoords = Util::getCursorPosition();
 	if (this->dCurrentTime < this->dSimulationTime) 
 	{
-		this->pProgressCoords.sY = max(0, this->pProgressCoords.sY - (16 + (cl_int)domainCount));
+		this->pProgressCoords.sY = max(0, this->pProgressCoords.sY - (16 + (cl_int) 1));
 		Util::setCursorPosition(this->pProgressCoords);
 	}
 }
@@ -424,12 +386,6 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
  */
 void CModel::visualiserUpdate()
 {
-	CDomainCartesian*	pDomain = this->domains->getDomain(0);
-	COCLDevice*	pDevice	= this->domains->getDomain(0)->getDevice();
-
-	#ifdef _WINDLL
-	this->domains->getDomain(0)->sendAllToRenderer();
-	#endif
 
 	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 || this->forcedAbort )
 		return;
@@ -450,9 +406,8 @@ void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, v
 */
 void	CModel::runModelPrepare()
 {
-	domainCount = this->getDomainSet()->getDomainCount();
 
-	domains->getDomain(0)->getScheme()->prepareSimulation();
+	domain->getScheme()->prepareSimulation();
 
 	bSynchronised		= true;
 	bAllIdle			= true;
@@ -464,62 +419,20 @@ void	CModel::runModelPrepare()
 }
 
 /*
-*  Prepare domains for a new simulation.
-*/
-void	CModel::runModelPrepareDomains()
-{
-	for (unsigned int i = 0; i < domainCount; ++i)
-	{
-		if (!domains->isDomainLocal(i))
-			continue;
-
-		domains->getDomain(i)->getScheme()->prepareSimulation();
-
-		if (domainCount > 1)
-		{
-			this->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
-				std::to_string(99999999) + " iterations.");
-		} else {
-			this->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
-				"overlapping.");
-		}
-	}
-}
-
-/*
 *  Assess the current state of each domain.
 */
 void	CModel::runModelDomainAssess(bool *			bSyncReady,bool *			bIdle)
 {
 	double dMinTimestep = 0.0;
 
-	if ( ( dMinTimestep == 0.0 || dMinTimestep > domains->getDomain(0)->getScheme()->getCurrentTimestep() ) &&
-			domains->getDomain(0)->getScheme()->getCurrentTimestep() > 0.0 )
-		dMinTimestep = domains->getDomain(0)->getScheme()->getCurrentTimestep();
+	if ( ( dMinTimestep == 0.0 || dMinTimestep > domain->getScheme()->getCurrentTimestep() ) &&
+			domain->getScheme()->getCurrentTimestep() > 0.0 )
+		dMinTimestep = domain->getScheme()->getCurrentTimestep();
 
 	dGlobalTimestep = dMinTimestep;
 
 }
 
-/*
- *  Exchange data across domains where necessary.
- */
-void	CModel::runModelDomainExchange()
-{
-	this->log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
-	// Swap sync zones over
-	for (unsigned int i = 0; i < domainCount; ++i)		// Source domain
-	{
-		if (domains->isDomainLocal(i))
-		{
-			domains->getDomain(i)->getScheme()->importLinkZoneData();
-			// TODO: Above command does not actually cause import -- next line can be removed?
-			domains->getDomain(i)->getDevice()->flushAndSetMarker();		
-		}
-	}
-	
-	this->runModelBlockNode();
-}
 
 /*
 *  Synchronise the whole model across all domains.
@@ -529,19 +442,6 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 	// Identify the smallest batch size associated timestep
 	double dEarliestSyncProposal = this->dSimulationTime;
 
-	
-	// Only bother with all this stuff if we actually need to synchronise,
-	// otherwise run free, for as long as possible (i.e. until outputs needed)
-	if (domainCount > 1 &&
-		this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
-	{
-		for (unsigned int i = 0; i < domainCount; ++i)
-		{
-			// TODO: How to calculate this for remote domains etc?
-			if (domains->isDomainLocal(i))
-				dEarliestSyncProposal = min(dEarliestSyncProposal, domains->getDomain(i)->getScheme()->proposeSyncPoint(dCurrentTime));
-		}
-	}
 
 	// Don't exceed an output interval if required
 	if (floor(dEarliestSyncProposal / dOutputFrequency)  > floor(dLastSyncTime / dOutputFrequency))
@@ -564,60 +464,6 @@ void	CModel::setModelUpdateTarget(double newTarget)
 
 }
 
-/*
-*  Synchronise the whole model across all domains.
-*/
-void	CModel::runModelSync()
-{
-	if (this->dTargetTime > this->dCurrentTime)
-		return;
-		
-	// Write outputs if possible
-		
-	this->setModelUpdateTarget(this->dTargetTime * 10);
-
-	if ( 
-			(domainCount > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
-			( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
-		)
-	{
-		domains->getDomain(0)->getScheme()->saveCurrentState();
-	}
-
-	// Let devices finish
-	this->runModelBlockNode();
-	
-	// Exchange domain data
-	this->log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
-	domains->getDomain(0)->getScheme()->importLinkZoneData();
-
-	// Wait for all nodes and devices
-	// TODO: This should become global across all nodes 
-	//this->runModelBlockGlobal();
-}
-
-/*
-*  Block execution across all domains which reside on this node only
-*/
-void	CModel::runModelBlockNode()
-{
-	for (unsigned int i = 0; i < domainCount; i++)
-	{
-		if (domains->isDomainLocal(i))
-			domains->getDomain(i)->getDevice()->blockUntilFinished();
-	}
-}
-
-/*
- *  Block execution across all domains until every single one is ready
- */
-void	CModel::runModelBlockGlobal()
-{
-	this->runModelBlockNode();
-#ifdef MPI_ON
-	this->getMPIManager()->asyncBlockOnComm();
-#endif
-}
 
 
 /*
@@ -690,14 +536,11 @@ void	CModel::runModelRollback()
 	// Write the last full set of domain data back to the GPU
 	dEarliestTime = dLastSyncTime;
 	dCurrentTime = dLastSyncTime;
-	for (unsigned int i = 0; i < domainCount; i++)
-	{
-		if (domains->isDomainLocal(i))
-			domains->getDomain(i)->getScheme()->rollbackSimulation(dLastSyncTime, dTargetTime);
-	}
+
+	domain->getScheme()->rollbackSimulation(dLastSyncTime, dTargetTime);
 
 	// Global block across all nodes is required for rollbacks
-	runModelBlockGlobal();
+	domain->getDevice()->blockUntilFinished();
 }
 
 
@@ -706,12 +549,8 @@ void	CModel::runModelRollback()
  */
 void	CModel::runModelCleanup()
 {
-	// Note these will not return until their threads have terminated
-	for (unsigned int i = 0; i < domainCount; ++i)
-	{
-		if (domains->isDomainLocal(i))
-			domains->getDomain(i)->getScheme()->cleanupSimulation();
-	}
+
+	domain->getScheme()->cleanupSimulation();
 }
 
 /*
@@ -719,20 +558,18 @@ void	CModel::runModelCleanup()
  */
 void	CModel::runModelMain()
 {
-	bSyncReady				= new bool[domainCount];
-	bIdle					= new bool[domainCount];
 	dCellRate				= 0.0;
 
 
-	dGlobalTimestep = this->domains->getDomain(0)->getScheme()->getTimestep();
+	dGlobalTimestep = this->domain->getScheme()->getTimestep();
 
 	//dTargetTime = this->getSimulationLength();
 	//dTargetTime = 360000.0;
 
 	log->writeLine("Simulation Started...");
 	unsigned char	ucRounding = 4;			// decimal places
-	CDomainCartesian* cd = (CDomainCartesian*) this->domains->getDomain(0);
-	CSchemePromaides* myProScheme = (CSchemePromaides*) this->domains->getDomain(0)->getScheme();
+	CDomainCartesian* cd = this->domain;
+	CSchemePromaides* myProScheme = (CSchemePromaides*) this->domain->getScheme();
 	Normalplain* np = new Normalplain(100, 100);
 	np->SetBedElevationMountain();
 	myProScheme->np = np;
@@ -743,7 +580,7 @@ void	CModel::runModelMain()
 		this->runNext(i);
 
 		//Read simulation results
-		this->getDomainSet()->getDomain(0)->readDomain();
+		this->domain->readDomain();
 
 		//if (i == 3600 * 5 && false) {
 		//	std::cout << "Changed" << std::endl;
@@ -752,7 +589,6 @@ void	CModel::runModelMain()
 //
 		//}
 	}
-
 
 
 	
@@ -775,28 +611,18 @@ void	CModel::runModelMain()
 	// Get the total number of cells calculated
 	unsigned long long	ulCurrentCellsCalculated = 0;
 	double				dVolume = 0.0;
-	for( unsigned int i = 0; i < domainCount; ++i )
-	{
-		if (!domains->isDomainLocal(i))
-			continue;
+	ulCurrentCellsCalculated += domain->getScheme()->getCellsCalculated();
+	dVolume += abs( domain->getVolume() );
 
-		ulCurrentCellsCalculated += domains->getDomain(i)->getScheme()->getCellsCalculated();
-		dVolume += abs( domains->getDomain(i)->getVolume() );
-	}
-
-	//this->log->writeLine( "Calculation rate:    " + std::to_string( floor(dCellRate) ) + " cells/sec" );
-	//this->log->writeLine( "Final volume:        " + std::to_string( static_cast<int>( dVolume ) ) + "m3" );
 	this->log->writeDivide();
 
-	delete[] bSyncReady;
-	delete[] bIdle;
 }
 
 void CModel::runNext(double	nextPoint) {
 	this->dTargetTime = nextPoint;
 	CBenchmark* pBenchmarkAll = new CBenchmark(true);
 	CBenchmark::sPerformanceMetrics* sTotalMetrics = pBenchmarkAll->getMetrics();
-	CSchemePromaides* myscheme = (CSchemePromaides*) this->domains->getDomain(0)->getScheme();
+	CSchemePromaides* myscheme = (CSchemePromaides*) this->domain->getScheme();
 	while ((this->dCurrentTime - nextPoint < 0) || !bAllIdle)
 	{
 		this->dCurrentTime = myscheme->getCurrentTime();
@@ -875,4 +701,12 @@ void CModel::setSelectedDevice(unsigned int id) {
 
 unsigned int CModel::getSelectedDevice() {
 	return this->selectedDevice;
+}
+
+void CModel::setDomain(CDomainCartesian* cDomainCartesian) {
+	this->domain = cDomainCartesian;
+}
+
+CDomainCartesian* CModel::getDomain() {
+	return this->domain;
 }
