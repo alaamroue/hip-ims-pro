@@ -28,7 +28,6 @@
  */
 #include "common.h"
 #include "CDomainManager.h"
-#include "CDomainBase.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
 #include "CScheme.h"
@@ -69,7 +68,7 @@ bool	CDomainManager::isDomainLocal(unsigned int uiID)
 /*
 *  Fetch a specific domain by ID
 */
-CDomainBase*	CDomainManager::getDomainBase(unsigned int uiID)
+CDomain*	CDomainManager::getDomainBase(unsigned int uiID)
 {
 	return domains[uiID];
 }
@@ -202,7 +201,7 @@ void	CDomainManager::logDetails()
 	for (unsigned int i = 0; i < this->getDomainCount(); i++)
 	{
 		char cDomainLine[70] = "                                                                    X";
-		CDomainBase::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
+		CDomain::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
 		std::string resolutionShort = std::to_string(pSummary.dResolution);
 		resolutionShort.resize(5);
 

@@ -32,7 +32,6 @@
 #include "opencl.h"
 #include <vector>
 
-class CDomainBase;
 class CDomain;
 class CDomainCartesian;
 class COCLDevice;
@@ -60,13 +59,13 @@ class CDomainManager
 		};
 
 		// Public variables
-		std::vector<CDomainBase*> domains;															// Vector of all the domains we hold
+		std::vector<CDomain*> domains;															// Vector of all the domains we hold
 
 		// ...
 
 		// Public functions
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
-		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
+		CDomain*			getDomainBase(unsigned int);										// Fetch a domain base by ID
 		CDomain*				getDomain( unsigned int );											// Fetch a domain by ID
 		CDomain*				getDomain( double, double );										// Fetch a domain by coordinate
 		unsigned int			getDomainCount();													// Get the total number of domains

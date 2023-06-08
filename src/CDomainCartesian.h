@@ -51,7 +51,7 @@ class CDomainCartesian : public CDomain
 		// Public functions
 		// - Replacements for CDomain stubs
 		virtual	unsigned char	getType()										{ return model::domainStructureTypes::kStructureCartesian; };	// Fetch a type code
-		virtual	CDomainBase::DomainSummary getSummary();						// Fetch summary information for this domain
+		virtual	CDomain::DomainSummary getSummary();						// Fetch summary information for this domain
 		void			logDetails();											// Log details about the domain
 		void			readDomain();											// Read Output from gpu
 		double*			readDomain_opt_h();										// Read Output flow hieght from gpu to double*

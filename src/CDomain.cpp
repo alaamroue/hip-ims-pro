@@ -47,12 +47,15 @@ CDomain::CDomain(void)
 	this->dMaxTopo			= -9999.0;
 	this->dMinDepth			= 9999.0;
 	this->dMaxDepth			= -9999.0;
-	this->uiRollbackLimit	= 999999999;
 
-	this->cTargetDir				= NULL;
-	this->cSourceDir				= NULL;
 	this->logger = nullptr;
 
+	pDataProgress.dBatchTimesteps = 0;
+	pDataProgress.dCurrentTime = 0.0;
+	pDataProgress.dCurrentTimestep = 0.0;
+	pDataProgress.uiBatchSize = 0;
+	pDataProgress.uiBatchSkipped = 0;
+	pDataProgress.uiBatchSuccessful = 0;
 }
 
 /*
@@ -531,9 +534,9 @@ COCLDevice*	CDomain::getDevice()
 /*
  *  Gets the scheme we're running on this domain
  */
-CDomainBase::mpiSignalDataProgress	CDomain::getDataProgress()
+CDomain::mpiSignalDataProgress	CDomain::getDataProgress()
 {
-	CDomainBase::mpiSignalDataProgress pResponse;
+	CDomain::mpiSignalDataProgress pResponse;
 	CScheme *pScheme = getScheme();
 
 	pResponse.uiDomainID = this->uiID;
@@ -549,4 +552,42 @@ CDomainBase::mpiSignalDataProgress	CDomain::getDataProgress()
 
 void CDomain::setLogger(CLog* log) {
 	this->logger = log;
+}
+
+/*
+ *	Fetch summary information for this domain
+ */
+CDomain::DomainSummary CDomain::getSummary()
+{
+	CDomain::DomainSummary pSummary;
+
+	pSummary.uiNodeID = 0;
+
+	return pSummary;
+}
+
+
+/*
+ *	Fetch a cell ID based on Cartesian assumption and data held in the summary
+ */
+unsigned long	CDomain::getCellID(unsigned long ulX, unsigned long ulY)
+{
+	DomainSummary pSummary = this->getSummary();
+	return (ulY * pSummary.ulColCount) + ulX;
+}
+
+/*
+ *  Is this domain ready to be used for a model run?
+ */
+bool	CDomain::isInitialised()
+{
+	return true;
+}
+
+/*
+ *  Return the total number of cells in the domain
+ */
+unsigned long	CDomain::getCellCount()
+{
+	return this->ulCellCount;
 }

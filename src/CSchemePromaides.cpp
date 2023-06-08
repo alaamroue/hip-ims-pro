@@ -979,8 +979,7 @@ void CSchemePromaides::Threaded_runBatch()
 		}
 
 		// Have we been asked to override the timestep at the start of this batch?
-		if ( //uiIterationsSinceSync < this->pDomain->getRollbackLimit() &&
-			this->dCurrentTime < dTargetTime &&
+		if ( this->dCurrentTime < dTargetTime &&
 			this->bOverrideTimestep)
 		{
 			if (this->floatPrecision == model::floatPrecision::kSingle)
@@ -1049,8 +1048,7 @@ void CSchemePromaides::Threaded_runBatch()
 
 		// Schedule a batch-load of work for the device
 		// Do we need to run any work?
-		if (uiIterationsSinceSync < this->pDomain->getRollbackLimit() &&
-			this->dCurrentTime < dTargetTime)
+		if (this->dCurrentTime < dTargetTime)
 		{
 			for (unsigned int i = 0; i < uiQueueAmount; i++)
 			{
@@ -1246,17 +1244,6 @@ bool	CSchemePromaides::isSimulationFailure(double dExpectedTargetTime)
 	if (bRunning)
 		return false;
 
-	// Can't exceed number of buffer cells in forecast mode
-	if (this->syncMethod == model::syncMethod::kSyncForecast &&
-		uiBatchSuccessful >= pDomain->getRollbackLimit() &&
-		dExpectedTargetTime - dCurrentTime > 1E-5)
-		return true;
-
-	// This shouldn't happen
-	if (this->syncMethod == model::syncMethod::kSyncTimestep &&
-		uiBatchSuccessful > pDomain->getRollbackLimit())
-		return true;
-
 	// This also shouldn't happen... but might...
 	if (this->dCurrentTime > dExpectedTargetTime + 1E-5)
 	{
@@ -1315,19 +1302,11 @@ bool	CSchemePromaides::isSimulationSyncReady(double dExpectedTargetTime)
 
 	// Are we synchronising the timesteps?
 	if (this->syncMethod == model::syncMethod::kSyncTimestep &&
-		uiIterationsSinceSync < this->pDomain->getRollbackLimit() - 1 &&
 		dExpectedTargetTime - dCurrentTime > 1E-5 &&
 		dCurrentTime > 0.0)
 		return false;
 
-	//if ( uiIterationsSinceSync < this->pDomain->getRollbackLimit() )
-	//	return false;
-
 	// Assume success
-	#ifdef DEBUG_MPI
-		//logger->writeLine( "Domain is considered sync ready" );
-	#endif
-
 	return true;
 }
 
@@ -1481,14 +1460,12 @@ double CSchemePromaides::proposeSyncPoint(double dCurrentTime)
 	{
 		// Try to accommodate approximately three spare iterations
 		dProposal = dCurrentTime +
-			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - this->syncBatchSpares) / pDomain->getRollbackLimit()));
+			max(fabs(this->dTimestep), 999999999.0 * (dBatchTimesteps / uiBatchSuccessful) * ((999999999.0 - this->syncBatchSpares) / 999999999.0));
 		// Don't allow massive jumps
 		//if ((dProposal - dCurrentTime) > dBatchTimesteps * 3.0)
 		//	dProposal = dCurrentTime + dBatchTimesteps * 3.0;
 		// If we've hit our rollback limit, use the time we reached to determine a conservative estimate for 
 		// a new sync point
-		if (uiBatchSuccessful >= pDomain->getRollbackLimit())
-			dProposal = dCurrentTime + dBatchTimesteps * 0.95;
 	}
 	else {
 		// Can't return a suggestion of not going anywhere..

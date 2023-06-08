@@ -30,7 +30,6 @@
 #define HIPIMS_DOMAIN_CDOMAIN_H_
 
 #include "opencl.h"
-#include "CDomainBase.h"
 
 namespace model {
 
@@ -41,8 +40,17 @@ namespace domainValueIndices{ enum domainValueIndices {
 	kValueDischargeX						= 2,	// Discharge X
 	kValueDischargeY						= 3		// Discharge Y
 }; }
+	// Model domain structure types
+	namespace domainStructureTypes {
+		enum domainStructureTypes {
+			kStructureCartesian = 0,	// Cartesian
+			kStructureRemote = 1,	// Remotely held domain
+			kStructureInvalid = 255	// Error state, cannot work with this type of domain
+		};
+	}
 
 }
+
 
 // TODO: Make a CLocation class
 class CDomainCartesian;
@@ -57,7 +65,7 @@ class CScheme;
  *  Stores relevant details for the computational domain and
  *  common operations required.
  */
-class CDomain : public CDomainBase
+class CDomain
 {
 
 	public:
@@ -66,9 +74,46 @@ class CDomain : public CDomainBase
 		~CDomain( void );																			// Destructor
 
 		// Public variables
-		// ...
+		
+		
+		// Public structures
+		struct DomainSummary
+		{
+			bool			bAuthoritative;
+			unsigned int	uiDomainID;
+			unsigned int	uiNodeID;
+			unsigned int	uiLocalDeviceID;
+			double			dResolution;
+			unsigned long	ulRowCount;
+			unsigned long	ulColCount;
+			unsigned char	ucFloatPrecision;
+		};
+
+		struct mpiSignalDataProgress
+		{
+			unsigned int 	uiDomainID;
+			double			dCurrentTimestep;
+			double			dCurrentTime;
+			double			dBatchTimesteps;
+			cl_uint			uiBatchSkipped;
+			cl_uint			uiBatchSuccessful;
+			unsigned int	uiBatchSize;
+		};
 
 		// Public functions
+		virtual		DomainSummary	getSummary();							// Fetch summary information for this domain
+		bool						isInitialised();												// X Is the domain ready to be used
+		unsigned	long			getCellCount();													// X Return the total number of cells
+		unsigned int				getID() { return uiID; }						// Get the ID number
+		void						setID(unsigned int i) { uiID = i; }							// Set the ID number
+		virtual unsigned long		getCellID(unsigned long, unsigned long);						// Get the cell ID using an X and Y index
+		virtual void 				setDataProgress(mpiSignalDataProgress a) { pDataProgress = a; };	// Set some data on this domain's progress
+		void setLogger(CLog* log);
+		CLog* logger;
+
+
+
+
 		virtual		bool			isRemote()				{ return false; };						// Is this domain on this node?
 		virtual		void			logDetails() = 0;												// Log details about the domain
 		virtual		void			readDomain() = 0;												// Read Domain From Gpu
@@ -93,24 +138,15 @@ class CDomain : public CDomainBase
 		double						getManningCoefficient( unsigned long );							// Gets the manning coefficient for a cell
 		double						getStateValue( unsigned long, unsigned char );					// Gets a state variable
 		double						getdsdt(unsigned long);					// Gets dsdt variable
-		double						getMaxFSL()				{ return dMaxFSL; }						// Fetch the maximum FSL in the domain
-		double						getMinFSL()				{ return dMinFSL; }						// Fetch the minimum FSL in the domain
 		virtual double				getVolume();													// Calculate the total volume in all the cells
-		unsigned int				getID()					{ return uiID; }						// Get the ID number
-		void						setID( unsigned int i ) { uiID = i; }							// Set the ID number
 		virtual mpiSignalDataProgress getDataProgress();											// Fetch some data on this domain's progress
 
 		void						setScheme( CScheme* );											// Set the scheme running for this domain
 		CScheme*					getScheme();													// Get the scheme running for this domain
 		void						setDevice( COCLDevice* );										// Set the device responsible for running this domain
 		COCLDevice*					getDevice();													// Get the device responsible for running this domain
-		void						setLogger(CLog* clog);											// Set reference to the CLog Class
 		CExecutorControlOpenCL* cExecutorControlOpenCL;
 
-		#ifdef _WINDLL
-		virtual void				sendAllToRenderer() {};											// Allows the renderer to read off the bed elevations
-		#endif
-		cl_double4*			dCellStates;															// Heap for cell state data
 
 	protected:
 
@@ -118,6 +154,7 @@ class CDomain : public CDomainBase
 		unsigned char		ucFloatSize;															// Size of floats used for cell data (bytes)
 		char*				cSourceDir;																// Data source dir
 		char*				cTargetDir;																// Output target dir
+		cl_double4*			dCellStates;															// Heap for cell state data
 		cl_double*			dBedElevations;															// Heap for bed elevations
 		cl_double*			dManningValues;															// Heap for manning values
 		cl_double2*			dBoundCoup;																// Heap for boundary and coupling condition values
@@ -138,8 +175,12 @@ class CDomain : public CDomainBase
 
 		CScheme*			pScheme;																// Scheme we are running for this particular domain
 		COCLDevice*			pDevice;																// Device responsible for running this domain
-		CLog* logger;																				// Pointer to the logger class 
 
+		// Private variables
+		unsigned int		uiID;																	// Domain ID
+		unsigned int		uiRollbackLimit;														// Iterations after which a rollback is required
+		unsigned long		ulCellCount;															// Total number of cells
+		mpiSignalDataProgress pDataProgress;														// Data on this domain's progress
 
 };
 

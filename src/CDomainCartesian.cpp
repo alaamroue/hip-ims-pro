@@ -292,9 +292,9 @@ double* CDomainCartesian::readDomain_vy()
 /*
  *	Fetch summary information for this domain
  */
-CDomainBase::DomainSummary CDomainCartesian::getSummary()
+CDomain::DomainSummary CDomainCartesian::getSummary()
 {
-	CDomainBase::DomainSummary pSummary;
+	CDomain::DomainSummary pSummary;
 	
 	pSummary.bAuthoritative = true;
 

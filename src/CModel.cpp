@@ -341,7 +341,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 			ulCurrentCellsCalculated += domains->getDomain(i)->getScheme()->getCellsCalculated();
 		}
 
-		CDomainBase::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+		CDomain::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
 
 		if (uiBatchSizeMax < pProgress.uiBatchSize)
 			uiBatchSizeMax = pProgress.uiBatchSize;
@@ -384,7 +384,7 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	for( unsigned int i = 0; i < domainCount; i++ )
 	{
 		char cDomainLine[70] = "                                                                    X";
-		CDomainBase::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
+		CDomain::mpiSignalDataProgress pProgress = domains->getDomain(i)->getDataProgress();
 		
 		// TODO: Give this it's proper name...
 		std::string sDeviceName = "REMOTE";
@@ -478,7 +478,7 @@ void	CModel::runModelPrepareDomains()
 		if (domainCount > 1)
 		{
 			this->log->writeLine("Domain #" + std::to_string(i + 1) + " has rollback limit of " +
-				std::to_string(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
+				std::to_string(99999999) + " iterations.");
 		} else {
 			this->log->writeLine("Domain #" + std::to_string(i + 1) + " is not constrained by " +
 				"overlapping.");
