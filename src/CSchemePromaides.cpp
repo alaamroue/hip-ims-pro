@@ -87,6 +87,11 @@ CSchemePromaides::CSchemePromaides(CModel* cmodel)
 	oclBufferCellFlowStates = NULL;
 	oclBufferBoundCoup = NULL;
 	oclBufferdsdt = NULL;
+	oclBufferReadN = NULL;
+	oclBufferReadE = NULL;
+	oclBufferWriteN = NULL;
+	oclBufferWriteE = NULL;
+
 	oclBufferCellBed = NULL;
 	oclBufferTimestep = NULL;
 	oclBufferTimestepReduction = NULL;
@@ -286,7 +291,7 @@ bool CSchemePromaides::prepareBoundaries()
 	oclKernelBoundary->setGlobalSize((cl_ulong) ceil(pDomain->getCols() / 8.0) * 8, (cl_ulong) ceil(pDomain->getRows() / 8.0) * 8);
 	oclKernelBoundary->setGroupSize(8, 8);
 
-	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed};
+	COCLBuffer* aryArgsBdy[] = { oclBufferBoundCoup,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed, oclBufferReadN,oclBufferReadE, oclBufferdsdt};
 	
 	oclKernelBoundary->assignArguments(aryArgsBdy);
 
@@ -587,6 +592,10 @@ bool CSchemePromaides::prepare1OMemory()
 
 	oclBufferCellStates = new COCLBuffer("Cell states", oclModel, false, true);
 	oclBufferCellStatesAlt = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
+	oclBufferWriteN = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
+	oclBufferWriteE = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
+	oclBufferReadN = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
+	oclBufferReadE = new COCLBuffer("Cell states (alternate)", oclModel, false, true);
 	oclBufferCellManning = new COCLBuffer("Manning coefficients", oclModel, true, true);
 	oclBufferCellFlowStates = new COCLBuffer("Flow Conditions", oclModel, true, true);
 	oclBufferBoundCoup = new COCLBuffer("Boundary and Coupling Conditions", oclModel, false, true);
@@ -599,6 +608,10 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellFlowStates->logger = logger;
 	oclBufferBoundCoup->logger = logger;
 	oclBufferdsdt->logger = logger;
+	oclBufferWriteN->logger = logger;
+	oclBufferWriteE->logger = logger;
+	oclBufferReadN->logger = logger;
+	oclBufferReadE->logger = logger;
 	oclBufferCellBed->logger = logger;
 
 
@@ -608,6 +621,12 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellFlowStates->setPointer(pFlowStateValues, sizeof(model::FlowStates) * pDomain->getCellCount());
 	oclBufferBoundCoup->setPointer(pBoundCoup, ucFloatSize * 2 * pDomain->getCellCount());
 	oclBufferdsdt->setPointer(pDsDt, ucFloatSize * pDomain->getCellCount());
+
+	oclBufferWriteN->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
+	oclBufferWriteE->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
+	oclBufferReadN->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
+	oclBufferReadE->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
+
 	oclBufferCellBed->setPointer(pBedElevations, ucFloatSize * pDomain->getCellCount());
 
 
@@ -617,6 +636,10 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellFlowStates->createBuffer();
 	oclBufferBoundCoup->createBuffer();
 	oclBufferdsdt->createBuffer();
+	oclBufferWriteN->createBuffer();
+	oclBufferWriteE->createBuffer();
+	oclBufferReadN->createBuffer();
+	oclBufferReadE->createBuffer();
 	oclBufferCellBed->createBuffer();
 
 	// --
@@ -726,27 +749,12 @@ bool CSchemePromaides::prepare1OKernels()
 	CDomainCartesian* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
-	// --
-	// Godunov-type scheme kernels
-	// --
-
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheNone)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheDisabled");
-		oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup, oclBufferdsdt };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheEnabled");
-		oclKernelFullTimestep->setGroupSize(this->ulCachedWorkgroupSizeX, this->ulCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulCachedGlobalSizeX, this->ulCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup, oclBufferdsdt };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
-
+	oclKernelFullTimestep = oclModel->getKernel("gts_cacheDisabled");
+	oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
+	oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
+	COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup, oclBufferdsdt,
+	oclBufferReadN,oclBufferReadE, oclBufferWriteN,oclBufferWriteE };
+	oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
 	return bReturnState;
 }
 
@@ -785,6 +793,11 @@ void CSchemePromaides::release1OResources()
 	if (this->oclBufferCellFlowStates != NULL)				delete oclBufferCellFlowStates;
 	if (this->oclBufferBoundCoup != NULL)				delete oclBufferBoundCoup;
 	if (this->oclBufferdsdt != NULL)				delete oclBufferdsdt;
+	if (this->oclBufferReadN  != NULL)				delete oclBufferReadN;
+	if (this->oclBufferReadE  != NULL)				delete oclBufferReadE;
+	if (this->oclBufferWriteN != NULL)				delete oclBufferWriteN;
+	if (this->oclBufferWriteE != NULL)				delete oclBufferWriteE;
+
 	if (this->oclBufferCellBed != NULL)					delete oclBufferCellBed;
 	if (this->oclBufferTimestep != NULL)					delete oclBufferTimestep;
 	if (this->oclBufferTimestepReduction != NULL)			delete oclBufferTimestepReduction;
@@ -806,6 +819,10 @@ void CSchemePromaides::release1OResources()
 	oclBufferCellFlowStates = NULL;
 	oclBufferBoundCoup = NULL;
 	oclBufferdsdt = NULL;
+	oclBufferReadN = NULL;
+	oclBufferReadE = NULL;
+	oclBufferWriteN = NULL;
+	oclBufferWriteE = NULL;
 	oclBufferCellBed = NULL;
 	oclBufferTimestep = NULL;
 	oclBufferTimestepReduction = NULL;
@@ -847,6 +864,10 @@ void	CSchemePromaides::prepareSimulation()
 	oclBufferCellFlowStates->queueWriteAll();
 	oclBufferBoundCoup->queueWriteAll();
 	oclBufferdsdt->queueWriteAll();
+	oclBufferReadN->queueWriteAll();
+	oclBufferReadE->queueWriteAll();
+	oclBufferWriteN->queueWriteAll();
+	oclBufferWriteE->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();
@@ -1317,14 +1338,30 @@ void	CSchemePromaides::scheduleIteration(
 	{
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStatesAlt);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStates);
+
+		oclKernelFullTimestep->assignArgument(8, oclBufferWriteN);
+		oclKernelFullTimestep->assignArgument(9, oclBufferWriteE);
+		oclKernelFullTimestep->assignArgument(10, oclBufferReadN);
+		oclKernelFullTimestep->assignArgument(11, oclBufferReadE);
+
 		oclKernelBoundary->assignArgument(2, oclBufferCellStatesAlt);
+		oclKernelBoundary->assignArgument(4, oclBufferWriteN);
+		oclKernelBoundary->assignArgument(5, oclBufferWriteE);
 		oclKernelFriction->assignArgument(1, oclBufferCellStates);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStates);
 	}
 	else {
 		oclKernelFullTimestep->assignArgument(2, oclBufferCellStates);
 		oclKernelFullTimestep->assignArgument(3, oclBufferCellStatesAlt);
+
+		oclKernelFullTimestep->assignArgument(10, oclBufferWriteN);
+		oclKernelFullTimestep->assignArgument(11, oclBufferWriteE);
+		oclKernelFullTimestep->assignArgument(8, oclBufferReadN);
+		oclKernelFullTimestep->assignArgument(9, oclBufferReadE);
+
 		oclKernelBoundary->assignArgument(2, oclBufferCellStates);
+		oclKernelBoundary->assignArgument(4, oclBufferReadN);
+		oclKernelBoundary->assignArgument(5, oclBufferReadE);
 		oclKernelFriction->assignArgument(1, oclBufferCellStatesAlt);
 		oclKernelTimestepReduction->assignArgument(3, oclBufferCellStatesAlt);
 	}

@@ -19,6 +19,10 @@ void gts_cacheDisabled (
 	__global    cl_double const * restrict,
 	__global	FlowStates const * restrict,
 	__global	cl_double2 *,
-	__global	cl_double *
+	__global	cl_double *,
+	__global	cl_double *  				BufferReadN,							// Current Boundary Coupling data
+	__global	cl_double *  				BufferReadE,							// Current Boundary Coupling data
+	__global	cl_double *  				BufferWriteN,							// Current Boundary Coupling data
+	__global	cl_double *  				BufferWriteE							// Current Boundary Coupling data
 );
 

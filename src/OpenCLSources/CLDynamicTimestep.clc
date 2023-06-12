@@ -21,6 +21,7 @@
  *
  */
 
+ #define TIMESTEP_FIXED 3
 
 /*
  *  Advance the total model time by the timestep specified
