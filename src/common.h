@@ -63,6 +63,8 @@ namespace model
 		bool isFlowElement;
 		bool noflow_x;
 		bool noflow_y;
+		bool noflow_nx;
+		bool noflow_ny;
 		bool opt_pol_x;
 		bool opt_pol_y;
 	};

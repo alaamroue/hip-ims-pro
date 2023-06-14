@@ -91,7 +91,7 @@ CModel::CModel(void)
 	this->ulRealTimeStart = 0;
 
 	this->forcedAbort = false;
-	this->ucRounding = 6;
+	this->ucRounding = 4;
 }
 
 
@@ -567,7 +567,7 @@ void	CModel::runModelMain()
 	//dTargetTime = 360000.0;
 
 	log->writeLine("Simulation Started...");
-	unsigned char	ucRounding = 4;			// decimal places
+	//unsigned char	ucRounding = 4;			// decimal places
 	CDomainCartesian* cd = this->domain;
 	CSchemePromaides* myProScheme = (CSchemePromaides*) this->domain->getScheme();
 	Normalplain* np = new Normalplain(100, 100);

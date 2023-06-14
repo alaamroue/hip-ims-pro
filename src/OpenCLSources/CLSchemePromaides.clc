@@ -29,7 +29,6 @@ void promaidesScheme (
 		return;
 	}
 
-
 	__private cl_double		dLclTimestep	= *dTimestep;
 	__private cl_double		dManningCoef;
 	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE,dNeigBedElevS,dNeigBedElevW;
@@ -39,26 +38,8 @@ void promaidesScheme (
 	__private cl_double		opt_s, opt_sN, opt_sE,opt_sS,opt_sW;
 	__private cl_double		pCellData,pNeigDataN,pNeigDataE,pNeigDataS,pNeigDataW;
 	
-
-	__private cl_uchar		ucStop				=	0;
-	__private cl_uchar		ucDryCount			=	0;
 	__private cl_double		ds_dt_data			=	0.0;
-	__private cl_double		flow_depth			=	0.0;
-	__private cl_double		flow_depth_neigh	=	0.0;
-	__private cl_double		delta_h				=	0.0;
-	__private cl_double		abs_delta_h			=	0.0;
-	__private cl_double		ds_dt_buff			=	0.0;
-	__private cl_double		reduction_term		=	0.0;
-	__private FlowStates	flowStateCell, flowStateCellS, flowStateCellW;
-
-	//This would be passed as a variable
-
-	//if (lIdxX==DOMAIN_COLS-1) {
-	//	noflow_x = true;
-	//}
-	//if (lIdxY==DOMAIN_ROWS-1){
-	//	noflow_y = true;
-	//}
+	__private FlowStates	flowStateCell;
 
 	// Also don't bother if we've gone beyond the total simulation time
 	if (dLclTimestep <= 0.0)
@@ -84,7 +65,7 @@ void promaidesScheme (
 	}
 
 	
-	
+	//We are reading outside of boundary when we are on the edge but wouldn't this be faster?
 	ulIdxNeigN = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_N);
 	dNeigBedElevN	= dBedElevation [ ulIdxNeigN ];
 	pNeigDataN		= pCellStateSrc	[ ulIdxNeigN ];
@@ -96,69 +77,34 @@ void promaidesScheme (
 	ulIdxNeigS = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_S);
 	dNeigBedElevS	= dBedElevation [ ulIdxNeigS ];
 	pNeigDataS		= pCellStateSrc	[ ulIdxNeigS ];
-	flowStateCellS	= flowstates[ ulIdxNeigS ];
 
 	ulIdxNeigW = getNeighbourByIndices(lIdxX, lIdxY, DOMAIN_DIR_W);
 	dNeigBedElevW	= dBedElevation [ ulIdxNeigW ];
 	pNeigDataW		= pCellStateSrc	[ ulIdxNeigW ];
-	flowStateCellW	= flowstates[ ulIdxNeigW ];
 
 	
 
 	bool isFlowElement	= flowStateCell.isFlowElement;
 	bool noflow_x		= flowStateCell.noflow_x;
 	bool noflow_y		= flowStateCell.noflow_y;
-	bool noflow_nx		= !flowStateCellW.isFlowElement;
-	bool noflow_ny		= !flowStateCellS.isFlowElement;
+	bool noflow_nx		= flowStateCell.noflow_nx;
+	bool noflow_ny		= flowStateCell.noflow_ny;
 	bool opt_pol_x		= flowStateCell.opt_pol_x;
 	bool opt_pol_y		= flowStateCell.opt_pol_y;
-	bool opt_pol_nx		= flowStateCellW.opt_pol_x;
-	bool opt_pol_ny		= flowStateCellS.opt_pol_y;
+	bool opt_pol_nx		= false;
+	bool opt_pol_ny		= false;
 
-	if(!(lIdxX==DOMAIN_ROWS-1)){
-		noflow_x = true;
-	}else if(!(lIdxX==0)){
-		noflow_nx = true;
-	}
+	//if (ulIdx==3274){printf("pCellData %f N: %f E: %f S: %f W: %f\n",pCellData, pNeigDataN-dNeigBedElevN, pNeigDataE-dNeigBedElevE,pNeigDataS-dNeigBedElevS, pNeigDataW-dNeigBedElevW);}
 	
-	if(!(lIdxY==DOMAIN_COLS-1)){
-		noflow_y = true;
-	}else if(!(lIdxY==0)){
-		noflow_ny = true;
-	}
-
-
-	if (ulIdx==3274){
-		/*
-		if(isFlowElement){	printf("isFlowElement	:True\n");}else{printf("isFlowElement	:False\n");}
-		if(noflow_x){		printf("noflow_x		:True\n");}else{printf("noflow_x		:False\n");}
-		if(noflow_y){		printf("noflow_y		:True\n");}else{printf("noflow_y		:False\n");}
-		if(noflow_nx){		printf("noflow_nx		:True\n");}else{printf("noflow_nx		:False\n");}
-		if(noflow_ny){		printf("noflow_ny		:True\n");}else{printf("noflow_ny		:False\n");}
-		if(opt_pol_x){		printf("opt_pol_x		:True\n");}else{printf("opt_pol_x		:False\n");}
-		if(opt_pol_y){		printf("opt_pol_y		:True\n");}else{printf("opt_pol_y		:False\n");}
-		if(opt_pol_nx){		printf("opt_pol_nx		:True\n");}else{printf("opt_pol_nx		:False\n");}
-		if(opt_pol_ny){		printf("opt_pol_ny		:True\n");}else{printf("opt_pol_ny		:False\n");}
-		printf("\n\n");	
-		*/
-
-		
-		//printf("pCellData %f N: %f E: %f S: %f W: %f\n",pCellData, pNeigDataN-dNeigBedElevN, pNeigDataE-dNeigBedElevE,pNeigDataS-dNeigBedElevS, pNeigDataW-dNeigBedElevW);
-	}
-	
-
-
-
-
 	//set data
 	opt_z = dCellBedElev;
-	//if((pCellData  - opt_z) < VERY_SMALL){
-	//	opt_h = 0.0;
-	//	opt_s = opt_z;
-	//}else{
+	if((pCellData  - opt_z) < VERY_SMALL){
+		opt_h = 0.0;
+		opt_s = opt_z;
+	}else{
 		opt_h = pCellData  - opt_z;
 		opt_s = pCellData;
-	//}
+	}
 
 
 	if(opt_pol_x || opt_pol_y){
@@ -174,64 +120,13 @@ void promaidesScheme (
 		opt_sE = pNeigDataE;
 		opt_zEmax = opt_z > dNeigBedElevE ? opt_z : dNeigBedElevE;
 		opt_cE = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigE])/pow(DOMAIN_DELTAX,1.5);
-
+		
+		//if (ulIdx==3274){printf("Initial ds_dt_data %f\n",ds_dt_data);}
 		if(!opt_pol_x){
-			ds_dt_data += manning_Solver(opt_h, opt_hE, opt_s,opt_sE,opt_zEmax,opt_cE);
-
+			ds_dt_data += manning_Solver(opt_h, opt_hE, opt_s,opt_sE,opt_zEmax,opt_cE, false);
+			//if (ulIdx==3274){printf("ds_dt_data E %f\n",ds_dt_data);}
 		}else{
-			printf("polini errorE: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
-			flow_depth		 =  opt_s - opt_zEmax;
-			flow_depth_neigh =  opt_sE- opt_zEmax;
-
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			else{ //Flow
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff = -1.0 * Cfacweir * opt_cE * pow(flow_depth, (3.0/2.0));
-
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-
-					ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff = Cfacweir * opt_cE * pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0 - flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-					}
-				}
-				//set the result
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
+			ds_dt_data += polini_Solver(opt_h, opt_hE, opt_s,opt_sE,opt_zEmax,opt_cE, false);
 		}
 	}
 	
@@ -244,61 +139,9 @@ void promaidesScheme (
 		opt_cW = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigW])/pow(DOMAIN_DELTAX,1.5);
 
 		if(!opt_pol_nx){
-			ds_dt_data += manning_Solver(opt_h, opt_hW, opt_s,opt_sW,opt_zWmax,opt_cW);
+			ds_dt_data += manning_Solver(opt_h, opt_hW, opt_s,opt_sW,opt_zWmax,opt_cW, false);
 		}else{
-			printf("polini errorW: lIdxX %ld lIdxX %ld\n", lIdxX, lIdxY);
-			flow_depth		 =  opt_s - opt_zWmax;
-			flow_depth_neigh =  opt_sW- opt_zWmax;
-
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			else{ //Flow
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff = -1.0 * Cfacweir * opt_cW * pow(flow_depth, (3.0/2.0));
-
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-
-					ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth_neigh,(3.0/2.0));
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff=-1.0 * ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff= -1.0 * ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff = Cfacweir * opt_cW * pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term = (1.0 - flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term <= 0.000463529){
-							ds_dt_buff = ds_dt_buff * 0.057965266895 * atan(8984.365582471040 * reduction_term);
-						}
-						else{
-							ds_dt_buff = ds_dt_buff * pow(reduction_term,(1.0/3.0));
-						}
-
-					}
-				}
-				//set the result
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
+			ds_dt_data += polini_Solver(opt_h, opt_hW, opt_s,opt_sW,opt_zWmax,opt_cW, false);
 		}
 	}
 
@@ -310,59 +153,9 @@ void promaidesScheme (
 		opt_zNmax = opt_z > dNeigBedElevN ? opt_z : dNeigBedElevN;
 		opt_cN = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigN])/pow(DOMAIN_DELTAX,1.5);
 		if(!opt_pol_y){
-			ds_dt_data += manning_Solver(opt_h, opt_hN, opt_s,opt_sN,opt_zNmax,opt_cN);
+			ds_dt_data += manning_Solver(opt_h, opt_hN, opt_s,opt_sN,opt_zNmax,opt_cN, false);
 		}else{
-			printf("polini errorN: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
-			flow_depth = opt_s-opt_zNmax;
-			flow_depth_neigh = opt_sN - opt_zNmax;
-		
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			//flow
-			else{
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff=-1.0* Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-					ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth_neigh,(3.0/2.0));
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff= Cfacweir *opt_cN*pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-					}
-				}
-
-				//set result data
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
+			ds_dt_data += polini_Solver(opt_h, opt_hN, opt_s,opt_sN,opt_zNmax,opt_cN, false);
 		}
 	}
 
@@ -372,62 +165,13 @@ void promaidesScheme (
 		opt_zSmax = opt_z > dNeigBedElevS ? opt_z : dNeigBedElevS;
 		opt_cS = 0.5*(1 / dManning[ulIdx] + 1 / dManning[ulIdxNeigS])/pow(DOMAIN_DELTAX,1.5);
 		if(!opt_pol_ny){
-			ds_dt_data += manning_Solver(opt_h, opt_hS, opt_s,opt_sS,opt_zSmax,opt_cS);
+			ds_dt_data += manning_Solver(opt_h, opt_hS, opt_s,opt_sS,opt_zSmax,opt_cS, false);
 		}else{
-			printf("polini errorS: lIdxX %ld lIdxY %ld\n", lIdxX, lIdxY);
-			flow_depth = opt_s-opt_zSmax;
-			flow_depth_neigh = opt_sS - opt_zSmax;
-		
-			//noFlow
-			if((flow_depth<=0.0 && flow_depth_neigh<=0.0) || (fabs(flow_depth-flow_depth_neigh)<=0.0)){
-				ds_dt_buff=0.0;
-			}
-			//flow
-			else{
-				//flow out of this element without submerged weirflow reduction into the neihgbouring element
-				if(flow_depth> 0.0 && flow_depth_neigh <= 0.0){
-					ds_dt_buff=-1.0* Cfacweir *opt_cS*pow(flow_depth,(3.0/2.0));
-				}
-				//flow out of the neighbouring element without submerged weirflow reduction into this element
-				else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
-					ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth_neigh,(3.0/2.0));
-				}
-				//submerged weirflow with reduction
-				else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
-					//flow out of this element into the neihgbouring element
-					if(flow_depth>flow_depth_neigh){
-						ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth_neigh/flow_depth);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=-1.0*ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=-1.0*ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-					}
-					//flow out of the neighbouring element into this element
-					else{
-						ds_dt_buff= Cfacweir *opt_cS*pow(flow_depth_neigh,(3.0/2.0));
-						//reduction of the discharge (submerged weirflow)
-						reduction_term=(1.0-flow_depth/flow_depth_neigh);
-						//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
-						if(reduction_term<=0.000463529){
-							ds_dt_buff=ds_dt_buff*0.057965266895*atan(8984.365582471040*reduction_term);
-						}
-						else{
-							ds_dt_buff=ds_dt_buff*pow(reduction_term,(1.0/3.0));
-						}
-					}
-				}
-
-				//set result data
-				ds_dt_data = ds_dt_data + ds_dt_buff;
-			}
+			ds_dt_data += polini_Solver(opt_h, opt_hS, opt_s,opt_sS,opt_zSmax,opt_cS, false);
 		}
 	}
 	
+	//if (ulIdx==3274){printf("Final ds_dt_data%f\n\n",ds_dt_data);}
 	
 	// Update the flow state
 	pCellData = pCellData	+ dLclTimestep * ds_dt_data;
@@ -443,7 +187,8 @@ cl_double manning_Solver(
 	cl_double opt_s,
 	cl_double opt_s_Neig,
 	cl_double opt_zmax_Neig,
-	cl_double opt_c_Neig)
+	cl_double opt_c_Neig,
+	bool debug)
 	{
 
 		cl_double flow_depth = 0;
@@ -451,14 +196,23 @@ cl_double manning_Solver(
 		cl_double ds_dt_buff;
 		cl_double delta_h;
 		cl_double abs_delta_h;
+		if (debug){printf("g0\n"); }
 
-		if(opt_h > VERY_SMALL || opt_h_Neig > VERY_SMALL){	
-			
-			flow_depth = opt_s - opt_zmaxNeig;
-			flow_depth_Neig = max(0, opt_s - opt_zmaxNeig);
-			flow_depth = max( flow_depth , flow_depth_Neig);
+		if(opt_h > VERY_SMALL || opt_h_Neig > VERY_SMALL){
+			if (debug){printf("g1\n"); }
+
+			flow_depth = opt_s - opt_zmax_Neig;
+			if (debug){printf("flow_depth %f opt_s %f opt_zmax_Neig %f\n",flow_depth,opt_s,opt_zmax_Neig); }
+
+			flow_depth_Neig = fmax(0, opt_s_Neig - opt_zmax_Neig);
+			if (debug){printf("flow_depth_Neig %f\n",flow_depth_Neig); }
+
+			flow_depth = fmax( flow_depth , flow_depth_Neig);
+			if (debug){printf("flow_depth %f\n",flow_depth); }
+
 
 			if(flow_depth > VERY_SMALL){
+				if (debug){printf("g2\n"); }
 				//diffusive wave
 				delta_h = opt_s_Neig - opt_s;
 				abs_delta_h=fabs(delta_h);
@@ -478,5 +232,69 @@ cl_double manning_Solver(
 			}
 		}
 
+		return 0;
+	}
+
+cl_double polini_Solver(
+	cl_double opt_h, 
+	cl_double opt_h_Neig, 
+	cl_double opt_s,
+	cl_double opt_s_Neig,
+	cl_double opt_zmax_Neig,
+	cl_double opt_c_Neig,
+	bool debug)
+	{
+		printf("polini error llllllllllllllllllllllllllllllll\n");
+
+		
+
+		cl_double flow_depth		=  opt_s - opt_zmax_Neig;
+		cl_double flow_depth_neigh	=  opt_s_Neig- opt_zmax_Neig;
+		cl_double reduction_term;
+
+		//noFlow
+		if((flow_depth<=0.0 && flow_depth_neigh<=0.0) ||	(fabs(flow_depth-flow_depth_neigh)<=0.0)){
+			return 0.0;
+		}else{
+			//flow out of this element without submerged weirflow reduction into the neihgbouring element
+			if( flow_depth > 0.0 && flow_depth_neigh <= 0.0){
+				return -1.0 * Cfacweir * opt_c_Neig * pow(flow_depth, (3.0/2.0));
+			}
+			//flow out of the neighbouring element without submerged weirflow reduction into this element
+			else if(flow_depth<= 0.0 && flow_depth_neigh > 0.0){
+
+				return Cfacweir * opt_c_Neig * pow(flow_depth_neigh,(3.0/2.0));
+			}
+			//submerged weirflow with reduction
+			else if(flow_depth > 0.0 && flow_depth_neigh > 0.0){
+				//flow into the neihgbouring element
+				if(flow_depth>flow_depth_neigh){
+					//reduction of the discharge (submerged weirflow)
+					reduction_term = (1.0-flow_depth_neigh/flow_depth);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term <= 0.000463529){
+						return -1.0 * Cfacweir * opt_c_Neig * pow(flow_depth,(3.0/2.0)) * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+					}
+					else{
+						return -1.0 * Cfacweir * opt_c_Neig * pow(flow_depth,(3.0/2.0)) * pow(reduction_term,(1.0/3.0));
+					}
+
+				}
+				//flow into this element
+				else{
+					//reduction of the discharge (submerged weirflow)
+					reduction_term = (1.0 - flow_depth/flow_depth_neigh);
+					//replace the ^(1/3) by a fitted arctan-function; at the boundary they have the same values
+					if(reduction_term <= 0.000463529){
+						return Cfacweir * opt_c_Neig * pow(flow_depth_neigh,(3.0/2.0)) * 0.057965266895 * atan(8984.365582471040 * reduction_term);
+					}
+					else{
+						return Cfacweir * opt_c_Neig * pow(flow_depth_neigh,(3.0/2.0)) * pow(reduction_term,(1.0/3.0));
+					}
+
+				}
+			}
+			return 0.0;
+		}
 		return 0;
 	}

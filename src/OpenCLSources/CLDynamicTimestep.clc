@@ -21,7 +21,7 @@
  *
  */
 
- #define TIMESTEP_FIXED 0.1
+ #define TIMESTEP_FIXED 0.01
 
 /*
  *  Advance the total model time by the timestep specified
@@ -66,8 +66,16 @@ void tst_Advance_Normal(
 	} else {
 		dLclTimeHydrological += dLclTimestep;
 	}
-
-	dLclTimestep = TIMESTEP_FIXED;
+	
+	if(dLclTimestep == 0 ){
+		dLclTimestep = 0.01;
+	}else if (dLclTimestep == 0.01){
+		dLclTimestep = 0.02;
+	}else if(dLclTimestep == 0.02){
+		dLclTimestep = 0.03;
+	}else{
+		dLclTimestep = 0.01;
+	}
 
 	// Impose a minimum timestep
 	if (dLclTimestep > 0.0 && dLclTimestep < TIMESTEP_MINIMUM)

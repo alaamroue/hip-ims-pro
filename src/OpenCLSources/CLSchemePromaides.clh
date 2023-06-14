@@ -4,6 +4,8 @@ typedef struct FlowStates
 	bool isFlowElement;
 	bool noflow_x;
 	bool noflow_y;
+	bool noflow_nx;
+	bool noflow_ny;
 	bool opt_pol_x;
 	bool opt_pol_y;
 } FlowStates;
@@ -26,4 +28,14 @@ cl_double manning_Solver(
 	cl_double opt_s,
 	cl_double opt_s_Neig,
 	cl_double opt_zmax_Neig,
-	cl_double opt_c_Neig);
+	cl_double opt_c_Neig,
+bool debug);
+
+cl_double polini_Solver(
+	cl_double opt_h, 
+	cl_double opt_h_Neig, 
+	cl_double opt_s,
+	cl_double opt_s_Neig,
+	cl_double opt_zmax_Neig,
+	cl_double opt_c_Neig,
+bool debug);
