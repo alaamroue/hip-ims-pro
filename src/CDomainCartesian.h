@@ -149,12 +149,12 @@ class CDomainCartesian
 		unsigned char		ucFloatSize;															// Size of floats used for cell data (bytes)
 		char* cSourceDir;																// Data source dir
 		char* cTargetDir;																// Output target dir
-		cl_double4* dCellStates;															// Heap for cell state data
+		cl_double* dCellStates;															// Heap for cell state data
 		cl_double* dBedElevations;															// Heap for bed elevations
 		cl_double* dManningValues;															// Heap for manning values
 		cl_double2* dBoundCoup;																// Heap for boundary and coupling condition values
 		cl_double* ddsdt;																// Heap for dsdt promaides varible
-		cl_float4* fCellStates;															// Heap for cell state date (single)
+		cl_float* fCellStates;															// Heap for cell state date (single)
 		cl_float* fBedElevations;															// Heap for bed elevations (single)
 		cl_float* fManningValues;															// Heap for manning values (single)
 		cl_float2* fBoundCoup;																// Heap for boundary and coupling condition values (single)

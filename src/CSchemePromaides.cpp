@@ -501,15 +501,15 @@ bool CSchemePromaides::prepare1OConstants()
 	// CFL/fixed timestep
 	// --
 
-	if (this->bDynamicTimestep)
-	{
-		oclModel->registerConstant("TIMESTEP_DYNAMIC", "1");
-		oclModel->removeConstant("TIMESTEP_FIXED");
-	}
-	else {
-		oclModel->registerConstant("TIMESTEP_FIXED", std::to_string(this->dTimestep));
+	//if (this->bDynamicTimestep)
+	//{
+	//	oclModel->registerConstant("TIMESTEP_DYNAMIC", "1");
+	//	oclModel->removeConstant("TIMESTEP_FIXED");
+	//}
+	//else {
+	//	oclModel->registerConstant("TIMESTEP_FIXED", std::to_string(this->dTimestep));
 		oclModel->removeConstant("TIMESTEP_DYNAMIC");
-	}
+	//}
 
 	// --
 	// Timestep reduction and simulation parameters
@@ -602,8 +602,8 @@ bool CSchemePromaides::prepare1OMemory()
 	oclBufferCellBed->logger = logger;
 
 
-	oclBufferCellStates->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
-	oclBufferCellStatesAlt->setPointer(pCellStates, ucFloatSize * 4 * pDomain->getCellCount());
+	oclBufferCellStates->setPointer(pCellStates, ucFloatSize * pDomain->getCellCount());
+	oclBufferCellStatesAlt->setPointer(pCellStates, ucFloatSize * pDomain->getCellCount());
 	oclBufferCellManning->setPointer(pManningValues, ucFloatSize * pDomain->getCellCount());
 	oclBufferCellFlowStates->setPointer(pFlowStateValues, sizeof(model::FlowStates) * pDomain->getCellCount());
 	oclBufferBoundCoup->setPointer(pBoundCoup, ucFloatSize * 2 * pDomain->getCellCount());
@@ -726,26 +726,12 @@ bool CSchemePromaides::prepare1OKernels()
 	CDomainCartesian* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
-	// --
-	// Godunov-type scheme kernels
-	// --
+	oclKernelFullTimestep = oclModel->getKernel("promaidesScheme");
+	oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
+	oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
+	COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates };
+	oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
 
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheNone)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheDisabled");
-		oclKernelFullTimestep->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup, oclBufferdsdt };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
-	if (this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled)
-	{
-		oclKernelFullTimestep = oclModel->getKernel("gts_cacheEnabled");
-		oclKernelFullTimestep->setGroupSize(this->ulCachedWorkgroupSizeX, this->ulCachedWorkgroupSizeY);
-		oclKernelFullTimestep->setGlobalSize(this->ulCachedGlobalSizeX, this->ulCachedGlobalSizeY);
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferCellFlowStates, oclBufferBoundCoup, oclBufferdsdt };
-		oclKernelFullTimestep->assignArguments(aryArgsFullTimestep);
-	}
 
 	return bReturnState;
 }
@@ -1215,11 +1201,11 @@ void	CSchemePromaides::rollbackSimulation(double dCurrentTime, double dTargetTim
 
 	// Schedule timestep calculation again
 	// Timestep reduction
-	if (this->bDynamicTimestep)
-	{
-		oclKernelTimestepReduction->scheduleExecution();
-		pDomain->getDevice()->queueBarrier();
-	}
+	//if (this->bDynamicTimestep)
+	//{
+	//	oclKernelTimestepReduction->scheduleExecution();
+	//	pDomain->getDevice()->queueBarrier();
+	//}
 
 	// Timestep update without simulation time update
 	if (this->syncMethod != model::syncMethod::kSyncTimestep)
@@ -1339,11 +1325,11 @@ void	CSchemePromaides::scheduleIteration(
 
 
 	// Timestep reduction
-	if (this->bDynamicTimestep)
-	{
-		oclKernelTimestepReduction->scheduleExecution();
-		pDevice->queueBarrier();
-	}
+	//if (this->bDynamicTimestep)
+	//{
+	//	oclKernelTimestepReduction->scheduleExecution();
+	//	pDevice->queueBarrier();
+	//}
 
 	// Time advancing
 	oclKernelTimeAdvance->scheduleExecution();

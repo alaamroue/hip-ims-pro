@@ -11,14 +11,19 @@ typedef struct FlowStates
 
 // Function definitions
 __kernel  REQD_WG_SIZE_FULL_TS
-void gts_cacheDisabled ( 
+void promaidesScheme ( 
 	__constant	cl_double *,
 	__global	cl_double const * restrict,
-	__global	cl_double4 *,
-	__global	cl_double4 *,
+	__global	cl_double *,
+	__global	cl_double *,
 	__global    cl_double const * restrict,
-	__global	FlowStates const * restrict,
-	__global	cl_double2 *,
-	__global	cl_double *
+	__global	FlowStates const * restrict
 );
 
+cl_double manning_Solver(
+	cl_double opt_h, 
+	cl_double opt_h_Neig, 
+	cl_double opt_s,
+	cl_double opt_s_Neig,
+	cl_double opt_zmax_Neig,
+	cl_double opt_c_Neig);

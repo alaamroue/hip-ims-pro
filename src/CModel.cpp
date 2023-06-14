@@ -630,7 +630,7 @@ void CModel::runNext(double	nextPoint) {
 		myscheme->runSimulation(nextPoint, sTotalMetrics->dSeconds);
 
 		sTotalMetrics = pBenchmarkAll->getMetrics();
-		this->runModelUI(sTotalMetrics);
+		//this->runModelUI(sTotalMetrics);
 	}
 
 }

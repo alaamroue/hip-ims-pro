@@ -41,10 +41,10 @@ void Normalplain::setBedElevation(unsigned long index, double value) {
 	this->bedElevation[(unsigned long)floor(index / this->getSizeX())][(unsigned long)index % this->getSizeY()] = value;
 }
 
-void Normalplain::setBedElevation(cl_double4* src) {
+void Normalplain::setBedElevation(cl_double* src) {
 	for (unsigned long i = 0; i < 10; i++) {
 		for (unsigned long j = 0; j < 10; j++) {
-			this->setBedElevation(i, j, src[i * 10 + j].s[0]);
+			this->setBedElevation(i, j, src[i * 10 + j]);
 		}
 	}
 }

@@ -185,11 +185,11 @@ double	CDomainCartesian::getVolume()
 	{
 		if (this->isDoublePrecision())
 		{
-			dVolume += (this->dCellStates[i].s[0] - this->dBedElevations[i]) *
+			dVolume += (this->dCellStates[i] - this->dBedElevations[i]) *
 				this->dCellResolution * this->dCellResolution;
 		}
 		else {
-			dVolume += (this->fCellStates[i].s[0] - this->fBedElevations[i]) *
+			dVolume += (this->fCellStates[i] - this->fBedElevations[i]) *
 				this->dCellResolution * this->dCellResolution;
 		}
 	}
@@ -237,10 +237,15 @@ double*	CDomainCartesian::readDomain_opt_h()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-
+	double temp;
 	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
 		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
 			ulCellID = this->getCellID(iCol, iRow);
+			if (ulCellID >= this->getRows() * this->getCols()) {
+				std::cout << "Buffer Overrun at CDomainCartesian.cpp" << std::endl;
+			}
+			temp = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel);
+			temp = this->getBedElevation(ulCellID);
 			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
 			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
 		}
@@ -359,14 +364,14 @@ void	CDomainCartesian::createStoreBuffers(
 		if (ucFloatSize == sizeof(cl_float))
 		{
 			// Single precision
-			this->fCellStates = new cl_float4[this->ulCellCount];
+			this->fCellStates = new cl_float[this->ulCellCount];
 			this->fBedElevations = new cl_float[this->ulCellCount];
 			this->fManningValues = new cl_float[this->ulCellCount];
 			this->fBoundCoup = new cl_float2[this->ulCellCount];
 			this->fdsdt = new cl_float[this->ulCellCount];
 
 			// Double precision
-			this->dCellStates = (cl_double4*)(this->fCellStates);
+			this->dCellStates = (cl_double*)(this->fCellStates);
 			this->dBedElevations = (cl_double*)(this->fBedElevations);
 			this->dManningValues = (cl_double*)(this->fManningValues);
 			this->dBoundCoup = (cl_double2*)(this->fBoundCoup);
@@ -384,14 +389,14 @@ void	CDomainCartesian::createStoreBuffers(
 		}
 		else {
 			// Double precision
-			this->dCellStates = new cl_double4[this->ulCellCount];
+			this->dCellStates = new cl_double[this->ulCellCount];
 			this->dBedElevations = new cl_double[this->ulCellCount];
 			this->dManningValues = new cl_double[this->ulCellCount];
 			this->dBoundCoup = new cl_double2[this->ulCellCount];
 			this->ddsdt = new cl_double[this->ulCellCount];
 
 
-			this->fCellStates = (cl_float4*)(this->dCellStates);
+			this->fCellStates = (cl_float*)(this->dCellStates);
 			this->fBedElevations = (cl_float*)(this->dBedElevations);
 			this->fManningValues = (cl_float*)(this->dManningValues);
 			this->fBoundCoup = (cl_float2*)(this->dBoundCoup);
@@ -516,10 +521,10 @@ void	CDomainCartesian::setStateValue(unsigned long ulCellID, unsigned char ucInd
 {
 	if (this->ucFloatSize == 4)
 	{
-		this->fCellStates[ulCellID].s[ucIndex] = static_cast<float>(dValue);
+		this->fCellStates[ulCellID] = static_cast<float>(dValue);
 	}
 	else {
-		this->dCellStates[ulCellID].s[ucIndex] = dValue;
+		this->dCellStates[ulCellID] = dValue;
 	}
 }
 
@@ -549,8 +554,8 @@ double	CDomainCartesian::getManningCoefficient(unsigned long ulCellID)
 double	CDomainCartesian::getStateValue(unsigned long ulCellID, unsigned char ucIndex)
 {
 	if (this->ucFloatSize == 4)
-		return static_cast<double>(this->fCellStates[ulCellID].s[ucIndex]);
-	return this->dCellStates[ulCellID].s[ucIndex];
+		return static_cast<double>(this->fCellStates[ulCellID]);
+	return this->dCellStates[ulCellID];
 }
 
 /*

@@ -26,7 +26,7 @@
 #define TIMESTEP_START_MINIMUM			1E-10
 #define TIMESTEP_START_MINIMUM_DURATION	1.0
 #define TIMESTEP_MINIMUM				1E-10
-#define TIMESTEP_MAXIMUM				1
+#define TIMESTEP_MAXIMUM				0.1
 
 #ifdef USE_FUNCTION_STUBS
 // Function definitions
@@ -36,7 +36,7 @@ void tst_Advance_Normal (
 	__global	cl_double *,
 	__global	cl_double *,
 	__global	cl_double *,
-	__global	cl_double4 *,
+	__global	cl_double *,
 	__global	cl_double *,
 	__global	cl_double *,
 	__global	cl_double *,
@@ -62,7 +62,7 @@ void tst_UpdateTimestep (
 
 __kernel  REQD_WG_SIZE_LINE
 void tst_Reduce ( 
-	__global	cl_double4 *,
+	__global	cl_double *,
 	__global	cl_double const * restrict,
 	__global	cl_double *
 );

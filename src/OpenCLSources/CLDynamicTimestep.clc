@@ -21,6 +21,7 @@
  *
  */
 
+ #define TIMESTEP_FIXED 0.1
 
 /*
  *  Advance the total model time by the timestep specified
@@ -31,7 +32,7 @@ void tst_Advance_Normal(
 		__global cl_double *  	dTimestep,
 		__global cl_double *  	dTimeHydrological,
 		__global cl_double *  	pReductionData,
-		__global cl_double4 *  	pCellData,
+		__global cl_double *  	pCellData,
 		__global cl_double *  	dBedData,
 		__global cl_double *  	dTimeSync,
 		__global cl_double *  	dBatchTimesteps,
@@ -66,48 +67,7 @@ void tst_Advance_Normal(
 		dLclTimeHydrological += dLclTimestep;
 	}
 
-	#ifdef TIMESTEP_DYNAMIC
-
-	__private cl_double dCellSpeed, dMaxSpeed;
-	__private cl_double dMinTime;
-
-	dCellSpeed = 0.0;
-	dMaxSpeed  = 0.0;
-	for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
-	{
-		dCellSpeed = pReductionData[i];
-		if ( dCellSpeed > dMaxSpeed ) 
-			dMaxSpeed = dCellSpeed;
-	}
-
-	// Convert velocity to a time (assumes domain deltaX=deltaY here)
-	// Force progression at the start of a simulation.
-	dMinTime = DOMAIN_DELTAX/dMaxSpeed;
-	if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM)
-		dMinTime = TIMESTEP_START_MINIMUM;
-
-	// Multiply by the Courant number
-	dLclTimestep = COURANT_NUMBER * dMinTime;
-
-	#endif
-	#ifdef TIMESTEP_FIXED
-
 	dLclTimestep = TIMESTEP_FIXED;
-
-	#endif
-
-	// Don't exceed the output interval
-	// but also don't stop things at the start
-	// Also don't exceed the synchronisation time
-	/*
-	if ( fmod( dLclTime, SCHEME_OUTPUTTIME ) < 1E-7 && dLclTime > 0.5 )
-	{
-		dLclTimestep = 0.0;
-	} else {
-		if ( ( dLclTime + dLclTimestep ) > ( trunc( dLclTime / SCHEME_OUTPUTTIME ) + 1 ) * SCHEME_OUTPUTTIME )
-			dLclTimestep = ( ( trunc( dLclTime / SCHEME_OUTPUTTIME ) + 1 ) * SCHEME_OUTPUTTIME ) - dLclTime;
-	}
-	*/
 
 	// Impose a minimum timestep
 	if (dLclTimestep > 0.0 && dLclTimestep < TIMESTEP_MINIMUM)
@@ -166,7 +126,7 @@ void tst_ResetCounters (
  */
 __kernel  REQD_WG_SIZE_LINE
 void tst_Reduce( 
-		__global cl_double4 *  			pCellData,
+		__global cl_double *  			pCellData,
 		__global cl_double const * restrict	dBedData,
 		__global cl_double *  			pReductionData
 	)
@@ -178,7 +138,7 @@ void tst_Reduce(
 	cl_uint		uiLocalSize		= get_local_size(0);
 	
 	cl_ulong	ulCellID		= get_global_id(0);
-	cl_double4	pCellState;
+	cl_double	pCellState;
 	cl_double	dBedElevation;
 	cl_double	dCellSpeed, dDepth, dVelX, dVelY;
 	cl_double	dMaxSpeed		= 0.0;
@@ -189,26 +149,14 @@ void tst_Reduce(
 		pCellState		= pCellData[ ulCellID ];
 		dBedElevation	= dBedData[ ulCellID ];
 		
-		dDepth = pCellState.x - dBedElevation;
+		dDepth = pCellState - dBedElevation;
 		
-		if ( dDepth > QUITE_SMALL && pCellState.y > -9999.0 )
+		if ( dDepth > QUITE_SMALL && pCellState != -9999.0 )
 		{
-			#ifndef TIMESTEP_SIMPLIFIED
-			
-			dVelX = pCellState.z / dDepth;
-			dVelY = pCellState.w / dDepth;
-			if ( dVelX < 0.0 ) dVelX = -dVelX;
-			if ( dVelY < 0.0 ) dVelY = -dVelY;
 
-			dVelX += sqrt( GRAVITY * dDepth );
-			dVelY += sqrt( GRAVITY * dDepth );
-
-			#else
-			
 			dVelX = sqrt( GRAVITY * dDepth );
 			dVelY = sqrt( GRAVITY * dDepth );
 
-			#endif
 			dCellSpeed = ( dVelX  < dVelY ) ? dVelY : dVelX;
 
 		} else {
