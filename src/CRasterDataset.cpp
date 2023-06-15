@@ -16,12 +16,11 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
-#include "../common.h"
+#include "common.h"
 #include "CRasterDataset.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
+#include "CDomainCartesian.h"
 
 using std::min;
 using std::max;

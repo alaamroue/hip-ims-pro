@@ -16,16 +16,14 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <cmath>
 #include <stdlib.h>
 
-#include "../../common.h"
-#include "../../MPI/CMPIManager.h"
+#include "common.h"
 #include "CDomainLink.h"
-#include "../Cartesian/CDomainCartesian.h"	// TEMP: Remove me!
-#include "../CDomainManager.h"				// TEMP: Remove me!
+#include "CDomainCartesian.h"	// TEMP: Remove me!
+#include "CDomainManager.h"				// TEMP: Remove me!
 
 using std::min;
 using std::max;
@@ -38,11 +36,7 @@ CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
 	this->uiTargetDomainID = pTarget->getID();
 	this->uiSourceDomainID = pSource->getID();
 
-#ifdef MPI_ON
-	this->iTargetNodeID = pTarget->getSummary().uiNodeID;
-#else
 	this->iTargetNodeID = -1;
-#endif
 	
 	// Start as invalid
 	this->dValidityTime = -1.0;
@@ -204,43 +198,6 @@ bool	CDomainLink::sendOverMPI()
 	if ( this->bSent )
 		return true;
 
-#ifdef MPI_ON
-	if ( this->iTargetNodeID >= 0 )
-	{
-		mpiSignalDataDomain pHeader;
-		
-		pHeader.iSignalCode = model::mpiSignalCodes::kSignalDomainData;
-		pHeader.uiTargetDomainID = this->uiTargetDomainID;
-		pHeader.uiSourceDomainID = this->uiSourceDomainID;
-		pHeader.dValidityTime = this->dValidityTime;
-		pHeader.uiDataSize = 0;
-		
-		for( unsigned int i = 0; i < this->linkDefs.size(); i++ )
-		{
-			pHeader.uiDataSize += this->linkDefs[i].ulSize;
-		}
-		
-		unsigned int uiSize = sizeof( mpiSignalDataDomain ) + pHeader.uiDataSize;
-		unsigned int uiOffset = sizeof( mpiSignalDataDomain ); 
-	
-		char* cSendBuffer = new char[ uiSize ];
-	
-		memcpy( &cSendBuffer[ 0 ], &pHeader, sizeof( mpiSignalDataDomain ) );
-		
-		for( unsigned int i = 0; i < this->linkDefs.size(); i++ )
-		{
-			memcpy(
-				&cSendBuffer[ uiOffset ],
-				this->linkDefs[i].vStateData,
-				this->linkDefs[i].ulSize
-			);
-			uiOffset += this->linkDefs[i].ulSize;
-		}
-	
-		pManager->getMPIManager()->sendDataDomainLink( this->iTargetNodeID, cSendBuffer, uiSize );
-	}
-#endif
-	
 	this->bSent = true;
 	
 	return false;

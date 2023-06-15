@@ -137,8 +137,6 @@
     <ClInclude Include="src\CLCode.h" />
     <ClInclude Include="src\CLog.h" />
     <ClInclude Include="src\CModel.h" />
-    <ClInclude Include="src\CMPIManager.h" />
-    <ClInclude Include="src\CMPINode.h" />
     <ClInclude Include="src\COCLBuffer.h" />
     <ClInclude Include="src\COCLDevice.h" />
     <ClInclude Include="src\COCLKernel.h" />
@@ -177,8 +175,6 @@
     <ClCompile Include="src\CExecutorControlOpenCL.cpp" />
     <ClCompile Include="src\CLog.cpp" />
     <ClCompile Include="src\CModel.cpp" />
-    <ClCompile Include="src\CMPIManager.cpp" />
-    <ClCompile Include="src\CMPINode.cpp" />
     <ClCompile Include="src\COCLBuffer.cpp" />
     <ClCompile Include="src\COCLDevice.cpp" />
     <ClCompile Include="src\COCLKernel.cpp" />

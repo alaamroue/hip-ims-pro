@@ -17,14 +17,13 @@
 *
 */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryUniform.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../OpenCL/Executors/COCLBuffer.h"
-#include "../OpenCL/Executors/COCLKernel.h"
-#include "../common.h"
+#include "CDomainCartesian.h"
+#include "COCLBuffer.h"
+#include "COCLKernel.h"
+#include "common.h"
 
 using std::vector;
 

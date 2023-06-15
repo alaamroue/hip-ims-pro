@@ -17,15 +17,14 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 
-#include "../common.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Boundaries/CBoundary.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
+#include "common.h"
+#include "CBoundaryMap.h"
+#include "CBoundary.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "CXMLDataset.h"
 #include "CSchemeMUSCLHancock.h"
 
 using std::min;

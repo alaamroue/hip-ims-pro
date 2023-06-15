@@ -25,25 +25,13 @@
 
 //#define DEBUG_MPI 1
 
-#define toString(s) boost::lexical_cast<std::string>(s)
+#define toString(s) std::to_string(s)
 
 // Windows-specific includes
-#ifdef PLATFORM_WIN
 #include <tchar.h>
 #include <direct.h>
-#endif
-#ifdef PLATFORM_UNIX
-#include <unistd.h>
-#include <time.h>
-#include <ncurses.h>
-#include "CLCode.h"
-#endif
-#ifdef MPI_ON
-#include <mpi.h>
-#endif
 
-#include "Datasets/TinyXML/tinyxml2.h"
-#include "General/CLog.h"
+#include "CLog.h"
 #include "CModel.h"
 
 using tinyxml2::XMLElement;
@@ -72,6 +60,120 @@ namespace floatPrecision{
 	enum floatPrecision {
 		kSingle = 0,	// Single-precision
 		kDouble = 1		// Double-precision
+	};
+}
+
+
+// Application author details
+const std::string appName = " _    _   _   _____    _____   __  __    _____  \n"
+" | |  | | (_) |  __ \\  |_   _| |  \\/  |  / ____| \n"
+" | |__| |  _  | |__) |   | |   | \\  / | | (___   \n"
+" |  __  | | | |  ___/    | |   | |\\/| |  \\___ \\  \n"
+" | |  | | | | | |       _| |_  | |  | |  ____) | \n"
+" |_|  |_| |_| |_|      |_____| |_|  |_| |_____/  \n"
+"   High-performance Integrated Modelling System   ";
+const std::string appAuthor = "Luke S. Smith and Qiuhua Liang";
+const std::string appContact = "luke@smith.ac";
+const std::string appUnit = "School of Civil Engineering and Geosciences";
+const std::string appOrganisation = "Newcastle University";
+const std::string appRevision = "$Revision: 717 $";
+
+// Application version details
+const unsigned int appVersionMajor = 0;	// Major 
+const unsigned int appVersionMinor = 2;	// Minor
+const unsigned int appVersionRevision = 0;	// Revision
+
+// Application structure for argument names
+struct modelArgument {
+	const char		cShort[3];
+	const char* cLong;
+	const char* cDescription;
+};
+
+//MUSCL
+// Kernel configurations
+namespace schemeConfigurations {
+	namespace musclHancock {
+		enum musclHancock {
+			kCacheNone = 10,		// Option B in dissertation: No local memory used
+			kCachePrediction = 11,		// Option C in dissertation: Only the prediction step uses caching
+			kCacheMaximum = 12		// Option D in dissertation: All stages use cache memory
+		};
+	}
+}
+
+namespace cacheConstraints {
+	namespace musclHancock {
+		enum musclHancock {
+			kCacheActualSize = 10,		// LDS of actual size
+			kCacheAllowOversize = 11,		// Allow LDS oversizing to avoid bank conflicts
+			kCacheAllowUndersize = 12		// Allow LDS undersizing to avoid bank conflicts
+		};
+	}
+}
+
+//Inertial
+// Kernel configurations
+namespace schemeConfigurations {
+	namespace inertialFormula {
+		enum inertialFormula {
+			kCacheNone = 0,		// No caching
+			kCacheEnabled = 1			// Cache cell state data
+		};
+	}
+}
+
+namespace cacheConstraints {
+	namespace inertialFormula {
+		enum inertialFormula {
+			kCacheActualSize = 0,		// LDS of actual size
+			kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
+			kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
+		};
+	}
+}
+
+//Godunov
+// Kernel configurations
+namespace schemeConfigurations {
+	namespace godunovType {
+		enum godunovType {
+			kCacheNone = 0,		// No caching
+			kCacheEnabled = 1			// Cache cell state data
+		};
+	}
+}
+
+namespace cacheConstraints {
+	namespace godunovType {
+		enum godunovType {
+			kCacheActualSize = 0,		// LDS of actual size
+			kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
+			kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
+		};
+	}
+}
+
+
+//Domain Base:
+
+// Model domain structure types
+namespace domainStructureTypes {
+	enum domainStructureTypes {
+		kStructureCartesian = 0,	// Cartesian
+		kStructureRemote = 1,	// Remotely held domain
+		kStructureInvalid = 255	// Error state, cannot work with this type of domain
+	};
+}
+
+//CDomain
+// Model domain structure types
+namespace domainValueIndices {
+	enum domainValueIndices {
+		kValueFreeSurfaceLevel = 0,	// Free-surface level
+		kValueMaxFreeSurfaceLevel = 1,	// Max free-surface level
+		kValueDischargeX = 2,	// Discharge X
+		kValueDischargeY = 3		// Discharge Y
 	};
 }
 

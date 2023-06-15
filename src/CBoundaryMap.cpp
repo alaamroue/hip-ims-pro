@@ -17,19 +17,17 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
-#include "../common.h"
+#include "common.h"
 #include "CBoundaryMap.h"
 #include "CBoundary.h"
 #include "CBoundaryCell.h"
 #include "CBoundaryUniform.h"
 #include "CBoundaryGridded.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Domain/CDomainManager.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
+#include "CXMLDataset.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
 
 using std::vector;
 

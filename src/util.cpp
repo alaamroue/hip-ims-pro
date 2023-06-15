@@ -23,9 +23,6 @@
 #include <math.h>
 #include <cmath>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "common.h"
 
 namespace Util 
@@ -161,61 +158,6 @@ namespace Util
 		(*cTarget)[ strlen( cString ) ] = '\0';
 	}
 
-	/*
-	 *	Timestamp conversion routines - from string to timestamp (1970-base)
-	 */
-	unsigned long toTimestamp( const char * cTime, const char * cFormat )
-	{
-		boost::local_time::local_time_input_facet *pFacet;
-		std::stringstream ssTime;
-
-		if (cFormat != NULL)
-		{
-			pFacet = new boost::local_time::local_time_input_facet(cFormat);
-		}
-		else {
-			pFacet = new boost::local_time::local_time_input_facet("%Y-%m-%d %H:%M");
-		}
-
-		ssTime.imbue(std::locale(ssTime.getloc(), pFacet));
-
-		boost::local_time::local_date_time ldt(boost::local_time::not_a_date_time);
-		ssTime.str(cTime);
-
-		ssTime >> ldt;
-
-		boost::posix_time::ptime time_t_epoch(boost::gregorian::date(1970, 1, 1));
-		return (ldt.utc_time() - time_t_epoch).total_seconds();
-	}
-
-	/*
-	 *	Timestamp conversion routines - from timestamp to time string
-	 */
-	const char * fromTimestamp(unsigned long ulTimestamp, const char * cFormat)
-	{
-		boost::posix_time::time_facet *pFacet;
-		std::stringstream ssTime;
-		ssTime.str("");
-
-		if (cFormat != NULL)
-		{
-			pFacet = new boost::posix_time::time_facet(cFormat);
-		}
-		else {
-			pFacet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M");
-		}
-
-		ssTime.imbue(std::locale(std::locale::classic(), pFacet));
-
-		boost::posix_time::ptime time_t_epoch = boost::posix_time::from_time_t(ulTimestamp);
-
-		ssTime << time_t_epoch;
-
-		char* cNewString;
-		Util::toNewString( &cNewString, ssTime.str().c_str() );
-
-		return cNewString;
-	}
 
 	/*
 	 *	Check if a file exists -- strictly speaking if it's accessible

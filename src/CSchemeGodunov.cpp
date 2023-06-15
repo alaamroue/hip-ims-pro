@@ -16,20 +16,17 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
 #include <algorithm>
 
-#include "../common.h"
-#include "../main.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Boundaries/CBoundary.h"
-#include "../Domain/CDomainManager.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Links/CDomainLink.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
+#include "common.h"
+#include "main.h"
+#include "CBoundaryMap.h"
+#include "CBoundary.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CDomainLink.h"
+#include "CDomainCartesian.h"
+#include "CXMLDataset.h"
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
@@ -1093,22 +1090,13 @@ void	CSchemeGodunov::prepareSimulation()
 	bThreadTerminated = false;
 }
 
-#ifdef PLATFORM_WIN
 DWORD CSchemeGodunov::Threaded_runBatchLaunch(LPVOID param)
 {
 	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
 	pScheme->Threaded_runBatch();
 	return 0;
 }
-#endif
-#ifdef PLATFORM_UNIX
-void* CSchemeGodunov::Threaded_runBatchLaunch(void* param)
-{
-	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
-	pScheme->Threaded_runBatch();
-	return 0;
-}
-#endif
+
 
 /*
  *	Create a new thread to run this batch using
@@ -1121,7 +1109,6 @@ void CSchemeGodunov::runBatchThread()
 	this->bThreadRunning = true;
 	this->bThreadTerminated = false;
 
-#ifdef PLATFORM_WIN
 	HANDLE hThread = CreateThread(
 		NULL,
 		0,
@@ -1131,13 +1118,7 @@ void CSchemeGodunov::runBatchThread()
 		NULL
 		);
 	CloseHandle(hThread);
-#endif
-#ifdef PLATFORM_UNIX
-	pthread_t tid;
-	int result = pthread_create(&tid, 0, CSchemeGodunov::Threaded_runBatchLaunch, this);
-	if (result == 0)
-		pthread_detach(tid);
-#endif
+
 }
 
 /*
@@ -1313,9 +1294,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		oclBufferBatchTimesteps->queueReadAll();
 		uiIterationsSinceProgressCheck = 0;
 
-#ifdef _WINDLL
-		oclBufferCellStates->queueReadAll();
-#endif
 
 		// Download data for each of the dependent domains
 		if (bDownloadLinks)
@@ -1779,12 +1757,6 @@ double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
 		if ( dProposal - dCurrentTime < 1E-5 )
 			dProposal = dCurrentTime + fabs(this->dTimestep);
 	}
-
-	// If using real-time visualisation, force syncs more frequently (?)
-#ifdef _WINDLL
-	// This line is broken... Maybe? Not sure...
-	//dProposal = min( dProposal, dCurrentTime + ( dBatchTimesteps / uiBatchSuccessful ) * 2 * uiQueueAdditionSize );
-#endif
 
 	return dProposal;
 }

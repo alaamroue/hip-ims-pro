@@ -22,24 +22,6 @@
 
 #include "CSchemeGodunov.h"
 
-namespace model {
-
-// Kernel configurations
-namespace schemeConfigurations{ 
-namespace musclHancock { enum musclHancock {
-	kCacheNone						= 10,		// Option B in dissertation: No local memory used
-	kCachePrediction				= 11,		// Option C in dissertation: Only the prediction step uses caching
-	kCacheMaximum					= 12		// Option D in dissertation: All stages use cache memory
-}; }  }
-
-namespace cacheConstraints{ 
-namespace musclHancock { enum musclHancock {
-	kCacheActualSize				= 10,		// LDS of actual size
-	kCacheAllowOversize				= 11,		// Allow LDS oversizing to avoid bank conflicts
-	kCacheAllowUndersize			= 12		// Allow LDS undersizing to avoid bank conflicts
-}; }  }
-
-}
 
 /*
  *  SCHEME CLASS

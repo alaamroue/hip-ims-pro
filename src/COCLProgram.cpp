@@ -18,10 +18,7 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/algorithm/string.hpp>
-#include "../../common.h"
+#include "common.h"
 #include "COCLProgram.h"
 #include "COCLKernel.h"
 

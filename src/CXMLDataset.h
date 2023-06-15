@@ -19,7 +19,7 @@
 #ifndef HIPIMS_DATASETS_CXMLDATASET_H_
 #define HIPIMS_DATASETS_CXMLDATASET_H_
 
-#include "../common.h"
+#include "common.h"
 
 /*
  *  XML DATASET CLASS

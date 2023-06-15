@@ -23,19 +23,11 @@ distribution.
 
 #include "tinyxml2.h"
 
-#if 1
 	#include <cstdarg>
 	#include <cstdio>
 	#include <cstdlib>
 	#include <new>
-#else
-	#include <string.h>
-	#include <stdlib.h>
-	#include <stdio.h>
-	#include <ctype.h>
-	#include <new>
-	#include <stdarg.h>
-#endif
+
 
 using namespace tinyxml2;
 

@@ -35,12 +35,6 @@
     <ClInclude Include="src\CModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CMPIManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CMPINode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\COCLBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -146,12 +140,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CMPIManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CMPINode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\COCLBuffer.cpp">

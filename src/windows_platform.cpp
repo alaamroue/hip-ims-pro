@@ -17,7 +17,7 @@
  *
  */
 
-#include "../common.h"
+#include "common.h"
 
 #ifndef PLATFORM_UNIX
 

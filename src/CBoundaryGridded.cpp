@@ -18,16 +18,15 @@
  */
 #include <vector>
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryGridded.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Datasets/CRasterDataset.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../OpenCL/Executors/COCLBuffer.h"
-#include "../OpenCL/Executors/COCLKernel.h"
-#include "../common.h"
+#include "CXMLDataset.h"
+#include "CRasterDataset.h"
+#include "CDomainCartesian.h"
+#include "COCLBuffer.h"
+#include "COCLKernel.h"
+#include "common.h"
 
 using std::vector;
 using std::min;

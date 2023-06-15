@@ -19,7 +19,7 @@
 #ifndef HIPIMS_BOUNDARIES_CBOUNDARYUNIFORM_H_
 #define HIPIMS_BOUNDARIES_CBOUNDARYUNIFORM_H_
 
-#include "../common.h"
+#include "common.h"
 #include "CBoundary.h"
 
 class CBoundaryUniform : public CBoundary

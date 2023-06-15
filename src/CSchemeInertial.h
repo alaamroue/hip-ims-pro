@@ -21,23 +21,6 @@
 
 #include "CSchemeGodunov.h"
 
-namespace model {
-
-// Kernel configurations
-namespace schemeConfigurations{ 
-namespace inertialFormula { enum inertialFormula {
-	kCacheNone						= 0,		// No caching
-	kCacheEnabled					= 1			// Cache cell state data
-}; }  }
-
-namespace cacheConstraints{ 
-namespace inertialFormula { enum inertialFormula {
-	kCacheActualSize				= 0,		// LDS of actual size
-	kCacheAllowOversize				= 1,		// Allow LDS oversizing to avoid bank conflicts
-	kCacheAllowUndersize			= 2			// Allow LDS undersizing to avoid bank conflicts
-}; }  }
-
-}
 
 /*
  *  SCHEME CLASS

@@ -17,14 +17,13 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundary.h"
-#include "../common.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../OpenCL/opencl.h"
+#include "common.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "opencl.h"
 
 using std::vector;
 int CBoundary::uiInstances = 0;

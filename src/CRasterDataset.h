@@ -20,11 +20,10 @@
 #ifndef HIPIMS_DATASETS_CRASTERDATASET_H_
 #define HIPIMS_DATASETS_CRASTERDATASET_H_
 
-#include <gdal_priv.h>
-#include <cpl_conv.h>
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Boundaries/CBoundaryGridded.h"
+
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "CBoundaryGridded.h"
 
 namespace model {
 

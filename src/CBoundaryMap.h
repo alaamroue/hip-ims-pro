@@ -19,12 +19,12 @@
 #ifndef HIPIMS_BOUNDARIES_CBOUNDARYMAP_H_
 #define HIPIMS_BOUNDARIES_CBOUNDARYMAP_H_
 
-#include <boost/unordered_map.hpp>
+
 #include <vector>
-#include "../common.h"
-#include "../Datasets/CCSVDataset.h"
-#include "../OpenCL/opencl.h"
-#include "../OpenCL/Executors/COCLProgram.h"
+#include "common.h"
+#include "CCSVDataset.h"
+#include "opencl.h"
+#include "COCLProgram.h"
 
 using boost::unordered_map;
 

@@ -16,19 +16,17 @@
  * ------------------------------------------
  *
  */
-#include "../common.h"
+#include "common.h"
 #include "CDomainManager.h"
 #include "CDomainBase.h"
 #include "CDomain.h"
-#include "Cartesian/CDomainCartesian.h"
-#include "Links/CDomainLink.h"
-#include "../Schemes/CScheme.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Datasets/CRasterDataset.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../OpenCL/Executors/COCLDevice.h"
-#include "../MPI/CMPIManager.h"
-#include "../MPI/CMPINode.h"
+#include "CDomainCartesian.h"
+#include "CDomainLink.h"
+#include "CScheme.h"
+#include "CXMLDataset.h"
+#include "CRasterDataset.h"
+#include "CBoundaryMap.h"
+#include "COCLDevice.h"
 
 /*
  *  Constructor
@@ -202,25 +200,12 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 
 			// Is the domain located on this node?
 			unsigned int uiDeviceAdjust = 1;
-#ifdef MPI_ON
-			if ( !pManager->getMPIManager()->getNode()->isDeviceOnNode(boost::lexical_cast<unsigned int>(cDomainDevice)) )
-			{
-				// Domain lives somewhere else, so we only need a skeleton data structure
-				pManager->log->writeLine("Creating a new skeleton domain for a remote node.");
-				pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureRemote);
-			} else {
-				// Adjust device number to be a local ID rather than across the whole MPI COMM
-				uiDeviceAdjust = pManager->getMPIManager()->getNode()->getDeviceBaseID();
-#endif
 				// Domain resides on this node
 				pManager->log->writeLine("Creating a new Cartesian-structured domain.");
 				pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
 				pManager->log->writeLine("Local device IDs are relative to #" + toString(uiDeviceAdjust) + "." );
 				pManager->log->writeLine("Assigning domain to device #" + toString(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1) + "."  );
 				static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1));
-#ifdef MPI_ON
-			}
-#endif
 
 			if (!pDomainNew->configureDomain(pXDomain))
 				return false;
@@ -247,13 +232,6 @@ bool CDomainManager::setupFromConfig( XMLElement* pXNode )
 	} else {
 		pManager->log->writeLine( "This is a MULTI-DOMAIN model, and possibly multi-device." );
 	}
-
-#ifdef MPI_ON
-	pManager->log->writeLine("Waiting for all nodes to finish loading domain data...");
-	pManager->getMPIManager()->blockOnComm();
-	pManager->log->writeLine("Proceeding to exchange domain data across MPI...");
-	pManager->getMPIManager()->exchangeDomains();
-#endif
 
 	// Generate links
 	this->generateLinks();
@@ -491,11 +469,7 @@ void	CDomainManager::logDetails()
 			cDomainLine,
 			"| %6s | %4s | %6s | %6s | %6s | %5s | %5s | %5s |",
 			toString(pSummary.uiDomainID + 1).c_str(),
-#ifdef MPI_ON
-			toString(pSummary.uiNodeID).c_str(),
-#else
 			"N/A",
-#endif
 			toString(pSummary.uiLocalDeviceID).c_str(),
 			toString(pSummary.ulRowCount).c_str(),
 			toString(pSummary.ulColCount).c_str(),

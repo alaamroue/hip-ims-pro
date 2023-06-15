@@ -16,10 +16,7 @@
  * ------------------------------------------
  *
  */
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
-
-#include "../common.h"
+#include "common.h"
 #include "CCSVDataset.h"
 
 /* 

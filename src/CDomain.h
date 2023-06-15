@@ -19,20 +19,8 @@
 #ifndef HIPIMS_DOMAIN_CDOMAIN_H_
 #define HIPIMS_DOMAIN_CDOMAIN_H_
 
-#include "../OpenCL/opencl.h"
+#include "opencl.h"
 #include "CDomainBase.h"
-
-namespace model {
-
-// Model domain structure types
-namespace domainValueIndices{ enum domainValueIndices {
-	kValueFreeSurfaceLevel					= 0,	// Free-surface level
-	kValueMaxFreeSurfaceLevel				= 1,	// Max free-surface level
-	kValueDischargeX						= 2,	// Discharge X
-	kValueDischargeY						= 3		// Discharge Y
-}; }
-
-}
 
 // TODO: Make a CLocation class
 class CDomainCartesian;
@@ -90,9 +78,6 @@ class CDomain : public CDomainBase
 		void						setDevice( COCLDevice* );										// Set the device responsible for running this domain
 		COCLDevice*					getDevice();													// Get the device responsible for running this domain
 
-		#ifdef _WINDLL
-		virtual void				sendAllToRenderer() {};											// Allows the renderer to read off the bed elevations
-		#endif
 
 	protected:
 

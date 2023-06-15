@@ -16,26 +16,23 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
+#include "
 #include <vector>
 
-#include "../common.h"
+#include "common.h"
 #include "CXMLDataset.h"
 #include "CCSVDataset.h"
 #include "CRasterDataset.h"
-#include "../MPI/CMPIManager.h"
-#include "../Domain/CDomainManager.h"
-#include "../Domain/CDomainBase.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Schemes/CScheme.h"
-#include "../Schemes/CSchemeGodunov.h"
-#include "../Schemes/CSchemeInertial.h"
-#include "../Schemes/CSchemeMUSCLHancock.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Boundaries/CBoundary.h"
+#include "CDomainManager.h"
+#include "CDomainBase.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
+#include "CScheme.h"
+#include "CSchemeGodunov.h"
+#include "CSchemeInertial.h"
+#include "CSchemeMUSCLHancock.h"
+#include "CBoundaryMap.h"
+#include "CBoundary.h"
 
 /*
  *  Default constructor

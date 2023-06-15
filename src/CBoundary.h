@@ -19,8 +19,8 @@
 #ifndef HIPIMS_BOUNDARIES_CBOUNDARY_H_
 #define HIPIMS_BOUNDARIES_CBOUNDARY_H_
 
-#include "../common.h"
-#include "../Datasets/CCSVDataset.h"
+#include "common.h"
+#include "CCSVDataset.h"
 
 #define BOUNDARY_DEPTH_IGNORE			0
 #define BOUNDARY_DEPTH_IS_FSL			1
