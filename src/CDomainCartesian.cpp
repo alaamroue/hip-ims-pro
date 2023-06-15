@@ -19,19 +19,14 @@
 #include <limits>
 #include <stdio.h>
 #include <cstring>
-#include <boost/lexical_cast.hpp>
 
-#include "../../common.h"
-#include "../../main.h"
-#include "../../CModel.h"
-#include "../CDomainManager.h"
-#include "../CDomain.h"
-#include "../../Schemes/CScheme.h"
-#include "../../Datasets/CXMLDataset.h"
-#include "../../Datasets/CRasterDataset.h"
-#include "../../OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "../../Boundaries/CBoundaryMap.h"
-#include "../../MPI/CMPIManager.h"
+#include "common.h"
+#include "main.h"
+#include "CModel.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CScheme.h"
+#include "CExecutorControlOpenCL.h"
 #include "CDomainCartesian.h"
 
 /*

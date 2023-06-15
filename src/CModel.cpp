@@ -22,13 +22,10 @@
 #include <math.h>
 #include "common.h"
 #include "main.h"
-#include "OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "Domain/CDomainManager.h"
-#include "Domain/CDomain.h"
-#include "Schemes/CScheme.h"
-#include "Datasets/CXMLDataset.h"
-#include "Datasets/CRasterDataset.h"
-#include "MPI/CMPIManager.h"
+#include "CExecutorControlOpenCL.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CScheme.h"
 
 using std::min;
 using std::max;

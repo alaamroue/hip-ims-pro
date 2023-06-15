@@ -19,13 +19,13 @@
 #ifndef HIPIMS_SCHEMES_CSCHEME_H_
 #define HIPIMS_SCHEMES_CSCHEME_H_
 
-#include "../General/CBenchmark.h"
-#include "../Domain/CDomain.h"
-#include "../OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "../OpenCL/Executors/COCLProgram.h"
-#include "../OpenCL/Executors/COCLDevice.h"
-#include "../OpenCL/Executors/COCLKernel.h"
-#include "../OpenCL/Executors/COCLBuffer.h"
+#include "CBenchmark.h"
+#include "CDomain.h"
+#include "CExecutorControlOpenCL.h"
+#include "COCLProgram.h"
+#include "COCLDevice.h"
+#include "COCLKernel.h"
+#include "COCLBuffer.h"
 
 namespace model {
 

@@ -21,8 +21,8 @@
 #define HIPIMS_OPENCL_EXECUTORS_CEXECUTORCONTROLOPENCL_H_
 
 #include <vector>
-#include "../../Base/CExecutorControl.h"
-#include "../opencl.h"
+#include "CExecutorControl.h"
+#include "opencl.h"
 
 // Type aliases
 typedef char*						OCL_RAW_CODE;

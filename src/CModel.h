@@ -19,9 +19,8 @@
 #ifndef HIPIMS_CMODEL_H_
 #define HIPIMS_CMODEL_H_
 
-#include "OpenCL/opencl.h"
-#include "General/CBenchmark.h"
-#include "Datasets/TinyXML/tinyxml2.h"
+#include "opencl.h"
+#include "CBenchmark.h"
 #include <vector>
 
 // Some classes we need to know about...

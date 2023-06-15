@@ -16,16 +16,12 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
-#include "../common.h"
+#include "common.h"
 #include "CDomain.h"
-#include "Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Datasets/CRasterDataset.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Schemes/CScheme.h"
-#include "../OpenCL/Executors/COCLDevice.h"
+#include "CDomainCartesian.h"
+#include "CScheme.h"
+#include "COCLDevice.h"
 
 /*
  *  Constructor

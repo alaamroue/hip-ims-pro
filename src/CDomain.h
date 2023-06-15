@@ -19,7 +19,7 @@
 #ifndef HIPIMS_DOMAIN_CDOMAIN_H_
 #define HIPIMS_DOMAIN_CDOMAIN_H_
 
-#include "../OpenCL/opencl.h"
+#include "opencl.h"
 #include "CDomainBase.h"
 
 namespace model {

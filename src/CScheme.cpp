@@ -16,19 +16,14 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
-#include "../common.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Boundaries/CBoundary.h"
+#include "common.h"
 #include "CScheme.h"
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Datasets/CRasterDataset.h"
+#include "CDomain.h"
+#include "CDomainCartesian.h"
 
 /*
  *  Default constructor

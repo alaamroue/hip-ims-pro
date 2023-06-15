@@ -35,12 +35,6 @@
     <ClInclude Include="src\CModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CMPIManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CMPINode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\COCLBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -56,9 +50,6 @@
     <ClInclude Include="src\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CRasterDataset.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\CScheme.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -69,9 +60,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CSchemeMUSCLHancock.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CXMLDataset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\main.h">
@@ -86,12 +74,6 @@
     <ClInclude Include="src\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\tinyxml2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\unix_platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,24 +81,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CBenchmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryCell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryGridded.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryUniform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CCSVDataset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CDomain.h">
@@ -148,12 +112,6 @@
     <ClCompile Include="src\CModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\CMPIManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CMPINode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\COCLBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -164,9 +122,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\COCLProgram.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CRasterDataset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CScheme.cpp">
@@ -181,16 +136,7 @@
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\CXMLDataset.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tinyxml2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\unix_platform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\util.cpp">
@@ -203,24 +149,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CBenchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryCell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryGridded.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryUniform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CCSVDataset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CDomain.cpp">
@@ -252,24 +180,62 @@
     <Text Include="src\Readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\opencl\CLBoundaries.clc" />
-    <None Include="src\opencl\CLBoundaries.clh" />
-    <None Include="src\opencl\CLDomainCartesian.clc" />
-    <None Include="src\opencl\CLDomainCartesian.clh" />
-    <None Include="src\opencl\CLDynamicTimestep.clc" />
-    <None Include="src\opencl\CLDynamicTimestep.clh" />
-    <None Include="src\opencl\CLFriction.clc" />
-    <None Include="src\opencl\CLFriction.clh" />
-    <None Include="src\opencl\CLSchemeGodunov.clc" />
-    <None Include="src\opencl\CLSchemeGodunov.clh" />
-    <None Include="src\opencl\CLSchemeInertial.clc" />
-    <None Include="src\opencl\CLSchemeInertial.clh" />
-    <None Include="src\opencl\CLSchemeMUSCLHancock.clc" />
-    <None Include="src\opencl\CLSchemeMUSCLHancock.clh" />
-    <None Include="src\opencl\CLSlopeLimiterMINMOD.clc" />
-    <None Include="src\opencl\CLSlopeLimiterMINMOD.clh" />
-    <None Include="src\opencl\CLSolverHLLC.clc" />
-    <None Include="src\opencl\CLSolverHLLC.clh" />
-    <None Include="src\opencl\CLUniversalHeader.clh" />
+    <None Include="src\opencl\CLBoundaries.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLBoundaries.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLDomainCartesian.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLDomainCartesian.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLDynamicTimestep.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLDynamicTimestep.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLFriction.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLFriction.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeGodunov.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeGodunov.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeInertial.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeInertial.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeMUSCLHancock.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeMUSCLHancock.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSlopeLimiterMINMOD.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSlopeLimiterMINMOD.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSolverHLLC.clc">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLSolverHLLC.clh">
+      <Filter>OpenCl</Filter>
+    </None>
+    <None Include="src\opencl\CLUniversalHeader.clh">
+      <Filter>OpenCl</Filter>
+    </None>
   </ItemGroup>
 </Project>

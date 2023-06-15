@@ -23,7 +23,7 @@
 #ifdef __GNUC__
 	#include "Platforms/unix_platform.h"
 #else
-	#include "Platforms/windows_platform.h"
+	#include "windows_platform.h"
 #endif
 
 #endif

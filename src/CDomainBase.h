@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#include "../OpenCL/opencl.h"
+#include "opencl.h"
 
 namespace model {
 
