@@ -39,3 +39,10 @@ _debug*.log
 # Exceptions
 !tools/**/*.exe
 !tools/**/*.dll
+/x64
+/.qtc_clangd
+/.vs/HiPIMS-OCL
+/packages/Microsoft.Windows.CppWinRT.2.0.220531.1
+/Debug
+/1.log
+/_modelzz.log
