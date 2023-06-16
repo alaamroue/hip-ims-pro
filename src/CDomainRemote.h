@@ -19,8 +19,8 @@
 #ifndef HIPIMS_DOMAIN_CDOMAINREMOTE_H_
 #define HIPIMS_DOMAIN_CDOMAINREMOTE_H_
 
-#include "opencl.h"
-#include "CDomainBase.h"
+#include "../../OpenCL/opencl.h"
+#include "../CDomainBase.h"
 
 /*
  *  DOMAIN CLASS

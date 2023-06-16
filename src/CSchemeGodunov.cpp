@@ -16,14 +16,20 @@
  * ------------------------------------------
  *
  */
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string_regex.hpp>
 #include <algorithm>
 
-#include "common.h"
-#include "main.h"
-#include "CDomainManager.h"
-#include "CDomain.h"
-#include "CDomainLink.h"
-#include "CDomainCartesian.h"
+#include "../common.h"
+#include "../main.h"
+#include "../Boundaries/CBoundaryMap.h"
+#include "../Boundaries/CBoundary.h"
+#include "../Domain/CDomainManager.h"
+#include "../Domain/CDomain.h"
+#include "../Domain/Links/CDomainLink.h"
+#include "../Domain/Cartesian/CDomainCartesian.h"
+#include "../Datasets/CXMLDataset.h"
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"

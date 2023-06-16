@@ -19,9 +19,9 @@
 #ifndef HIPIMS_DOMAIN_CDOMAINLINK_H_
 #define HIPIMS_DOMAIN_CDOMAINLINK_H_
 
-#include "opencl.h"
-#include "COCLBuffer.h"
-#include "CDomainBase.h"
+#include "../../OpenCL/opencl.h"
+#include "../../OpenCL/Executors/COCLBuffer.h"
+#include "../CDomainBase.h"
 #include <vector>
 
 /*

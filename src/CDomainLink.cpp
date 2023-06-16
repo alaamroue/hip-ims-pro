@@ -16,13 +16,16 @@
  * ------------------------------------------
  *
  */
+#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <cmath>
 #include <stdlib.h>
 
-#include "common.h"
+#include "../../common.h"
+#include "../../MPI/CMPIManager.h"
 #include "CDomainLink.h"
-#include "CDomainCartesian.h"	// TEMP: Remove me!
+#include "../Cartesian/CDomainCartesian.h"	// TEMP: Remove me!
+#include "../CDomainManager.h"				// TEMP: Remove me!
 
 using std::min;
 using std::max;

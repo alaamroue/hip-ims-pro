@@ -18,10 +18,11 @@
  */
 
 // Includes
-#include "common.h"
-#include "opencl.h"
-#include "CModel.h"
-#include "CExecutorControl.h"
+#include "../../common.h"
+#include <boost/lexical_cast.hpp>
+#include "../opencl.h"
+#include "../../CModel.h"
+#include "../../Base/CExecutorControl.h"
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
 

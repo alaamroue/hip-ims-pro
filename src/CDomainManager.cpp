@@ -16,14 +16,19 @@
  * ------------------------------------------
  *
  */
-#include "common.h"
+#include "../common.h"
 #include "CDomainManager.h"
 #include "CDomainBase.h"
 #include "CDomain.h"
-#include "CDomainCartesian.h"
-#include "CDomainLink.h"
-#include "CScheme.h"
-#include "COCLDevice.h"
+#include "Cartesian/CDomainCartesian.h"
+#include "Links/CDomainLink.h"
+#include "../Schemes/CScheme.h"
+#include "../Datasets/CXMLDataset.h"
+#include "../Datasets/CRasterDataset.h"
+#include "../Boundaries/CBoundaryMap.h"
+#include "../OpenCL/Executors/COCLDevice.h"
+#include "../MPI/CMPIManager.h"
+#include "../MPI/CMPINode.h"
 
 /*
  *  Constructor

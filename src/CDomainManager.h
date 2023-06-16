@@ -19,7 +19,7 @@
 #ifndef HIPIMS_DOMAIN_CDOMAINMANAGER_H_
 #define HIPIMS_DOMAIN_CDOMAINMANAGER_H_
 
-#include "opencl.h"
+#include "../OpenCL/opencl.h"
 #include <vector>
 
 class CDomainBase;

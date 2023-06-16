@@ -18,7 +18,7 @@
  */
 
 // Includes
-#include "common.h"
+#include "../common.h"
 #include "CBenchmark.h"
 
 /*

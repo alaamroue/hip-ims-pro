@@ -20,6 +20,8 @@
 #ifndef HIPIMS_OPENCL_COCLBUFFER_H
 #define HIPIMS_OPENCL_COCLBUFFER_H
 
+#include <boost/lexical_cast.hpp>
+
 class COCLProgram;
 class COCLDevice;
 class COCLBuffer

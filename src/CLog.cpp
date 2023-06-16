@@ -18,9 +18,11 @@
  */
 
 // Includes
-#include "common.h"
-#include "main.h"
+#include "../common.h"
+#include "../main.h"
 #include <sstream>
+#include <boost/algorithm/string_regex.hpp>
+#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor

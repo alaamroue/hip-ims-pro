@@ -19,10 +19,12 @@
  */
 
 // Includes
-#include "common.h"
+#include "../../common.h"
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
+#include "../../Datasets/CXMLDataset.h"
 #include <vector>
+#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor

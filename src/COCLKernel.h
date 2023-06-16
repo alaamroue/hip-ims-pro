@@ -20,7 +20,7 @@
 #ifndef HIPIMS_OPENCL_COCLKERNEL_H
 #define HIPIMS_OPENCL_COCLKERNEL_H
 
-#include "opencl.h"
+#include "../opencl.h"
 
 class COCLProgram;
 class COCLBuffer;

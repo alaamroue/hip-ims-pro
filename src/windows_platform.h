@@ -20,7 +20,7 @@
 #ifndef HIPIMS_PLATFORMS_WINDOWS_PLATFORM_H_
 #define HIPIMS_PLATFORMS_WINDOWS_PLATFORM_H_
 
-#include "common.h"
+#include "../common.h"
 
 // Platform constant
 namespace model {

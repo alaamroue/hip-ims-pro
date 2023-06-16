@@ -16,8 +16,9 @@
  * ------------------------------------------
  *
  */
+#include <boost/lexical_cast.hpp>
 
-#include "common.h"
+#include "../../common.h"
 #include "CDomainRemote.h"
 
 /*

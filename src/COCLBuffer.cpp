@@ -18,9 +18,10 @@
  */
 
 // Includes
+#include <boost/lexical_cast.hpp>
 
-#include "common.h"
-#include "opencl.h"
+#include "../../common.h"
+#include "../opencl.h"
 #include "COCLDevice.h"
 #include "COCLBuffer.h"
 #include "COCLProgram.h"
