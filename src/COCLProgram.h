@@ -21,6 +21,7 @@
 
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
+#include <unordered_map>
 
 class COCLKernel;
 class COCLProgram

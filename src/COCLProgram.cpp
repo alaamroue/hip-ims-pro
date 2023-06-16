@@ -281,7 +281,7 @@ std::string COCLProgram::getCompileLog()
 	sLog = std::string( cBuildLog );
 	delete[] cBuildLog;
 
-	boost::trim(sLog);
+	sLog.erase(sLog.find_last_not_of(" \n\r\t") + 1);
 	return sLog;
 }
 

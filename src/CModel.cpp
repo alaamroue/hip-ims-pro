@@ -26,7 +26,7 @@
 #include "CDomainManager.h"
 #include "CDomain.h"
 #include "CScheme.h"
-#include "CXMLDataset.h"
+
 #include "CRasterDataset.h"
 
 using std::min;
@@ -59,72 +59,14 @@ CModel::CModel(void)
  */
 void CModel::setupFromConfig( XMLElement* pXNode )
 {
-	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
-	char			*cParameterFormat   = NULL;
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-		Util::toNewString( &cParameterFormat, pParameter->Attribute( "format" ) );
 
-		if ( strcmp( cParameterName, "duration" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid simulation length given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
+
 				this->setSimulationLength( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "realstart" ) == 0 )
-		{ 
-			this->setRealStart( cParameterValue, cParameterFormat );
-		}
-		else if ( strcmp( cParameterName, "outputfrequency" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid output frequency given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
+				this->setRealStart( cParameterValue, cParameterFormat );
 				this->setOutputFrequency( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "floatingpointprecision" ) == 0 )
-		{ 
-			unsigned char ucFPPrecision = 255;
-			if ( strcmp( cParameterValue, "single" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kSingle;
-			if ( strcmp( cParameterValue, "double" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kDouble;
-			if ( ucFPPrecision == 255 )
-			{
-				model::doError(
-					"Invalid float precision given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setFloatPrecision( ucFPPrecision );
-			}
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement( "parameter" );
-	}
+				this->setFloatPrecision(model::floatPrecision::kDouble);
+				//this->setFloatPrecision(model::floatPrecision::kSingle);
 }
 
 /*

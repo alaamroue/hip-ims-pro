@@ -147,7 +147,6 @@
     <ClInclude Include="src\CSchemeGodunov.h" />
     <ClInclude Include="src\CSchemeInertial.h" />
     <ClInclude Include="src\CSchemeMUSCLHancock.h" />
-    <ClInclude Include="src\CXMLDataset.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\opencl.h" />
     <ClInclude Include="src\platforms.h" />
@@ -184,10 +183,8 @@
     <ClCompile Include="src\CSchemeGodunov.cpp" />
     <ClCompile Include="src\CSchemeInertial.cpp" />
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp" />
-    <ClCompile Include="src\CXMLDataset.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tinyxml2.cpp" />
-    <ClCompile Include="src\unix_platform.cpp" />
     <ClCompile Include="src\util.cpp" />
     <ClCompile Include="src\windows_platform.cpp" />
   </ItemGroup>

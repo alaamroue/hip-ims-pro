@@ -32,45 +32,6 @@
 #define BOUNDARY_DISCHARGE_IS_VELOCITY	2
 #define BOUNDARY_DISCHARGE_IS_VOLUME	3
 
-namespace model {
-
-// Kernel configurations
-namespace boundaries { 
-namespace types { enum types {
-	kBndyTypeCell,
-	kBndyTypeAtmospheric,
-	kBndyTypeCopy,
-	kBndyTypeReflective,		// -- Put the gridded types after this
-	kBndyTypeAtmosphericGrid
-}; }
-
-namespace depthValues { enum depthValues {
-	kValueFSL = BOUNDARY_DEPTH_IS_FSL,		// 2nd column in timeseries is the FSL
-	kValueDepth = BOUNDARY_DEPTH_IS_DEPTH,	// 2nd column in timeseries is a depth
-	kValueCriticalDepth = BOUNDARY_DEPTH_IS_CRITICAL, // Force critical depth based on the discharge
-	kValueIgnored = BOUNDARY_DEPTH_IGNORE								// 2nd column can be ignored
-}; }
-
-namespace dischargeValues { enum dischargeValues {
-	kValueTotal = BOUNDARY_DISCHARGE_IS_DISCHARGE,	// Value represents the total discharge through the boundary
-	kValuePerCell = BOUNDARY_DISCHARGE_IS_DISCHARGE,	// Value represents the discharge per cell through the boundary
-	kValueVelocity = BOUNDARY_DISCHARGE_IS_VELOCITY,	// Value represents a velocity through the boundary
-	kValueSurging = BOUNDARY_DISCHARGE_IS_VOLUME, // Value represents a depth increase in volumetric rate terms (e.g. manhole surge)
-	kValueIgnored = BOUNDARY_DISCHARGE_IGNORE
-}; }
-
-namespace griddedValues { enum griddedValues {
-	kValueRainIntensity				= 0,
-	kValueMassFlux					= 1
-}; }
-
-namespace uniformValues { enum lossUnits {
-	kValueRainIntensity				= 0,
-	kValueLossRate					= 1
-}; }
-
-}
-}
 
 // Class stubs
 class COCLBuffer;

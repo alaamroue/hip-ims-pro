@@ -24,7 +24,7 @@
 #include "CBoundary.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CXMLDataset.h"
+
 #include "CSchemeMUSCLHancock.h"
 
 using std::min;
@@ -75,77 +75,16 @@ CSchemeMUSCLHancock::~CSchemeMUSCLHancock(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeMUSCLHancock::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
+void	CSchemeMUSCLHancock::setupScheme(model::SchemeSettings schemeSettings)
 {
 	// Call the base class function which handles most of the settings
-	CSchemeGodunov::setupFromConfig( pXScheme, true );
+	CSchemeGodunov::setupScheme(schemeSettings );
 
-	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
-	char			*cParameterName = NULL, *cParameterValue = NULL;
+	this->setCacheMode(schemeSettings.CacheMode);
+	this->setCacheConstraints(schemeSettings.CacheConstraints);
+	this->setExtrapolatedContiguity(schemeSettings.ExtrapolatedContiguity);
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName,  pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
 
-		if ( strcmp( cParameterName, "localcachelevel" ) == 0 )
-		{ 
-			unsigned char usCache = 255;
-			if ( strcmp( cParameterValue, "maximum" ) == 0 || strcmp( cParameterValue, "max" ) == 0 )
-				usCache = model::schemeConfigurations::musclHancock::kCacheMaximum;
-			if ( strcmp( cParameterValue, "prediction" ) == 0 || strcmp( cParameterValue, "slopes" ) == 0 )
-				usCache = model::schemeConfigurations::musclHancock::kCachePrediction;
-			if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "no" ) == 0 )
-				usCache = model::schemeConfigurations::musclHancock::kCacheNone;
-			if ( usCache == 255 )
-			{
-				model::doError(
-					"Invalid cache level given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setCacheMode( usCache );
-			}
-		}
-		else if ( strcmp( cParameterName, "localcacheconstraints" ) == 0 )
-		{ 
-			unsigned char ucCacheConstraints = 255;
-			if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "normal" ) == 0 || strcmp( cParameterValue, "actual" ) == 0 )
-				ucCacheConstraints = model::cacheConstraints::musclHancock::kCacheActualSize;
-			if ( strcmp( cParameterValue, "larger" ) == 0 || strcmp( cParameterValue, "oversized" ) == 0 )
-				ucCacheConstraints = model::cacheConstraints::musclHancock::kCacheAllowOversize;
-			if ( strcmp( cParameterValue, "smaller" ) == 0 || strcmp( cParameterValue, "undersized" ) == 0 )
-				ucCacheConstraints = model::cacheConstraints::musclHancock::kCacheAllowUndersize;
-			if ( ucCacheConstraints == 255 )
-			{
-				model::doError(
-					"Invalid cache constraints given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setCacheConstraints( ucCacheConstraints );
-			}
-		}
-		else if ( strcmp( cParameterName, "contiguousextrapolationdata" ) == 0 )
-		{ 
-			unsigned char ucExtrapolationDataState = 255;
-			if ( strcmp( cParameterValue, "yes" ) == 0 )
-				ucExtrapolationDataState = 1;
-			if ( strcmp( cParameterValue, "no" ) == 0 )
-				ucExtrapolationDataState = 0;
-			if ( ucExtrapolationDataState == 255 )
-			{
-				model::doError(
-					"Invalid value for contiguous extrapolation data.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setExtrapolatedContiguity( ucExtrapolationDataState == 1 );
-			}
-		}
-
-		pParameter = pParameter->NextSiblingElement("parameter");
-	}
 }
 
 /*

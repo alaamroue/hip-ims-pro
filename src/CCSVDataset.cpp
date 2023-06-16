@@ -43,40 +43,5 @@ CCSVDataset::~CCSVDataset()
  */
 bool CCSVDataset::readFile()
 {
-	typedef boost::tokenizer<boost::escaped_list_separator<char>>	Tokenizer;
 
-	std::string sRow;
-	std::ifstream ifsCSV( this->sFilename, std::ios::in );
-
-	if ( !ifsCSV.is_open() )
-	{
-		model::doError(
-			"Could not open a CSV file.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	vContents.clear();
-
-	while ( ifsCSV.good() )
-	{
-		getline( ifsCSV, sRow );
-
-		Tokenizer				tRow(sRow);
-		std::vector<std::string>		vTokens;
-
-		vTokens.assign( tRow.begin(), tRow.end() );
-
-		for( unsigned int i = 0; i < vTokens.size(); i++ )
-			vTokens[i] = boost::algorithm::trim_copy( vTokens[i] );
-
-		if ( strcmp( sRow.c_str(), "" ) != 0 )
-			vContents.push_back( vTokens );
-	}
-
-	ifsCSV.close();
-	bReadFile = true;
-
-	return true;
 }

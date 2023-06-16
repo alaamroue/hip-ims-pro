@@ -19,7 +19,7 @@
 #include "common.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-#include "CXMLDataset.h"
+
 #include "CRasterDataset.h"
 #include "CBoundaryMap.h"
 #include "CScheme.h"
@@ -142,6 +142,7 @@ void	CDomain::createStoreBuffers(
 			void**			vArrayCellStates,
 			void**			vArrayBedElevations,
 			void**			vArrayManningCoefs,
+			void**			vArrayBoundaryValues,
 			unsigned char	ucFloatSize
 		)
 {
@@ -157,25 +158,31 @@ void	CDomain::createStoreBuffers(
 			this->fCellStates		= new cl_float4[ this->ulCellCount ];
 			this->fBedElevations	= new cl_float[ this->ulCellCount ];
 			this->fManningValues	= new cl_float[ this->ulCellCount ];
+			this->fBoundaryValues	= new cl_float[ this->ulCellCount ];
 			this->dCellStates		= (cl_double4*)( this->fCellStates );
 			this->dBedElevations	= (cl_double*)( this->fBedElevations );
 			this->dManningValues	= (cl_double*)( this->fManningValues );
+			this->dBoundaryValues	= (cl_double*)( this->fBoundaryValues);
 
 			*vArrayCellStates	 = static_cast<void*>( this->fCellStates );
 			*vArrayBedElevations = static_cast<void*>( this->fBedElevations );
 			*vArrayManningCoefs	 = static_cast<void*>( this->fManningValues );
+			*vArrayBoundaryValues= static_cast<void*>( this->fBoundaryValues);
 		} else {
 			// Double precision
 			this->dCellStates		= new cl_double4[ this->ulCellCount ];
 			this->dBedElevations	= new cl_double[ this->ulCellCount ];
 			this->dManningValues	= new cl_double[ this->ulCellCount ];
+			this->dBoundaryValues	= new cl_double[ this->ulCellCount ];
 			this->fCellStates		= (cl_float4*)( this->dCellStates );
 			this->fBedElevations	= (cl_float*)( this->dBedElevations );
 			this->fManningValues	= (cl_float*)( this->dManningValues );
+			this->fBoundaryValues	= (cl_float*)( this->dBoundaryValues);
 
 			*vArrayCellStates	 = static_cast<void*>( this->dCellStates );
 			*vArrayBedElevations = static_cast<void*>( this->dBedElevations );
 			*vArrayManningCoefs	 = static_cast<void*>( this->dManningValues );
+			*vArrayBoundaryValues= static_cast<void*>( this->dBoundaryValues);
 		}
 	}
 	catch( std::bad_alloc )
@@ -274,6 +281,16 @@ double	CDomain::getManningCoefficient( unsigned long ulCellID )
 	if ( this->ucFloatSize == 4 ) 
 		return static_cast<double>( this->fManningValues[ ulCellID ] );
 	return this->dManningValues[ ulCellID ];
+}
+
+/*
+ *  Gets the Manning coefficient for a given cell
+ */
+double	CDomain::getBoundaryCondition( unsigned long ulCellID )
+{
+	if ( this->ucFloatSize == 4 ) 
+		return static_cast<double>( this->fBoundaryValues[ ulCellID ] );
+	return this->dBoundaryValues[ ulCellID ];
 }
 
 /*
@@ -393,6 +410,22 @@ void	CDomain::handleInputData(
 		break;
 	}
 }
+
+
+/*
+ *  Sets the Manning coefficient for a given cell
+ */
+void	CDomain::setBoundaryCondition(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fBoundaryValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dBoundaryValues[ulCellID] = dCoefficient;
+	}
+}
+
 
 /*
  *  Calculate the total volume present in all of the cells

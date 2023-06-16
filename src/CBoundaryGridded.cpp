@@ -21,7 +21,7 @@
 
 #include "CBoundaryMap.h"
 #include "CBoundaryGridded.h"
-#include "CXMLDataset.h"
+
 #include "CRasterDataset.h"
 #include "CDomainCartesian.h"
 #include "COCLBuffer.h"
@@ -66,94 +66,7 @@ CBoundaryGridded::~CBoundaryGridded()
 */
 bool CBoundaryGridded::setupFromConfig(XMLElement* pElement, std::string sBoundarySourceDir)
 {
-	char *cBoundaryType, *cBoundaryName, *cBoundaryMask, *cBoundaryInterval, *cBoundaryValue;
-	double dInterval = 0.0;
 
-	Util::toLowercase(&cBoundaryType, pElement->Attribute("type"));
-	Util::toNewString(&cBoundaryName, pElement->Attribute("name"));
-	Util::toNewString(&cBoundaryMask, pElement->Attribute("mask"));
-	Util::toLowercase(&cBoundaryInterval, pElement->Attribute("interval"));
-	Util::toLowercase(&cBoundaryValue, pElement->Attribute("value"));
-
-	// Must have unique name for each boundary (will get autoname by default)
-	this->sName = std::string(cBoundaryName);
-
-	// Convert the interval to a number
-	if (CXMLDataset::isValidFloat( cBoundaryInterval ))
-	{
-		dInterval = boost::lexical_cast<double>( cBoundaryInterval );
-	} else {
-		model::doError(
-			"Gridded boundary interval is not a valid number.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// The gridded data represents...?
-	if (cBoundaryValue == NULL || strcmp(cBoundaryValue, "rain-intensity") == 0)
-	{
-		this->setValue(model::boundaries::griddedValues::kValueRainIntensity);
-	} else if (strcmp(cBoundaryValue, "mass-flux") == 0) {
-		this->setValue(model::boundaries::griddedValues::kValueMassFlux);
-	}
-	else {
-		model::doError(
-			"Unrecognised value parameter specified for gridded timeseries data.",
-			model::errorCodes::kLevelWarning
-		);
-	}
-
-	// Allocate memory for the array of gridded inputs
-	this->uiTimeseriesLength = static_cast<unsigned int>(ceil(pManager->getSimulationLength() / dInterval)) + 1;
-	this->pTimeseries = new CBoundaryGriddedEntry*[ this->uiTimeseriesLength ];
-	SBoundaryGridTransform* pTransform = NULL;
-
-	this->dTimeseriesInterval = dInterval;
-	this->dTimeseriesLength = pManager->getSimulationLength();
-
-	// Deal with the gridded files...
-	unsigned long ulEntry = 0;
-	for ( double dTime = 0.0; dTime <= pManager->getSimulationLength(); dTime += dInterval )
-	{
-		const char * cMaskName = Util::fromTimestamp(
-			pManager->getRealStart() + static_cast<unsigned long>( dTime ),
-			cBoundaryMask
-		);
-
-		std::string sFilename = sBoundarySourceDir + std::string( cMaskName );
-
-		// Check if the file exists...
-		if (!Util::fileExists(sFilename.c_str()))
-		{
-			model::doError(
-				"Gridded boundary raster missing for " + Util::secondsToTime( dTime ),
-				model::errorCodes::kLevelWarning
-			);
-			this->dTimeseriesLength = min( this->dTimeseriesLength, dTime );
-			continue;
-		}
-
-		// Load the raster...
-		CRasterDataset *pRaster = new CRasterDataset();
-		pRaster->openFileRead(sFilename);
-
-		// First raster? Need to come up with a transformation...
-		if ( pTransform == NULL )
-			pTransform = pRaster->createTransformationForDomain(static_cast<CDomainCartesian*>(this->pDomain));
-
-		// Store the data...
-		this->pTimeseries[ulEntry++] = new CBoundaryGriddedEntry(
-			dTime,
-			pRaster->createArrayForBoundary( pTransform )
-		);
-
-		delete pRaster;
-	}
-
-	this->pTransform = pTransform;
-
-	return true;
 }
 
 void CBoundaryGridded::prepareBoundary(

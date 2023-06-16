@@ -23,7 +23,7 @@
 #include "CDomainCartesian.h"
 #include "CDomainLink.h"
 #include "CScheme.h"
-#include "CXMLDataset.h"
+
 #include "CRasterDataset.h"
 #include "CBoundaryMap.h"
 #include "COCLDevice.h"
@@ -46,217 +46,6 @@ CDomainManager::~CDomainManager(void)
 		delete domains[uiID];
 
 	pManager->log->writeLine("The domain manager has been unloaded.");
-}
-
-/*
- *  Set up the domain manager using the configuration file
- */
-bool CDomainManager::setupFromConfig( XMLElement* pXNode )
-{
-	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
-	char			*cSyncMethodName    = NULL;
-	char			*cSyncSpareIterations = NULL;
-
-	// Have we defined a synchronisation method for multi-domains?
-	Util::toLowercase(&cSyncMethodName, pXNode->Attribute("syncMethod"));
-	if (cSyncMethodName != NULL)
-	{
-		if (strcmp(cSyncMethodName, "timestep") == 0)
-		{
-			this->setSyncMethod(model::syncMethod::kSyncTimestep);
-		}
-		else if(strcmp(cSyncMethodName, "forecast") == 0)
-		{
-			this->setSyncMethod(model::syncMethod::kSyncForecast);
-		}
-		else 
-		{
-			model::doError(
-				"Invalid synchronisation method given.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-	}
-
-	// Have we defined a number of spare iterations to aim for?
-	Util::toLowercase(&cSyncSpareIterations, pXNode->Attribute("syncSpareSize"));
-	if (cSyncSpareIterations != NULL)
-	{
-		if ( CXMLDataset::isValidUnsignedInt(cSyncSpareIterations) )
-		{
-			this->setSyncBatchSpares(boost::lexical_cast<unsigned int>(cSyncSpareIterations));
-		}
-		else
-		{
-			model::doError(
-				"Invalid synchronisation spare buffer size given.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-	}
-
-	// TODO: Ditch <parameter> for the domainSet?
-	/*
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-
-		if ( strcmp( cParameterName, "overlapcellcount" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid simulation length given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				// TODO: Use this value to split domains automatically etc.
-			}
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement( "parameter" );
-	}
-	*/
-
-	/*
-	
-	XMLElement*		pXData;
-
-	// Device number(s) are now declared as part of the domain to allow for
-	// split workloads etc.
-	char			*cDomainDevice		= NULL;
-	Util::toLowercase( &cDomainDevice, pXDomain->Attribute( "deviceNumber" ) );
-
-	// TODO: For now we're only working with 1 device. If we need more than one device,
-	// the domain manager must handle splitting...
-	// TODO: Device selection/assignment should take place in the domain manager class.
-
-	// Validate the device number
-	if ( cDomainDevice == NULL )
-	{
-	// Select a device automatically
-	model::doError(
-	"Skeleton domain has no device number.",
-	model::errorCodes::kLevelModelStop
-	);
-	} else {
-	if ( CXMLDataset::isValidUnsignedInt( std::string(cDomainDevice) ) )
-	{
-	// TODO: Fix this...
-	//pDevice = pManager->getExecutor()->getDevice( boost::lexical_cast<unsigned int>(cDomainDevice) );
-	} else {
-	model::doError(
-	"The domain device specified is invalid.",
-	model::errorCodes::kLevelWarning
-	);
-	}
-	}
-	
-	*/
-
-	// From here on we're more concerned with the actual domains
-	XMLElement*		pXDomain			= pXNode->FirstChildElement( "domain" );
-	char			*cDomainType		= NULL;
-	char			*cDomainDevice		= NULL;
-
-	while ( pXDomain != NULL )
-	{
-		Util::toLowercase( &cDomainType,   pXDomain->Attribute( "type" ) );
-		Util::toLowercase( &cDomainDevice, pXDomain->Attribute( "deviceNumber" ) );
-
-		if (strcmp(cDomainType, "cartesian") == 0)
-		{
-			CDomainBase* pDomainNew;
-
-			// Do we have a valid device number?
-			if (cDomainDevice == NULL)
-			{
-				// Select a device automatically
-				model::doError(
-					"Domain is missing device number.",
-					model::errorCodes::kLevelModelStop
-				);
-				return false;
-			}
-			else {
-				if (!CXMLDataset::isValidUnsignedInt(std::string(cDomainDevice)))
-				{
-					model::doError(
-						"The domain device specified is invalid.",
-						model::errorCodes::kLevelWarning
-						);
-				}
-			}
-
-			// Is the domain located on this node?
-			unsigned int uiDeviceAdjust = 1;
-				// Domain resides on this node
-				pManager->log->writeLine("Creating a new Cartesian-structured domain.");
-				pDomainNew = CDomainBase::createDomain(model::domainStructureTypes::kStructureCartesian);
-				pManager->log->writeLine("Local device IDs are relative to #" + toString(uiDeviceAdjust) + "." );
-				pManager->log->writeLine("Assigning domain to device #" + toString(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1) + "."  );
-				static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(boost::lexical_cast<unsigned int>(cDomainDevice) - uiDeviceAdjust + 1));
-
-			if (!pDomainNew->configureDomain(pXDomain))
-				return false;
-
-			pDomainNew->setID( getDomainCount() );	// Should not be needed, but somehow is?
-			domains.push_back( pDomainNew );
-		}
-		else 
-		{
-			model::doError(
-				"Invalid domain type: " + std::string( cDomainType ),
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
-
-		pXDomain = pXDomain->NextSiblingElement( "domain" );
-	}
-
-	// Warn the user if it's a multi-domain model, just so they know...
-	if ( domains.size() <= 1 )
-	{
-		pManager->log->writeLine( "This is a SINGLE-DOMAIN model, limited to 1 device." );
-	} else {
-		pManager->log->writeLine( "This is a MULTI-DOMAIN model, and possibly multi-device." );
-	}
-
-	// Generate links
-	this->generateLinks();
-
-	// Spit out some details
-	this->logDetails();
-
-	// If we have more than one domain then we also need at least one link per domain
-	// otherwise something is wrong...
-	if (domains.size() > 1)
-	{
-		for (unsigned int i = 0; i < domains.size(); i++)
-		{
-			if (domains[i]->getLinkCount() < 1)
-			{
-				model::doError(
-					"One or more domains are not linked.",
-					model::errorCodes::kLevelModelStop
-				);
-				return false;
-			}
-		}
-	}
-
-	return true;
 }
 
 /*
@@ -289,6 +78,14 @@ bool	CDomainManager::isDomainLocal(unsigned int uiID)
 CDomainBase*	CDomainManager::getDomainBase(unsigned int uiID)
 {
 	return domains[uiID];
+}
+
+/*
+*  Fetch a specific domain by ID
+*/
+std::vector<CDomainBase*>* CDomainManager::getDomainBaseVector()
+{
+	return &domains;
 }
 
 /*

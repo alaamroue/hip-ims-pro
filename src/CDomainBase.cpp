@@ -22,7 +22,7 @@
 #include "CDomainCartesian.h"
 #include "CDomainRemote.h"
 #include "CDomainLink.h"
-#include "CXMLDataset.h"
+
 
 /*
  *  Constructor

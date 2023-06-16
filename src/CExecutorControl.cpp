@@ -22,7 +22,7 @@
 
 // Includes
 #include "common.h"
-#include "CXMLDataset.h"
+
 #include "CExecutorControl.h"
 #include "CExecutorControlOpenCL.h"
 

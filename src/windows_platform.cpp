@@ -19,16 +19,12 @@
 
 #include "common.h"
 
-#ifndef PLATFORM_UNIX
+
 
 char*	Util::getFileResource( const char * sName, const char * sType )
 {
-#ifdef _CONSOLE
 	HMODULE hModule = GetModuleHandle( NULL );
-#else
-	//HMODULE hModule = model::hdlDLL;
-	HMODULE hModule = GetModuleHandle( "HiPIMS_Engine.dll" );
-#endif
+
 
 	if ( hModule == NULL )
 		model::doError(
@@ -130,5 +126,3 @@ void Util::getHostname(char* cHostname)
 {
 	std::strcpy(cHostname, "Unknown");
 }
-
-#endif

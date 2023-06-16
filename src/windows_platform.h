@@ -22,13 +22,7 @@
 
 #include "common.h"
 
-// Platform constant
-namespace model {
-namespace env {
-const std::string	platformCode	= "WIN";
-const std::string	platformName	= "Microsoft Windows";
-}
-}
+
 
 // Forward conditionals
 #define PLATFORM_WIN
@@ -37,7 +31,7 @@ const std::string	platformName	= "Microsoft Windows";
 #include <Windows.h>					// QueryPerformanceCounter etc
 
 // Windows-specific includes
-#define isnan _isnan
+//#define isnan _isnan
 #ifndef NAN
 #define NAN	  _Nan._Double
 #endif
@@ -45,26 +39,6 @@ const std::string	platformName	= "Microsoft Windows";
 /*
  *  OS PORTABILITY CONSTANTS
  */
-#ifndef _CONSOLE
-namespace model {
-	namespace cli {
-		const WORD		colourTimestamp = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN;
-		const WORD		colourError = FOREGROUND_RED | FOREGROUND_INTENSITY;
-		const WORD		colourHeader = 0x03;
-		const WORD		colourMain = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-		const WORD		colourInfoBlock = FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
-	}
-}
-#else
-namespace model {
-namespace cli {
-	const WORD		colourTimestamp		= FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | BACKGROUND_BLUE;
-	const WORD		colourError			= FOREGROUND_RED | FOREGROUND_INTENSITY | BACKGROUND_BLUE;
-	const WORD		colourHeader		= 0x03 | BACKGROUND_BLUE;
-	const WORD		colourMain			= FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY | BACKGROUND_BLUE;
-	const WORD		colourInfoBlock		= FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY | BACKGROUND_BLUE;
-}
-}
-#endif
+
 
 #endif

@@ -19,29 +19,9 @@
 #ifndef HIPIMS_DOMAIN_CEXECUTORCONTROL_H_
 #define HIPIMS_DOMAIN_CEXECUTORCONTROL_H_
 
-// Executor states
-namespace model { 
-namespace executorStates { enum executorStates {
-	executorReady				= 1,				// This executor can be used
-	executorError				= 0					// This executor cannot be used
-}; }
 
-// Executor types
-namespace executorTypes { enum executorTypes {
-	executorTypeOpenCL			= 0					// OpenCL-based executor
-}; }
-}
 
-// Device-type filers
-namespace model {
-namespace filters {
-namespace devices {
-	enum devices {
-		devicesGPU			= 1,					// Graphics processors
-		devicesCPU			= 2,					// Standard processors
-		devicesAPU			= 4						// Accelerated processors
-	};
-};};}
+
 
 /*
  *  EXECUTOR CONTROL CLASS
@@ -62,6 +42,7 @@ class CExecutorControl
 		void						setDeviceFilter( unsigned int );	// Filter to specific types of device
 		unsigned int				getDeviceFilter();					// Fetch back the current device filter
 		virtual void				setupFromConfig( XMLElement* ) = 0;	// Set up the executor
+		virtual bool				createDevices(void) = 0;			// Creates new classes for each device
 
 		// Static functions
 		static CExecutorControl*	createExecutor( unsigned char );	// Create a new executor of the specified type

@@ -26,7 +26,7 @@
 #include "opencl.h"
 #include "COCLProgram.h"
 
-using boost::unordered_map;
+using std::unordered_map;
 
 // Class stubs
 class CBoundary;

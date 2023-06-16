@@ -38,32 +38,7 @@
 #include "platforms.h"
 
 // Basic functions and variables used throughout
-namespace model
-{
-int						loadConfiguration();
-int						commenceSimulation();
-int						closeConfiguration();
-void					outputVersion();
-void					doPause();
-int						doClose( int );
 
-// Data structures used in interop
-struct DomainData
-{
-	double			dResolution;
-	double			dWidth;
-	double			dHeight;
-	double			dCornerWest;
-	double			dCornerSouth;
-	unsigned long	ulCellCount;
-	unsigned long	ulRows;
-	unsigned long	ulCols;
-	unsigned long	ulBoundaryCells;
-	unsigned long	ulBoundaryOthers;
-};
-
-extern	CModel*			pManager;
-}
 
 
 #endif

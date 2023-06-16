@@ -22,7 +22,7 @@
 #include "common.h"
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
-#include "CXMLDataset.h"
+
 #include <vector>
 
 /*

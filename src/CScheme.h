@@ -19,6 +19,7 @@
 #ifndef HIPIMS_SCHEMES_CSCHEME_H_
 #define HIPIMS_SCHEMES_CSCHEME_H_
 
+#include "common.h"
 #include "CBenchmark.h"
 #include "CDomain.h"
 #include "CExecutorControlOpenCL.h"
@@ -27,41 +28,7 @@
 #include "COCLKernel.h"
 #include "COCLBuffer.h"
 
-namespace model {
 
-// Model scheme types
-namespace schemeTypes{ enum schemeTypes {
-	kGodunov							= 0,	// Godunov (first-order)
-	kMUSCLHancock						= 1,	// MUSCL-Hancock (second-order)
-	kInertialSimplification				= 2		// Inertial simplification
-}; }
-
-// Riemann solver types
-namespace solverTypes{ enum solverTypes {
-	kHLLC								= 0		// HLLC approximate
-}; }
-
-// Queue mode
-namespace queueMode{ enum queueMode {
-	kAuto								= 0,	// Automatic
-	kFixed								= 1		// Fixed
-}; }
-
-// Timestep mode
-namespace timestepMode{ enum timestepMode {
-	kCFL								= 0,	// CFL constrained
-	kFixed								= 1		// Fixed
-}; }
-
-// Timestep mode
-namespace syncMethod {
-	enum syncMethod {
-		kSyncTimestep = 0,						// Timestep synchronised
-		kSyncForecast = 1						// Timesteps forecast
-	};
-}
-
-}
 
 /*
  *  SCHEME CLASS
@@ -82,7 +49,7 @@ class CScheme
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
 		static CScheme*		createFromConfig( XMLElement* );										// Parse and configure a scheme class
 
-		virtual void		setupFromConfig( XMLElement*, bool = false );							// Set up the scheme
+		virtual void		setupScheme(model::SchemeSettings) = 0 ;										// Set up the scheme
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
 		virtual void		logDetails() = 0;														// Write some details about the scheme

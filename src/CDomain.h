@@ -55,15 +55,17 @@ class CDomain : public CDomainBase
 		virtual		void			logDetails() = 0;												// Log details about the domain
 		virtual		void			updateCellStatistics() = 0;										// Update the total number of cells calculation
 		virtual		void			writeOutputs() = 0;												// Write output files to disk
-		void						createStoreBuffers( void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
+		void						createStoreBuffers( void**, void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
 		void						initialiseMemory();												// Populate cells with default values
 		void						handleInputData( unsigned long, double, unsigned char, unsigned char );	// Handle input data for varying state/static cell variables 
 		void						setBedElevation( unsigned long, double );						// Sets the bed elevation for a cell
 		void						setManningCoefficient( unsigned long, double );					// Sets the manning coefficient for a cell
+		void						setBoundaryCondition( unsigned long, double );					// Sets the manning coefficient for a cell
 		void						setStateValue( unsigned long, unsigned char, double );			// Sets a state variable
 		bool						isDoublePrecision() { return ( ucFloatSize == 8 ); };				// Are we using double-precision?
 		double						getBedElevation( unsigned long );								// Gets the bed elevation for a cell
 		double						getManningCoefficient( unsigned long );							// Gets the manning coefficient for a cell
+		double						getBoundaryCondition( unsigned long );							// Gets the manning coefficient for a cell
 		double						getStateValue( unsigned long, unsigned char );					// Gets a state variable
 		double						getMaxFSL()				{ return dMaxFSL; }						// Fetch the maximum FSL in the domain
 		double						getMinFSL()				{ return dMinFSL; }						// Fetch the minimum FSL in the domain
@@ -88,9 +90,11 @@ class CDomain : public CDomainBase
 		cl_double4*			dCellStates;															// Heap for cell state data
 		cl_double*			dBedElevations;															// Heap for bed elevations
 		cl_double*			dManningValues;															// Heap for manning values
+		cl_double*			dBoundaryValues;														// Heap for manning values
 		cl_float4*			fCellStates;															// Heap for cell state date (single)
 		cl_float*			fBedElevations;															// Heap for bed elevations (single)
 		cl_float*			fManningValues;															// Heap for manning values (single)
+		cl_float*			fBoundaryValues;															// Heap for manning values (single)
 
 		cl_double			dMinFSL;																// Min and max FSLs in the domain used for rendering
 		cl_double			dMaxFSL;
