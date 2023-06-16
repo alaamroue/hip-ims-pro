@@ -55,21 +55,6 @@ CModel::CModel(void)
 }
 
 /*
- *  Setup the simulation using parameters specified in the configuration file
- */
-void CModel::setupFromConfig( XMLElement* pXNode )
-{
-
-
-
-				this->setSimulationLength( boost::lexical_cast<double>( cParameterValue ) );
-				this->setRealStart( cParameterValue, cParameterFormat );
-				this->setOutputFrequency( boost::lexical_cast<double>( cParameterValue ) );
-				this->setFloatPrecision(model::floatPrecision::kDouble);
-				//this->setFloatPrecision(model::floatPrecision::kSingle);
-}
-
-/*
  *  Destructor
  */
 CModel::~CModel(void)
