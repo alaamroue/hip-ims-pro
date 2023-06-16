@@ -70,7 +70,7 @@ CDomain::~CDomain(void)
 	delete [] this->cSourceDir;
 	delete [] this->cTargetDir;
 
-	pManager->log->writeLine("All domain memory has been released.");
+	model::log->writeLine("All domain memory has been released.");
 }
 
 /*
@@ -139,7 +139,7 @@ void	CDomain::createStoreBuffers(
  */
 void	CDomain::initialiseMemory()
 {
-	pManager->log->writeLine( "Initialising heap domain data." );
+	model::log->writeLine( "Initialising heap domain data." );
 
 	for( unsigned long i = 0; i < this->ulCellCount; i++ )
 	{

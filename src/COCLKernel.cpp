@@ -158,13 +158,13 @@ bool COCLKernel::assignArguments(
 {
 	if ( this->clKernel == NULL ) return false;
 
-	pManager->log->writeLine("Assigning arguments for '" + this->sName + "':");
+	model::log->writeLine("Assigning arguments for '" + this->sName + "':");
 
 	for( unsigned char i = 0; i < this->uiArgumentCount; i++ )
 	{
 		if ( aBuffers[ i ] == NULL )
 		{
-			pManager->log->writeLine(" " + toString( i + 1 ) + ". NULL" );
+			model::log->writeLine(" " + toString( i + 1 ) + ". NULL" );
 		}
 		else if ( this->assignArgument( i, aBuffers[ i ] ) == false )
 		{
@@ -174,7 +174,7 @@ bool COCLKernel::assignArguments(
 			);
 			return false;
 		} else {
-			pManager->log->writeLine(" " + toString( i + 1 ) + ". " + aBuffers[i]->getName() );
+			model::log->writeLine(" " + toString( i + 1 ) + ". " + aBuffers[i]->getName() );
 		}
 	}
 
@@ -234,7 +234,7 @@ void COCLKernel::prepareKernel()
 		return;
 	}
 
-	pManager->log->writeLine( "Kernel '" + sName + "' prepared for device #" + toString( this->program->device->uiDeviceNo ) + "." );
+	model::log->writeLine( "Kernel '" + sName + "' prepared for device #" + toString( this->program->device->uiDeviceNo ) + "." );
 
 	// Fetch the kernel details on workgroup sizes etc.
 	iErrorID = clGetKernelInfo(
@@ -318,11 +318,11 @@ void COCLKernel::prepareKernel()
 
 	this->arguments = new COCLBuffer*[ this->uiArgumentCount ];
 	
-	pManager->log->writeLine( "Kernel '" + sName + "' is defined:" ); 
-	pManager->log->writeLine( "  Private memory:   " + toString( this->ulMemPrivate ) + " bytes" ); 
-	pManager->log->writeLine( "  Local memory:     " + toString( this->ulMemLocal )   + " bytes" ); 
-	pManager->log->writeLine( "  Arguments:        " + toString( this->uiArgumentCount ) ); 
-	pManager->log->writeLine( "  Work-group size:  [ " + toString( szRequiredWGSize[0] )   + "," + 
+	model::log->writeLine( "Kernel '" + sName + "' is defined:" ); 
+	model::log->writeLine( "  Private memory:   " + toString( this->ulMemPrivate ) + " bytes" ); 
+	model::log->writeLine( "  Local memory:     " + toString( this->ulMemLocal )   + " bytes" ); 
+	model::log->writeLine( "  Arguments:        " + toString( this->uiArgumentCount ) ); 
+	model::log->writeLine( "  Work-group size:  [ " + toString( szRequiredWGSize[0] )   + "," + 
 														 toString( szRequiredWGSize[1] )   + "," +
 														 toString( szRequiredWGSize[2] )   + " ]"); 
 
@@ -347,7 +347,7 @@ void COCLKernel::setGlobalSize(
 	this->szGlobalSize[1] = static_cast<size_t>(Y);
 	this->szGlobalSize[2] = static_cast<size_t>(Z);
 
-	pManager->log->writeLine(
+	model::log->writeLine(
 		"Global work size for '" + this->sName + "' set to [" +
 		toString( this->szGlobalSize[0] ) + "," +
 		toString( this->szGlobalSize[1] ) + "," +
@@ -384,7 +384,7 @@ void COCLKernel::setGroupSize(
 	this->szGroupSize[1]	= static_cast<size_t>( Y );
 	this->szGroupSize[2]	= static_cast<size_t>( Z );	
 
-	pManager->log->writeLine(
+	model::log->writeLine(
 		"Work-group size for '" + this->sName + "' set to [" +
 		toString( this->szGroupSize[0] ) + "," +
 		toString( this->szGroupSize[1] ) + "," +

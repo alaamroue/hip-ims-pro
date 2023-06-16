@@ -40,7 +40,7 @@ COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigne
 	this->bBusy					= false;
 	this->clMarkerEvent			= NULL;
 
-	pManager->log->writeLine( "Querying the suitability of a discovered device." );
+	model::log->writeLine( "Querying the suitability of a discovered device." );
 
 	this->getAllInfo();
 	this->createQueue();
@@ -63,7 +63,7 @@ COCLDevice::~COCLDevice(void)
 	delete[] this->clDeviceOpenCLVersion;
 	delete[] this->clDeviceOpenCLDriver;
 
-	pManager->log->writeLine( "An OpenCL device has been released (#" + toString(this->uiDeviceNo) + ")." );
+	model::log->writeLine( "An OpenCL device has been released (#" + toString(this->uiDeviceNo) + ")." );
 }
 
 /*
@@ -200,7 +200,7 @@ void* COCLDevice::getDeviceInfo( cl_device_info clInfo )
  */
 void COCLDevice::logDevice()
 {
-	CLog*		pLog			= pManager->log;
+	CLog*		pLog			= model::log;
 	std::string	sPlatformNo;
 
 	pLog->writeDivide();
@@ -259,7 +259,7 @@ void COCLDevice::createQueue()
 		return;
 	}
 
-	pManager->log->writeLine( "Creating an OpenCL device context and command queue." );
+	model::log->writeLine( "Creating an OpenCL device context and command queue." );
 
 	this->clContext = clCreateContext( 
 		NULL,						// Properties (nothing special required) 
@@ -295,7 +295,7 @@ void COCLDevice::createQueue()
 		return;
 	}
 
-	pManager->log->writeLine( "Command queue created for device successfully." );
+	model::log->writeLine( "Command queue created for device successfully." );
 }
 
 /*
@@ -305,13 +305,13 @@ bool COCLDevice::isSuitable()
 {
 	if ( !this->clDeviceAvailable )
 	{
-		pManager->log->writeLine( "Device is not available." );
+		model::log->writeLine( "Device is not available." );
 		return false;
 	}
 
 	if ( !this->clDeviceCompilerAvailable )
 	{
-		pManager->log->writeLine( "No compiler is available." );
+		model::log->writeLine( "No compiler is available." );
 		return false;
 	}
 
@@ -328,7 +328,7 @@ bool COCLDevice::isReady()
 {
 	if ( !this->isSuitable() )
 	{
-		pManager->log->writeLine( "Device is not considered suitable." );
+		model::log->writeLine( "Device is not considered suitable." );
 		return false;
 	}
 
@@ -336,13 +336,13 @@ bool COCLDevice::isReady()
 		 !this->clQueue ||
 		 this->bErrored == true )
 	{
-		pManager->log->writeLine( "No context, queue or an error occured on device." );
+		model::log->writeLine( "No context, queue or an error occured on device." );
 		if ( !this->clContext )
-			pManager->log->writeLine( " - No context" );
+			model::log->writeLine( " - No context" );
 		if ( !this->clQueue )
-			pManager->log->writeLine( " - No command queue" );
+			model::log->writeLine( " - No command queue" );
 		if ( !this->bErrored )
-			pManager->log->writeLine( " - Device error" );
+			model::log->writeLine( " - Device error" );
 		return false;
 	}
 
@@ -504,7 +504,7 @@ bool COCLDevice::isBusy()
 	if (iQueryStatus != CL_SUCCESS)
 		return true;
 
-	pManager->log->writeLine("Exec status for device #" + toString(uiDeviceNo)+" is " + toString(iStatus));
+	model::log->writeLine("Exec status for device #" + toString(uiDeviceNo)+" is " + toString(iStatus));
 	if (iStatus == CL_COMPLETE)
 	{
 		return false;

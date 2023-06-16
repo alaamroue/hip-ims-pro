@@ -73,7 +73,6 @@ class CDomainBase
 		// Public functions
 		static		CDomainBase*	createDomain(unsigned char);									// Create a new domain of the specified type
 		virtual		DomainSummary	getSummary();													// Fetch summary information for this domain
-		virtual 	bool			configureDomain( XMLElement* );									// Configure a domain, loading data etc.
 		virtual		bool			isRemote()				{ return true; };						// Is this domain on this node?
 		virtual		unsigned char	getType()				{ return model::domainStructureTypes::kStructureInvalid; };	// Fetch a type code
 

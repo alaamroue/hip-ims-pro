@@ -17,28 +17,7 @@
  * ------------------------------------------
  *
  */
-#ifndef HIPIMS_MAIN_H_
-#define HIPIMS_MAIN_H_
-
-// Includes
-//#include <vld.h>				// Memory leak detection
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <cmath>
-#include <stdexcept>
-#include <thread>
-
+#pragma once
 
 // Base includes
 #include "common.h"
-#include "platforms.h"
-
-// Basic functions and variables used throughout
-
-
-
-#endif

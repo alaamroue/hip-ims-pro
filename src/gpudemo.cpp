@@ -19,17 +19,17 @@
  */
 
 // Includes
-#include "main.h"
+#include "gpudemo.h"
 #include "CModel.h"
 #include "CRasterDataset.h"
 #include "COCLDevice.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
-#include "CBoundaryMap.h"
 #include "CScheme.h"
 
 // Globals
 CModel*					model::pManager;
+CLog*					model::log;
 
 /*
  *  Application entry-point. 
@@ -37,8 +37,6 @@ CModel*					model::pManager;
 int main()
 {
 	// Default configurations
-	model::configFile	= new char[50];
-
 
 	int iReturnCode = model::loadConfiguration();
 	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
@@ -57,6 +55,12 @@ int main()
 int model::loadConfiguration()
 {
 	CModel* pManager = new CModel();
+	CLog* cLog = new CLog();
+	model::pManager = pManager;
+	model::log = cLog;
+
+
+	pManager->setLogger(cLog);
 
 	CExecutorControl* pExecutor = CExecutorControl::createExecutor(model::executorTypes::executorTypeOpenCL);
 	//pExecutor->setDeviceFilter(model::filters::devices::devicesCPU);
@@ -84,30 +88,32 @@ int model::loadConfiguration()
 	static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(1));
 	CDomainCartesian* ourCartesianDomain = (CDomainCartesian*) pDomainNew;
 
+	ourCartesianDomain->setCellResolution(1);
+	ourCartesianDomain->setCols(100);
+	ourCartesianDomain->setRows(100);
 
 	unsigned long ulCellID;
-	for (unsigned long iRow = 0; iRow < 100; iRow++) {
-		for (unsigned long iCol = 0; iCol < 100; iCol++) {
+	unsigned char	ucRounding = 5;
+	for (unsigned long iRow = 0; iRow < ourCartesianDomain->getRows(); iRow++) {
+		for (unsigned long iCol = 0; iCol < ourCartesianDomain->getCols(); iCol++) {
 			ulCellID = ourCartesianDomain->getCellID(iCol, ourCartesianDomain->getRows() - iRow - 1);
 			//Elevations
-			ourCartesianDomain->handleInputData(ulCellID, pow(iRow* iRow + iCol * iCol,0.5), model::rasterDatasets::dataValues::kBedElevation, pManager->ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, pow(iRow* iRow + iCol * iCol,0.5), model::rasterDatasets::dataValues::kBedElevation, ucRounding);
 			//Manning Coefficient
-			ourCartesianDomain->handleInputData(ulCellID, 0.03, model::rasterDatasets::dataValues::kManningCoefficient, pManager->ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.03, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
 			//Depth
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, pManager->ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
 			//VelocityX
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, pManager->ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
 			//VelocityY
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, pManager->ucRounding);
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
 			//Boundary Condition
 			ourCartesianDomain->setBoundaryCondition(ulCellID, 0.0);
 			//Coupling Condition
-			ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
+			//ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
 
 		}
 	}
-
-
 
 	CScheme* pScheme;
 	pScheme = CScheme::createScheme(model::schemeTypes::kGodunov);
@@ -214,7 +220,7 @@ void model::doPause()
  */
 void model::doError( std::string sError, unsigned char cError )
 {
-	pManager->log->writeError( sError, cError );
+	model::log->writeError( sError, cError );
 	if ( cError & model::errorCodes::kLevelModelStop )
 		std::cout << "model forceAbort was requested by a function." << std::endl;
 	if ( cError & model::errorCodes::kLevelFatal )

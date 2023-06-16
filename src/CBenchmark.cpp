@@ -49,7 +49,6 @@ double CBenchmark::getCurrentTime()
 	 *  Performance counters vary from one platform to
 	 *  another.
 	 */
-	#ifdef PLATFORM_WIN
 		BOOL bQueryState;
 
 		LARGE_INTEGER liPerfCount, liPerfFreq;
@@ -72,13 +71,6 @@ double CBenchmark::getCurrentTime()
 		// Adjust for seconds
 		return dPerfCount / dPerfFreq;
 
-	#else
-
-		timespec sTimeNow;
-		clock_gettime( CLOCK_REALTIME, &sTimeNow );
-		return static_cast<double>( sTimeNow.tv_sec ) + static_cast<double>( sTimeNow.tv_nsec / 1000000000 );
-
-	#endif
 }
 
 /*

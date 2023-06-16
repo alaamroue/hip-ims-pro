@@ -21,7 +21,6 @@
 #include <cmath>
 #include <math.h>
 #include "common.h"
-#include "main.h"
 #include "CExecutorControlOpenCL.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
@@ -37,7 +36,7 @@ using std::max;
  */
 CModel::CModel(void)
 {
-	this->log = new CLog();
+	this->log = nullptr;
 
 	this->execController	= NULL;
 	this->domains			= new CDomainManager();
@@ -319,21 +318,21 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
 
-	pManager->log->writeDivide();																						// 1
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 2
-	pManager->log->writeLine( " SIMULATION PROGRESS                                              ", false, wColour );	// 3
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 4
-	pManager->log->writeLine( std::string( cTimeLine )											  , false, wColour );	// 5
-	pManager->log->writeLine( std::string( cCellsLine )											  , false, wColour );	// 6
-	pManager->log->writeLine( std::string( cTimeLine2 )											  , false, wColour );	// 7
-	pManager->log->writeLine( std::string( cBatchSizeLine )										  , false, wColour );	// 8
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 9
-	pManager->log->writeLine( std::string( cProgressLine )										  , false, wColour );	// 10
-	pManager->log->writeLine( "                                                                  ", false, wColour );	// 11
+	model::log->writeDivide();																						// 1
+	model::log->writeLine( "                                                                  ", false, wColour );	// 2
+	model::log->writeLine( " SIMULATION PROGRESS                                              ", false, wColour );	// 3
+	model::log->writeLine( "                                                                  ", false, wColour );	// 4
+	model::log->writeLine( std::string( cTimeLine )											  , false, wColour );	// 5
+	model::log->writeLine( std::string( cCellsLine )											  , false, wColour );	// 6
+	model::log->writeLine( std::string( cTimeLine2 )											  , false, wColour );	// 7
+	model::log->writeLine( std::string( cBatchSizeLine )										  , false, wColour );	// 8
+	model::log->writeLine( "                                                                  ", false, wColour );	// 9
+	model::log->writeLine( std::string( cProgressLine )										  , false, wColour );	// 10
+	model::log->writeLine( "                                                                  ", false, wColour );	// 11
 
-	pManager->log->writeLine( "             +----------+----------------+------------+----------+", false, wColour );	// 12
-	pManager->log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
-	pManager->log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
+	model::log->writeLine( "             +----------+----------------+------------+----------+", false, wColour );	// 12
+	model::log->writeLine( "             |  Device  |  Avg.timestep  | Iterations | Bypassed |", false, wColour );	// 12
+	model::log->writeLine( "+------------+----------+----------------+------------+----------|", false, wColour );	// 13
 	
 	for( unsigned int i = 0; i < domains->getDomainCount(); i++ )
 	{
@@ -358,11 +357,11 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 			toString(pProgress.uiBatchSkipped).c_str()
 		);
 
-		pManager->log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
+		model::log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
 	}
 
-	pManager->log->writeLine( "+------------+----------+----------------+------------+----------+" , false, wColour);	// 14
-	pManager->log->writeDivide();																						// 15
+	model::log->writeLine( "+------------+----------+----------------+------------+----------+" , false, wColour);	// 14
+	model::log->writeDivide();																						// 15
 
 	this->pProgressCoords = Util::getCursorPosition();
 	if (this->dCurrentTime < this->dSimulationTime) 
@@ -431,10 +430,10 @@ void	CModel::runModelPrepareDomains()
 
 		if (domains->getDomainCount() > 1)
 		{
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " has rollback limit of " +
+			model::log->writeLine("Domain #" + toString(i + 1) + " has rollback limit of " +
 				toString(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
 		} else {
-			pManager->log->writeLine("Domain #" + toString(i + 1) + " is not constrained by " +
+			model::log->writeLine("Domain #" + toString(i + 1) + " is not constrained by " +
 				"overlapping.");
 		}
 	}
@@ -515,7 +514,7 @@ void	CModel::runModelDomainAssess(
 				if ( !domains->getDomainBase(i)->isLinkSetAtTime( dEarliestTime ) && dEarliestTime > 0.0 )
 				{
 #ifdef DEBUG_MPI
-					pManager->log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
+					model::log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
 #endif
 					bSynchronised = false;
 					bWaitOnLinks = true;
@@ -562,7 +561,7 @@ void	CModel::runModelDomainAssess(
 void	CModel::runModelDomainExchange()
 {
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
+	model::log->writeLine( "[DEBUG] Exchanging domain data NOW... (" + Util::secondsToTime( this->dEarliestTime ) + ")" );
 #endif
 
 	// Swap sync zones over
@@ -588,7 +587,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 	double dEarliestSyncProposal = this->dSimulationTime;
 
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Should now be updating the target time..." );
+	model::log->writeLine( "[DEBUG] Should now be updating the target time..." );
 #endif
 	
 	// Only bother with all this stuff if we actually need to synchronise,
@@ -669,7 +668,7 @@ void	CModel::runModelSync()
 			   )
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] Saving domain state for domain #" + toString( i ) );
+				model::log->writeLine( "[DEBUG] Saving domain state for domain #" + toString( i ) );
 #endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
@@ -729,7 +728,7 @@ void	CModel::runModelOutputs()
 	}
 	
 #ifdef DEBUG_MPI
-	pManager->log->writeLine( "[DEBUG] Global block until all output files have been written..." );
+	model::log->writeLine( "[DEBUG] Global block until all output files have been written..." );
 #endif
 	this->runModelBlockGlobal();
 }
@@ -764,10 +763,10 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
 				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//pManager->log->writeLine( "Global timestep: " + toString( dGlobalTimestep ) + " Current time: " + toString( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
+			//model::log->writeLine( "Global timestep: " + toString( dGlobalTimestep ) + " Current time: " + toString( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
 
 			// Run a batch
-			//pManager->log->writeLine("[DEBUG] Running scheme to " + toString(dTargetTime));
+			//model::log->writeLine("[DEBUG] Running scheme to " + toString(dTargetTime));
 			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 		}
 	}
@@ -812,7 +811,7 @@ void	CModel::runModelRollback()
 	// Use the data from the last run to work out how long we can run 
 	// the batch for. Same function as normal but relative to the last sync time instead.
 	this->runModelUpdateTarget(dLastSyncTime);
-	pManager->log->writeLine("Simulation rollback at " + Util::secondsToTime(this->dCurrentTime) + "; revised sync point is " + Util::secondsToTime(dTargetTime) + ".");
+	model::log->writeLine("Simulation rollback at " + Util::secondsToTime(this->dCurrentTime) + "; revised sync point is " + Util::secondsToTime(dTargetTime) + ".");
 
 	// ---
 	// TODO: Do we need to do an MPI reduce here...?
@@ -865,7 +864,7 @@ void	CModel::runModelMain()
 	this->logDetails();
 
 	// Track time for the whole simulation
-	pManager->log->writeLine( "Collecting time and performance data..." );
+	model::log->writeLine( "Collecting time and performance data..." );
 	pBenchmarkAll = new CBenchmark( true );
 	sTotalMetrics = pBenchmarkAll->getMetrics();
 
@@ -939,13 +938,19 @@ void	CModel::runModelMain()
 	}
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
-	pManager->log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
-	//pManager->log->writeLine( "Calculation rate:    " + toString( floor(dCellRate) ) + " cells/sec" );
-	//pManager->log->writeLine( "Final volume:        " + toString( static_cast<int>( dVolume ) ) + "m3" );
-	pManager->log->writeDivide();
+	model::log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
+	//model::log->writeLine( "Calculation rate:    " + toString( floor(dCellRate) ) + " cells/sec" );
+	//model::log->writeLine( "Final volume:        " + toString( static_cast<int>( dVolume ) ) + "m3" );
+	model::log->writeDivide();
 
 	delete   pBenchmarkAll;
 	delete[] bSyncReady;
 	delete[] bIdle;
 }
 
+/*
+ * Attached the logger class to the CModel
+ */
+void CModel::setLogger(CLog* cLog) {
+	this->log = cLog;
+}

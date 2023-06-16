@@ -120,11 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CBenchmark.h" />
-    <ClInclude Include="src\CBoundary.h" />
-    <ClInclude Include="src\CBoundaryCell.h" />
-    <ClInclude Include="src\CBoundaryGridded.h" />
-    <ClInclude Include="src\CBoundaryMap.h" />
-    <ClInclude Include="src\CBoundaryUniform.h" />
     <ClInclude Include="src\CCSVDataset.h" />
     <ClInclude Include="src\CDomain.h" />
     <ClInclude Include="src\CDomainBase.h" />
@@ -147,22 +142,13 @@
     <ClInclude Include="src\CSchemeGodunov.h" />
     <ClInclude Include="src\CSchemeInertial.h" />
     <ClInclude Include="src\CSchemeMUSCLHancock.h" />
-    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\gpudemo.h" />
     <ClInclude Include="src\opencl.h" />
-    <ClInclude Include="src\platforms.h" />
     <ClInclude Include="src\resource.h" />
-    <ClInclude Include="src\tinyxml2.h" />
-    <ClInclude Include="src\unix_platform.h" />
     <ClInclude Include="src\util.h" />
-    <ClInclude Include="src\windows_platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CBenchmark.cpp" />
-    <ClCompile Include="src\CBoundary.cpp" />
-    <ClCompile Include="src\CBoundaryCell.cpp" />
-    <ClCompile Include="src\CBoundaryGridded.cpp" />
-    <ClCompile Include="src\CBoundaryMap.cpp" />
-    <ClCompile Include="src\CBoundaryUniform.cpp" />
     <ClCompile Include="src\CCSVDataset.cpp" />
     <ClCompile Include="src\CDomain.cpp" />
     <ClCompile Include="src\CDomainBase.cpp" />
@@ -183,8 +169,7 @@
     <ClCompile Include="src\CSchemeGodunov.cpp" />
     <ClCompile Include="src\CSchemeInertial.cpp" />
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\tinyxml2.cpp" />
+    <ClCompile Include="src\gpudemo.cpp" />
     <ClCompile Include="src\util.cpp" />
     <ClCompile Include="src\windows_platform.cpp" />
   </ItemGroup>

@@ -126,7 +126,7 @@ bool COCLBuffer::createBuffer()
 
 	this->bReady = true;
 
-	pManager->log->writeLine(
+	model::log->writeLine(
 		"Memory buffer created for '" + this->sName + "' with " + toString( this->ulSize ) + " bytes."
 	);
 
@@ -218,7 +218,7 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 
 	if ( iReturn != CL_SUCCESS )
 	{
-		pManager->log->writeLine("Error code returned from memory read is " + toString(iReturn));
+		model::log->writeLine("Error code returned from memory read is " + toString(iReturn));
 		model::doError(
 			"Unable to read memory buffer from device back to host  " 
 			+ this->sName + " (" + toString( iReturn ) + ")",

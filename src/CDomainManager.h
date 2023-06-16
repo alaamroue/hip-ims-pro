@@ -53,7 +53,6 @@ class CDomainManager
 		// ...
 
 		// Public functions
-		bool					setupFromConfig( XMLElement* );										// Set up the domain set
 		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		std::vector<CDomainBase*>* getDomainBaseVector();											// Fetch a domain base vector

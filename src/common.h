@@ -21,7 +21,8 @@
 
 // Base includes
 #include "util.h"
-#include "platforms.h"
+#include <Windows.h>					// QueryPerformanceCounter etc
+
 
 //#define DEBUG_MPI 1
 
@@ -34,7 +35,16 @@
 #include "CLog.h"
 #include "CModel.h"
 
-using tinyxml2::XMLElement;
+// TODO: Alaa check if these includes are needed. They have been removed wih no problems in the other branches (see master branch and gpu branch)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <cmath>
+#include <stdexcept>
+#include <thread>
 
 // Basic functions and variables used throughout
 namespace model
@@ -183,56 +193,6 @@ extern  char*			codeDir;
 void					doError( std::string, unsigned char );
 }
 
-namespace model {
-
-	// Kernel configurations
-	namespace boundaries {
-		namespace types {
-			enum types {
-				kBndyTypeCell,
-				kBndyTypeAtmospheric,
-				kBndyTypeCopy,
-				kBndyTypeReflective,		// -- Put the gridded types after this
-				kBndyTypeAtmosphericGrid
-			};
-		}
-
-		namespace depthValues {
-			enum depthValues {
-				kValueFSL = BOUNDARY_DEPTH_IS_FSL,		// 2nd column in timeseries is the FSL
-				kValueDepth = BOUNDARY_DEPTH_IS_DEPTH,	// 2nd column in timeseries is a depth
-				kValueCriticalDepth = BOUNDARY_DEPTH_IS_CRITICAL, // Force critical depth based on the discharge
-				kValueIgnored = BOUNDARY_DEPTH_IGNORE								// 2nd column can be ignored
-			};
-		}
-
-		namespace dischargeValues {
-			enum dischargeValues {
-				kValueTotal = BOUNDARY_DISCHARGE_IS_DISCHARGE,	// Value represents the total discharge through the boundary
-				kValuePerCell = BOUNDARY_DISCHARGE_IS_DISCHARGE,	// Value represents the discharge per cell through the boundary
-				kValueVelocity = BOUNDARY_DISCHARGE_IS_VELOCITY,	// Value represents a velocity through the boundary
-				kValueSurging = BOUNDARY_DISCHARGE_IS_VOLUME, // Value represents a depth increase in volumetric rate terms (e.g. manhole surge)
-				kValueIgnored = BOUNDARY_DISCHARGE_IGNORE
-			};
-		}
-
-		namespace griddedValues {
-			enum griddedValues {
-				kValueRainIntensity = 0,
-				kValueMassFlux = 1
-			};
-		}
-
-		namespace uniformValues {
-			enum lossUnits {
-				kValueRainIntensity = 0,
-				kValueLossRate = 1
-			};
-		}
-
-	}
-}
-
 // Executor states
 namespace model {
 	namespace executorStates {
@@ -376,8 +336,9 @@ namespace model
 	
 	};
 
-
-	extern	CModel* pManager;
+	//Todo: Alaa Remove model:: dependency and allow for safe error logging
+	extern	CModel* pManager;		// Global Model Class
+	extern	CLog* log;				// Global logger class
 }
 
 // Platform constant

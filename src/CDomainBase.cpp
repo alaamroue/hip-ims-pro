@@ -48,18 +48,9 @@ CDomainBase::~CDomainBase(void)
 	for (unsigned int uiID = 0; uiID < links.size(); ++uiID)
 		delete links[uiID];
 
-	pManager->log->writeLine("The domain base has been released.");
+	model::log->writeLine("The domain base has been released.");
 }
 
-/*
- *  Configure the domain using the XML file
- */
-bool CDomainBase::configureDomain(XMLElement* pXDomain)
-{
-	// We don't really care if the domain isn't on this node
-	// and can just ignore all the configuration stuff for it...
-	return true;
-}
 
 /*
  *  Helper function that create a new class of the appropriate type

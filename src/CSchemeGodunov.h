@@ -143,6 +143,7 @@ class CSchemeGodunov : public CScheme
 		COCLBuffer*			oclBufferCellStates;
 		COCLBuffer*			oclBufferCellStatesAlt;
 		COCLBuffer*			oclBufferCellManning;
+		COCLBuffer*			oclBufferCellBoundary;
 		COCLBuffer*			oclBufferCellBed;
 		COCLBuffer*			oclBufferTimestep;
 		COCLBuffer*			oclBufferTime;

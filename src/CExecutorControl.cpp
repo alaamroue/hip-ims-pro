@@ -61,43 +61,6 @@ CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType )
 }
 
 /*
- *  Create and configure an executor using an XML configuration node
- */
-CExecutorControl*	CExecutorControl::createFromConfig( XMLElement* pXNode )
-{
-	CExecutorControl*	pExecutor		= NULL;
-	char*				cExecutorName	= NULL;
-
-	Util::toLowercase( &cExecutorName, pXNode->Attribute( "name" ) );
-	if ( cExecutorName == NULL )
-	{
-		model::doError(
-			"The <executor> element has no name.",
-			model::errorCodes::kLevelWarning
-		);
-		return NULL;
-	}
-
-	if ( std::strcmp( cExecutorName, "opencl" ) == 0 )
-	{
-		pManager->log->writeLine( "OpenCL executor specified in configuration." );
-		pExecutor = CExecutorControl::createExecutor(
-			model::executorTypes::executorTypeOpenCL
-		);
-	} else {
-		model::doError(
-			"Unsupported executor specified.",
-			model::errorCodes::kLevelWarning
-		);
-		return NULL;
-	}
-	
-	pExecutor->setupFromConfig( pXNode );
-
-	return pExecutor;
-}
-
-/*
  *  Is this executor ready to run models?
  */
 bool CExecutorControl::isReady( void )

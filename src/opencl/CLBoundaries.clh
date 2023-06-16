@@ -51,67 +51,10 @@
 
 #ifdef USE_FUNCTION_STUBS
 
-typedef struct sBdyCellConfiguration
-{
-	cl_ulong		TimeseriesEntries;
-	cl_double		TimeseriesInterval;
-	cl_double		TimeseriesLength;
-	cl_ulong		RelationCount;
-	cl_uint			DefinitionDepth;
-	cl_uint			DefinitionDischarge;
-} sBdyCellConfiguration;
-
-typedef struct sBdyGriddedConfiguration
-{
-	cl_double		TimeseriesInterval;
-	cl_double		GridResolution;
-	cl_double		GridOffsetX;
-	cl_double		GridOffsetY;
-	cl_ulong		TimeseriesEntries;
-	cl_ulong		Definition;
-	cl_ulong		GridRows;
-	cl_ulong		GridCols;
-} sBdyGriddedConfiguration;
-
-typedef struct sBdyUniformConfiguration
-{
-	cl_uint			TimeseriesEntries;
-	cl_double		TimeseriesInterval;
-	cl_double		TimeseriesLength;
-	cl_uint			Definition;
-} sBdyUniformConfiguration;
-
-__kernel void bdy_Cell ( 
-	__constant		sBdyCellConfiguration *,
-	__global		cl_ulong const * restrict,
-	__global		cl_double4 const * restrict,
-	__global		cl_double *,
-	__global		cl_double *,
-	__global		cl_double *,
-	__global		cl_double4 *,
-	__global		cl_double *,
-	__global		cl_double *
-);
-
-__kernel void bdy_Gridded ( 
-	__constant		sBdyGriddedConfiguration *,
-	__global		cl_double const * restrict,
-	__global		cl_double *,
-	__global		cl_double *,
-	__global		cl_double *,
-	__global		cl_double4 *,
-	__global		cl_double *,
-	__global		cl_double *
-);
-
-__kernel void bdy_Uniform ( 
-	__constant		sBdyUniformConfiguration *,
+__kernel void bdy_Promaides ( 
 	__global		cl_double2 const * restrict,
 	__global		cl_double *,
-	__global		cl_double *,
-	__global		cl_double *,
 	__global		cl_double4 *,
-	__global		cl_double *,
 	__global		cl_double *
 );
 

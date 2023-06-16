@@ -48,7 +48,6 @@ class CDomain : public CDomainBase
 		// ...
 
 		// Public functions
-		virtual 	bool			configureDomain( XMLElement* );									// Configure a domain, loading data etc.
 		virtual		bool			isRemote()				{ return false; };						// Is this domain on this node?
 		virtual		bool			validateDomain( bool ) = 0;										// Verify required data is available
 		virtual		void			prepareDomain() = 0;											// Create memory structures etc.

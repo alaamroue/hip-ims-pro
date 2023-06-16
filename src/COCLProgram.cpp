@@ -76,7 +76,7 @@ bool COCLProgram::compileProgram(
 	// For intel debugging only!
 	//this->sCompileParameters += " -g";
 
-	pManager->log->writeLine( "Compiling a new program for device #" + toString( this->device->getDeviceID() ) + "." );
+	model::log->writeLine( "Compiling a new program for device #" + toString( this->device->getDeviceID() ) + "." );
 
 	// Should we add standard elements to the code stack first?
 	if ( bIncludeStandardElements )
@@ -123,27 +123,27 @@ bool COCLProgram::compileProgram(
 			"Could not build the program to run on device #" + toString( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
-		pManager->log->writeDivide();
-		pManager->log->writeLine( this->getCompileLog(), false );
-		pManager->log->writeDivide();
-		pManager->log->writeDebugFile( orcCode, uiStackLength );
+		model::log->writeDivide();
+		model::log->writeLine( this->getCompileLog(), false );
+		model::log->writeDivide();
+		model::log->writeDebugFile( orcCode, uiStackLength );
 		return false;
 	}
 
-	pManager->log->writeLine( "Program successfully compiled for device #" + toString( this->device->getDeviceID() ) + "." );
+	model::log->writeLine( "Program successfully compiled for device #" + toString( this->device->getDeviceID() ) + "." );
 
 	std::string sBuildLog = this->getCompileLog();
 	if ( sBuildLog.length() > 0 )
 	{
 		model::doError( "Some messages were reported while building.", model::errorCodes::kLevelWarning );
-		pManager->log->writeDivide();
-		pManager->log->writeLine( sBuildLog, false );
-		pManager->log->writeDivide();
+		model::log->writeDivide();
+		model::log->writeLine( sBuildLog, false );
+		model::log->writeDivide();
 	}
 
 	// Write debug file containing the concatenated code
 	// TODO: Make debug outputs configurable/optional/debug only
-	pManager->log->writeDebugFile( orcCode, uiStackLength );
+	model::log->writeDebugFile( orcCode, uiStackLength );
 
 	delete[] orcCode;
 

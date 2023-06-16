@@ -73,9 +73,9 @@ bool	CRasterDataset::openFileRead( std::string sFilename )
 {
 	GDALDataset		*gdDataset;
 
-	pManager->log->writeLine( "Invoking GDAL to open dataset." );
+	model::log->writeLine( "Invoking GDAL to open dataset." );
 	gdDataset = static_cast<GDALDataset*>( GDALOpen( sFilename.c_str(), GA_ReadOnly ) );
-	pManager->log->writeLine( "Handle on dataset established." );
+	model::log->writeLine( "Handle on dataset established." );
 
 	if ( gdDataset == NULL )
 	{
@@ -86,7 +86,7 @@ bool	CRasterDataset::openFileRead( std::string sFilename )
 		return false;
 	}
 
-	pManager->log->writeLine( "Opened GDAL raster dataset from file." );
+	model::log->writeLine( "Opened GDAL raster dataset from file." );
 
 	this->gdDataset		= gdDataset;
 	this->bAvailable	= true;
@@ -119,7 +119,7 @@ bool	CRasterDataset::domainToRaster(
 	std::string		sValueName;
 
 	CRasterDataset::getValueDetails( ucValue, &sValueName );
-	pManager->log->writeLine( "Writing " + sValueName + " to output raster file..." );
+	model::log->writeLine( "Writing " + sValueName + " to output raster file..." );
 
 	pDriver = GetGDALDriverManager()->GetDriverByName( cDriver );
 
@@ -336,14 +336,14 @@ void	CRasterDataset::logDetails()
 {
 	if ( !this->bAvailable ) return;
 
-	pManager->log->writeDivide();
-	pManager->log->writeLine( "Dataset driver:      " + std::string( this->cDriverDescription ) );
-	pManager->log->writeLine( "Dataset driver name: " + std::string( this->cDriverLongName ) );
-	pManager->log->writeLine( "Dataset band count:  " + toString( this->uiBandCount ) );
-	pManager->log->writeLine( "Cell dimensions:     [" + toString( this->ulColumns ) + ", " + toString( this->ulRows ) + "]" );
-	pManager->log->writeLine( "Cell resolution:     [" + toString( this->dResolutionX ) + ", " + toString( this->dResolutionY ) + "]" );
-	pManager->log->writeLine( "Lower-left offset:   [" + toString( this->dOffsetX ) + ", " + toString( this->dOffsetY ) + "]" );
-	pManager->log->writeDivide();
+	model::log->writeDivide();
+	model::log->writeLine( "Dataset driver:      " + std::string( this->cDriverDescription ) );
+	model::log->writeLine( "Dataset driver name: " + std::string( this->cDriverLongName ) );
+	model::log->writeLine( "Dataset band count:  " + toString( this->uiBandCount ) );
+	model::log->writeLine( "Cell dimensions:     [" + toString( this->ulColumns ) + ", " + toString( this->ulRows ) + "]" );
+	model::log->writeLine( "Cell resolution:     [" + toString( this->dResolutionX ) + ", " + toString( this->dResolutionY ) + "]" );
+	model::log->writeLine( "Lower-left offset:   [" + toString( this->dOffsetX ) + ", " + toString( this->dOffsetY ) + "]" );
+	model::log->writeDivide();
 }
 
 /*
@@ -353,7 +353,7 @@ bool	CRasterDataset::applyDimensionsToDomain( CDomainCartesian*	pDomain )
 {
 	if ( !this->bAvailable ) return false;
 
-	pManager->log->writeLine( "Dimensioning domain from raster dataset." );
+	model::log->writeLine( "Dimensioning domain from raster dataset." );
 
 	pDomain->setProjectionCode( 0 );					// Unknown
 	pDomain->setUnits( "m" );							
@@ -382,7 +382,7 @@ bool	CRasterDataset::applyDataToDomain( unsigned char ucValue, CDomainCartesian*
 	if ( !this->isDomainCompatible( pDomain ) ) return false;
 
 	CRasterDataset::getValueDetails( ucValue, &sValueName );
-	pManager->log->writeLine( "Loading " + sValueName + " from raster dataset." );
+	model::log->writeLine( "Loading " + sValueName + " from raster dataset." );
 
 	pBand = this->gdDataset->GetRasterBand( 1 );
 

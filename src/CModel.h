@@ -21,7 +21,6 @@
 
 #include "opencl.h"
 #include "CBenchmark.h"
-#include "tinyxml2.h"
 #include <vector>
 
 // Some classes we need to know about...
@@ -32,7 +31,6 @@ class CScheme;
 class CLog;
 class CMPIManager;
 
-using tinyxml2::XMLElement;
 
 /*
  *  APPLICATION CLASS
@@ -87,6 +85,7 @@ class CModel
 		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );	// Callback event used when memory reads complete, for visualisation updates
 
 		// Public variables
+		void					setLogger(CLog*);								// Sets the logger class 
 		CLog*					log;											// Handle for the log singular class
 
 	private:

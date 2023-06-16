@@ -21,7 +21,6 @@
 #include <cstring>
 
 #include "common.h"
-#include "main.h"
 #include "CModel.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
@@ -29,7 +28,6 @@
 
 #include "CRasterDataset.h"
 #include "CExecutorControlOpenCL.h"
-#include "CBoundaryMap.h"
 #include "CDomainCartesian.h"
 
 /*
@@ -39,18 +37,8 @@ CDomainCartesian::CDomainCartesian(void)
 {
 	// Default values will trigger errors on validation
 	this->dCellResolution			= std::numeric_limits<double>::quiet_NaN();
-	this->dRealDimensions[kAxisX]	= std::numeric_limits<double>::quiet_NaN();
-	this->dRealDimensions[kAxisY]	= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeN]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeE]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeS]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealExtent[kEdgeW]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealOffset[kAxisX]		= std::numeric_limits<double>::quiet_NaN();
-	this->dRealOffset[kAxisY]		= std::numeric_limits<double>::quiet_NaN();
-	this->cUnits[0]					= 0;
-	this->ulProjectionCode			= 0;
-	this->cTargetDir				= NULL;
-	this->cSourceDir				= NULL;
+	this->ulRows					= std::numeric_limits<unsigned long>::quiet_NaN();
+	this->ulCols					= std::numeric_limits<unsigned long>::quiet_NaN();
 }
 
 /*
@@ -61,141 +49,6 @@ CDomainCartesian::~CDomainCartesian(void)
 	// ...
 }
 
-/*
- *  Configure the domain using the XML file
- */
-bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
-{
-
-
-
-
-}
-
-/*
- *  Load all the initial conditions and data from rasters or constant definitions
- */
-bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
-{
-	bool							bSourceVelX			= false, 
-									bSourceVelY			= false, 
-									bSourceManning		= false;
-	sDataSourceInfo					pDataDEM;
-	sDataSourceInfo					pDataDepth;
-	std::vector<sDataSourceInfo>	pDataOther;
-	XMLElement*						pDataSource			= pXData->FirstChildElement( "dataSource" );
-
-	pDataDEM.ucValue		= 255;
-	pDataDepth.ucValue		= 255;
-
-	// Read data source information but don't process it, because
-	// a specific order is required...
-	while ( pDataSource != NULL )
-	{
-		char			*cSourceType = NULL, *cSourceValue = NULL, *cSourceFile = NULL;
-		unsigned char	ucValueType;
-		Util::toLowercase( &cSourceType, pDataSource->Attribute( "type" ) );
-		Util::toLowercase( &cSourceValue, pDataSource->Attribute( "value" ) );
-		Util::toNewString( &cSourceFile, pDataSource->Attribute( "source" ) );
-
-		ucValueType  = this->getDataValueCode( cSourceValue );
-
-		sDataSourceInfo pDataInfo;
-		pDataInfo.cSourceType	= cSourceType;
-		pDataInfo.cFileValue	= cSourceFile;
-		pDataInfo.ucValue		= ucValueType;
-
-		switch( ucValueType )
-		{
-			case model::rasterDatasets::dataValues::kBedElevation:
-				pDataDEM	= pDataInfo;
-				break;
-			case model::rasterDatasets::dataValues::kDepth:
-			case model::rasterDatasets::dataValues::kFreeSurfaceLevel:
-				pDataDepth	= pDataInfo;
-				break;
-			case model::rasterDatasets::dataValues::kDischargeX:
-			case model::rasterDatasets::dataValues::kVelocityX:
-				pDataOther.push_back( pDataInfo );
-				bSourceVelX = true;
-				break;
-			case model::rasterDatasets::dataValues::kDischargeY:
-			case model::rasterDatasets::dataValues::kVelocityY:
-				pDataOther.push_back( pDataInfo );
-				bSourceVelY = true;
-				break;
-			case model::rasterDatasets::dataValues::kManningCoefficient:
-				pDataOther.push_back( pDataInfo );
-				bSourceManning = true;
-				break;
-			default:
-				pDataOther.push_back( pDataInfo );
-				break;
-		}
-
-		pDataSource = pDataSource->NextSiblingElement( "dataSource" );
-	}
-
-	// Need a DEM and a depth data source as a minimum
-	if ( pDataDEM.ucValue == 255 || pDataDepth.ucValue == 255 )
-	{
-		model::doError(
-			"Missing DEM or depth data source.",
-			model::errorCodes::kLevelWarning
-		);
-	}
-
-	// Present warnings if some things aren't defined
-	if ( !bSourceVelX )
-		model::doError(
-			"No source defined for X-velocity - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-	if ( !bSourceVelY )
-		model::doError(
-			"No source defined for Y-velocity - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-	if ( !bSourceManning )
-		model::doError(
-			"No source defined for Manning coefficient - assuming zero.",
-			model::errorCodes::kLevelWarning
-		);
-
-	// Process the initial conditions in the order:
-	// 1. DEM
-	// 2. Depth/FSL
-	// 3. All others
-	if ( !this->loadInitialConditionSource( pDataDEM,	cSourceDir ) )
-	{
-		model::doError(
-			"Could not load DEM data.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-	if ( !this->loadInitialConditionSource( pDataDepth,	cSourceDir ) )
-	{
-		model::doError(
-			"Could not load depth/FSL data.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-	for ( unsigned int i = 0; i < pDataOther.size(); ++i )
-	{
-		if ( !this->loadInitialConditionSource( pDataOther[i], cSourceDir ) ) 
-		{
-			model::doError(
-				"Could not load initial conditions.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
-	}
-
-	return true;
-}
 
 /*
  *  Does the domain contain all of the required data yet?
@@ -212,38 +65,10 @@ bool	CDomainCartesian::validateDomain( bool bQuiet )
 		return false;
 	}
 
-	// Got a size?
-	if ( ( std::isnan( this->dRealDimensions[ kAxisX ] ) || 
-		   std::isnan( this->dRealDimensions[ kAxisY ] ) ) &&
-		 ( std::isnan( this->dRealExtent[ kEdgeN ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeE ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeS ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeW ] ) ) )
+	if (this->ulRows == NAN || this->ulCols == NAN)
 	{
-		if ( !bQuiet ) model::doError(
-			"Domain extent not defined",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Got an offset?
-	if ( std::isnan( this->dRealOffset[ kAxisX ] ) ||
-		 std::isnan( this->dRealOffset[ kAxisY ] ) )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain offset not defined",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	// Valid extent?
-	if ( this->dRealExtent[ kEdgeE ] <= this->dRealExtent[ kEdgeW ] ||
-		 this->dRealExtent[ kEdgeN ] <= this->dRealExtent[ kEdgeS ] )
-	{
-		if ( !bQuiet ) model::doError(
-			"Domain extent is not valid",
+		if (!bQuiet) model::doError(
+			"Rows/Cols have not been defined",
 			model::errorCodes::kLevelWarning
 		);
 		return false;
@@ -275,25 +100,25 @@ void	CDomainCartesian::prepareDomain()
  */
 void	CDomainCartesian::logDetails()
 {
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 	unsigned short	wColour			= model::cli::colourInfoBlock;
 
-	pManager->log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
+	model::log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
 	if ( this->ulProjectionCode > 0 ) 
 	{
-		pManager->log->writeLine( "  Projection:        EPSG:" + toString( this->ulProjectionCode ), true, wColour );
+		model::log->writeLine( "  Projection:        EPSG:" + toString( this->ulProjectionCode ), true, wColour );
 	} else {
-		pManager->log->writeLine( "  Projection:        Unknown", true, wColour );
+		model::log->writeLine( "  Projection:        Unknown", true, wColour );
 	}
-	pManager->log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
-	pManager->log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
-	pManager->log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ) + this->cUnits, true, wColour );
-	pManager->log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
+	model::log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
+	model::log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
+	model::log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ) + this->cUnits, true, wColour );
+	model::log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
 														 toString( this->ulRows ) + "]", true, wColour );
-	pManager->log->writeLine( "  Real dimensions:   [" + toString( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " + 
+	model::log->writeLine( "  Real dimensions:   [" + toString( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " + 
 														 toString( this->dRealDimensions[ kAxisY ] ) + this->cUnits + "]", true, wColour );
 
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 }
 
 /*
@@ -448,6 +273,24 @@ void	CDomainCartesian::updateCellStatistics()
 		this->dRealDimensions[ kAxisX ] / this->dCellResolution
 	);
 	this->ulCellCount = this->ulRows * this->ulCols;
+}
+
+/*
+ *  
+ */
+void	CDomainCartesian::setCols(unsigned long value)
+{
+	this->ulCols = value;
+	this->updateCellStatistics();
+}
+
+/*
+ *  
+ */
+void	CDomainCartesian::setRows(unsigned long value)
+{
+	this->ulRows = value;
+	this->updateCellStatistics();
 }
 
 /*

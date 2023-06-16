@@ -34,7 +34,7 @@
  */
 CScheme::CScheme()
 {
-	pManager->log->writeLine( "Scheme base-class instantiated." );
+	model::log->writeLine( "Scheme base-class instantiated." );
 
 	// Not ready by default
 	this->bReady				= false;
@@ -59,7 +59,7 @@ CScheme::CScheme()
  */
 CScheme::~CScheme(void)
 {
-	pManager->log->writeLine( "The abstract scheme class was unloaded from memory." );
+	model::log->writeLine( "The abstract scheme class was unloaded from memory." );
 }
 
 
@@ -85,15 +85,6 @@ CScheme* CScheme::createScheme( unsigned char ucType )
 	return NULL;
 }
 
-/*
- *  Ask the executor to create a type of scheme with the defined
- *  flags.
- */
-CScheme* CScheme::createFromConfig( XMLElement *pXScheme )
-{
-
-
-}
 
 /*
  *  Simple check for if the scheme is ready to run

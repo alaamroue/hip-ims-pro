@@ -26,9 +26,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\windows_platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\CLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -65,22 +62,13 @@
     <ClInclude Include="src\CSchemeMUSCLHancock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\main.h">
+    <ClInclude Include="src\gpudemo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\opencl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\platforms.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\tinyxml2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\unix_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\util.h">
@@ -90,21 +78,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CBenchmark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryCell.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryGridded.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CBoundaryUniform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CCSVDataset.h">
@@ -166,10 +139,7 @@
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tinyxml2.cpp">
+    <ClCompile Include="src\gpudemo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\util.cpp">
@@ -182,21 +152,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CBenchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryCell.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryGridded.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CBoundaryUniform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CCSVDataset.cpp">

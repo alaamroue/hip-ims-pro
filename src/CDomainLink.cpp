@@ -43,7 +43,7 @@ CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
 	this->bSent 		= true;
 	this->uiSmallestOverlap = 999999999;
 
-	pManager->log->writeLine("Generating link definitions between domains #" + toString(this->uiTargetDomainID + 1) 
+	model::log->writeLine("Generating link definitions between domains #" + toString(this->uiTargetDomainID + 1) 
 		+ " and #" + toString(this->uiSourceDomainID + 1));
 
 	this->generateDefinitions( pTarget, pSource );
@@ -72,7 +72,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 	// Cannot link two remote domains (as there's no need)
 	if ( !pSumA.bAuthoritative && !pSumB.bAuthoritative )
 	{
-		//pManager->log->writeLine("[DEBUG] Cannot link non-authorative.");
+		//model::log->writeLine("[DEBUG] Cannot link non-authorative.");
 		return false;
 	}
 
@@ -81,7 +81,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 	if ( ( pSumA.dEdgeNorth >= pSumB.dEdgeNorth && pSumA.dEdgeSouth >= pSumB.dEdgeNorth ) ||
 		 ( pSumA.dEdgeNorth <= pSumB.dEdgeSouth && pSumA.dEdgeSouth <= pSumB.dEdgeSouth ) )
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link non-overlapping N/S.");
+                //model::log->writeLine("[DEBUG] Cannot link non-overlapping N/S.");
                 return false;
         }
 
@@ -89,7 +89,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 	if ( pSumA.dEdgeWest >= pSumB.dEdgeEast &&
 		 pSumA.dEdgeEast <= pSumB.dEdgeWest )
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link non-overlapping E/W.");
+                //model::log->writeLine("[DEBUG] Cannot link non-overlapping E/W.");
                 return false;
         }
 
@@ -100,7 +100,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 		 pSumA.dEdgeNorth == pSumB.dEdgeNorth &&
 		 pSumA.dEdgeSouth == pSumB.dEdgeSouth )
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link identical.");
+                //model::log->writeLine("[DEBUG] Cannot link identical.");
                 return false;
         }
 
@@ -108,7 +108,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 	// TODO: Add support for mixed-resolution syncing at a later date
 	if ( pSumA.dResolution != pSumB.dResolution )
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link mismatched resolutions.");
+                //model::log->writeLine("[DEBUG] Cannot link mismatched resolutions.");
                 return false;
         }
 
@@ -117,12 +117,12 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 	// for mass conservation...
 	if (remainder(fabs(pSumA.dEdgeNorth - pSumB.dEdgeSouth), pSumA.dResolution) > 0.1 * pSumA.dResolution)
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link non-aligned N/S.");
+                //model::log->writeLine("[DEBUG] Cannot link non-aligned N/S.");
                 return false;
         }
 	if (remainder(fabs(pSumA.dEdgeEast - pSumB.dEdgeWest), pSumA.dResolution) > 0.1 * pSumA.dResolution)
 	{
-                //pManager->log->writeLine("[DEBUG] Cannot link non-aligned E/W.");
+                //model::log->writeLine("[DEBUG] Cannot link non-aligned E/W.");
                 return false;
         }
 
@@ -135,7 +135,7 @@ bool CDomainLink::canLink(CDomainBase* pA, CDomainBase* pB)
 void	CDomainLink::pullFromMPI(double dCurrentTime, char* pData)
 {
 #ifdef DEBUG_MPI
-	pManager->log->writeLine("[DEBUG] Importing link data via MPI... Data time: " + Util::secondsToTime(dCurrentTime) + ", Current time: " + Util::secondsToTime(this->dValidityTime));
+	model::log->writeLine("[DEBUG] Importing link data via MPI... Data time: " + Util::secondsToTime(dCurrentTime) + ", Current time: " + Util::secondsToTime(this->dValidityTime));
 #endif
 
 	if ( this->dValidityTime >= dCurrentTime )
@@ -171,7 +171,7 @@ void	CDomainLink::pullFromBuffer(double dCurrentTime, COCLBuffer* pBuffer)
 		for (unsigned int i = 0; i < this->linkDefs.size(); i++)
 		{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine("[DEBUG] Should now be downloading data from buffer at time " + Util::secondsToTime(dCurrentTime));
+				model::log->writeLine("[DEBUG] Should now be downloading data from buffer at time " + Util::secondsToTime(dCurrentTime));
 #endif
 				pBuffer->queueReadPartial(
 					this->linkDefs[i].ulOffsetSource,
@@ -185,7 +185,7 @@ void	CDomainLink::pullFromBuffer(double dCurrentTime, COCLBuffer* pBuffer)
 		
 	} else {
 #ifdef DEBUG_MPI
-		pManager->log->writeLine("[DEBUG] Not downloading data at " + Util::secondsToTime(dCurrentTime) + " as validity time is " + Util::secondsToTime(dValidityTime));
+		model::log->writeLine("[DEBUG] Not downloading data at " + Util::secondsToTime(dCurrentTime) + " as validity time is " + Util::secondsToTime(dValidityTime));
 #endif
 	}
 }
@@ -216,7 +216,7 @@ void	CDomainLink::pushToBuffer(COCLBuffer* pBuffer)
 	for (unsigned int i = 0; i < this->linkDefs.size(); i++)
 	{
 #ifdef DEBUG_MPI
-		pManager->log->writeLine("[DEBUG] Should now be pushing data to buffer at time " + Util::secondsToTime(dValidityTime) + " (" + toString(this->linkDefs[i].ulSize) + " bytes)");
+		model::log->writeLine("[DEBUG] Should now be pushing data to buffer at time " + Util::secondsToTime(dValidityTime) + " (" + toString(this->linkDefs[i].ulSize) + " bytes)");
 #endif
 		pBuffer->queueWritePartial(
 			this->linkDefs[i].ulOffsetTarget,

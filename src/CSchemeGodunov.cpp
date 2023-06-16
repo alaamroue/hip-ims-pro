@@ -19,9 +19,6 @@
 #include <algorithm>
 
 #include "common.h"
-#include "main.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
 #include "CDomainLink.h"
@@ -39,7 +36,7 @@ using std::max;
 CSchemeGodunov::CSchemeGodunov()
 {
 	// Scheme is loaded
-	pManager->log->writeLine( "Godunov-type scheme loaded for execution on OpenCL platform." );
+	model::log->writeLine( "Godunov-type scheme loaded for execution on OpenCL platform." );
 
 	// Default setup values
 	this->bRunning						= false;
@@ -93,7 +90,7 @@ CSchemeGodunov::CSchemeGodunov()
 	if ( this->bDebugOutput )
 		model::doError( "Debug mode is enabled!", model::errorCodes::kLevelWarning );
 
-	pManager->log->writeLine( "Populated scheme with default settings." );
+	model::log->writeLine( "Populated scheme with default settings." );
 }
 
 /*
@@ -102,7 +99,7 @@ CSchemeGodunov::CSchemeGodunov()
 CSchemeGodunov::~CSchemeGodunov(void)
 {
 	this->releaseResources();
-	pManager->log->writeLine( "The Godunov scheme class was unloaded from memory." );
+	model::log->writeLine( "The Godunov scheme class was unloaded from memory." );
 }
 
 /*
@@ -130,7 +127,7 @@ void	CSchemeGodunov::setupScheme(model::SchemeSettings schemeSettings)
  */
 void CSchemeGodunov::logDetails()
 {
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
 
 	std::string sSolver			= "Undefined";
@@ -152,20 +149,19 @@ void CSchemeGodunov::logDetails()
 		break;
 	}
 
-	pManager->log->writeLine( "GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME", true, wColour );
-	pManager->log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
-	pManager->log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	pManager->log->writeLine( "  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
-	pManager->log->writeLine( "  Boundaries:         " + toString(this->pDomain->getBoundaries()->getBoundaryCount()), true, wColour);
-	pManager->log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
-	pManager->log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
-	pManager->log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
-	pManager->log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
-	pManager->log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
+	model::log->writeLine( "GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME", true, wColour );
+	model::log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
+	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	model::log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
+	model::log->writeLine( "  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	model::log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
+	model::log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
+	model::log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
+	model::log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
+	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	model::log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 }
 
 /*
@@ -173,12 +169,12 @@ void CSchemeGodunov::logDetails()
  */
 void CSchemeGodunov::prepareAll()
 {
-	pManager->log->writeLine( "Starting to prepare program for Godunov-type scheme." );
+	model::log->writeLine( "Starting to prepare program for Godunov-type scheme." );
 
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		pManager->getExecutor(),
+		model::pManager->getExecutor(),
 		this->pDomain->getDevice()
 	);
 
@@ -188,7 +184,7 @@ void CSchemeGodunov::prepareAll()
 	this->dCurrentTime					= 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision( pManager->getFloatPrecision() == model::floatPrecision::kSingle );
+	this->oclModel->setForcedSinglePrecision( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle );
 
 	// OpenCL elements
 	if ( !this->prepare1OExecDimensions() ) 
@@ -292,17 +288,6 @@ bool CSchemeGodunov::prepareCode()
 }
 
 /*
- *  Create boundary data arrays etc.
- */
-bool CSchemeGodunov::prepareBoundaries()
-{
-	CBoundaryMap*	pBoundaries = this->pDomain->getBoundaries();
-	pBoundaries->prepareBoundaries( oclModel, oclBufferCellBed, oclBufferCellManning, oclBufferTime, oclBufferTimeHydrological, oclBufferTimestep );
-
-	return true;
-}
-
-/*
  *  Set the dry cell threshold depth
  */
 void	CSchemeGodunov::setDryThreshold( double dThresholdDepth )
@@ -401,7 +386,7 @@ unsigned char	CSchemeGodunov::getCacheConstraints()
 bool CSchemeGodunov::prepare1OExecDimensions()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL*		pExecutor	 = pManager->getExecutor();
+	CExecutorControlOpenCL*		pExecutor	 = model::pManager->getExecutor();
 	COCLDevice*		pDevice		 = pExecutor->getDevice();
 	CDomainCartesian*			pDomain		 = static_cast<CDomainCartesian*>( this->pDomain );
 
@@ -551,8 +536,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	oclModel->registerConstant( "TIMESTEP_WORKERS",		toString( this->ulReductionGlobalSize ) );
 	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	toString( this->ulReductionWorkgroupSize ) );
-	oclModel->registerConstant( "SCHEME_ENDTIME",		toString( pManager->getSimulationLength() ) );
-	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toString( pManager->getOutputFrequency() ) );
+	oclModel->registerConstant( "SCHEME_ENDTIME",		toString( model::pManager->getSimulationLength() ) );
+	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toString( model::pManager->getOutputFrequency() ) );
 	oclModel->registerConstant( "COURANT_NUMBER",		toString( this->dCourantNumber ) );
 
 	// --
@@ -577,12 +562,12 @@ bool CSchemeGodunov::prepare1OConstants()
 bool CSchemeGodunov::prepare1OMemory()
 {
 	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= pManager->getExecutor();
+	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	CBoundaryMap*				pBoundaries			= pDomain->getBoundaries();
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 
-	unsigned char ucFloatSize =  ( pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof( cl_float ) : sizeof( cl_double ) );
+	unsigned char ucFloatSize =  ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof( cl_float ) : sizeof( cl_double ) );
 
 	// --
 	// Batch tracking data
@@ -592,7 +577,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferBatchSuccessful = new COCLBuffer( "Batch successful iterations", oclModel, false, true, sizeof(cl_uint), true );
 	oclBufferBatchSkipped	 = new COCLBuffer( "Batch skipped iterations", oclModel, false, true, sizeof(cl_uint), true );
 
-	if ( pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		*( oclBufferBatchTimesteps->getHostBlock<float*>() )	= 0.0f;
 	} else {
@@ -646,7 +631,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferTimeHydrological	= new COCLBuffer( "Time (hydrological)", oclModel, false, true, ucFloatSize, true );
 
 	// We duplicate the time and timestep variables if we're using single-precision so we have copies in both formats
-	if ( pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		*( oclBufferTime->getHostBlock<float*>()     )			= static_cast<cl_float>( this->dCurrentTime );
 		*( oclBufferTimestep->getHostBlock<float*>() )			= static_cast<cl_float>( this->dCurrentTimestep );
@@ -686,7 +671,7 @@ bool CSchemeGodunov::prepare1OMemory()
 bool CSchemeGodunov::prepareGeneralKernels()
 {
 	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= pManager->getExecutor();
+	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	CBoundaryMap*				pBoundaries			= pDomain->getBoundaries();
 	COCLDevice*					pDevice				= pExecutor->getDevice();
@@ -774,7 +759,7 @@ void CSchemeGodunov::releaseResources()
 {
 	this->bReady = false;
 
-	pManager->log->writeLine("Releasing scheme resources held for OpenCL.");
+	model::log->writeLine("Releasing scheme resources held for OpenCL.");
 
 	this->release1OResources();
 }
@@ -786,7 +771,7 @@ void CSchemeGodunov::release1OResources()
 {
 	this->bReady = false;
 
-	pManager->log->writeLine("Releasing 1st-order scheme resources held for OpenCL.");
+	model::log->writeLine("Releasing 1st-order scheme resources held for OpenCL.");
 
 	if ( this->oclModel != NULL )							delete oclModel;
 	if ( this->oclKernelFullTimestep != NULL )				delete oclKernelFullTimestep;
@@ -847,14 +832,14 @@ void CSchemeGodunov::release1OResources()
 void	CSchemeGodunov::prepareSimulation()
 {
 	// Adjust cell bed elevations if necessary for boundary conditions
-	pManager->log->writeLine( "Adjusting domain data for boundaries..." );
+	model::log->writeLine( "Adjusting domain data for boundaries..." );
 	this->pDomain->getBoundaries()->applyDomainModifications();
 
 	// Initial volume in the domain
-	pManager->log->writeLine( "Initial domain volume: " + toString( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
+	model::log->writeLine( "Initial domain volume: " + toString( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
 
 	// Copy the initial conditions
-	pManager->log->writeLine( "Copying domain data to device..." );
+	model::log->writeLine( "Copying domain data to device..." );
 	oclBufferCellStates->queueWriteAll();
 	oclBufferCellStatesAlt->queueWriteAll();
 	oclBufferCellBed->queueWriteAll();
@@ -944,7 +929,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		{
 			this->bUpdateTargetTime = false;
 #ifdef DEBUG_MPI
-			pManager->log->writeLine("[DEBUG] Setting new target time of " + Util::secondsToTime(this->dTargetTime) + "...");
+			model::log->writeLine("[DEBUG] Setting new target time of " + Util::secondsToTime(this->dTargetTime) + "...");
 #endif
 		
 			if (pManager->getFloatPrecision() == model::floatPrecision::kSingle)
@@ -984,7 +969,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			//pDomain->getDevice()->blockUntilFinished();		// Shouldn't be needed
 			
 #ifdef DEBUG_MPI
-			pManager->log->writeLine("[DEBUG] Done updating new target time to " + Util::secondsToTime(this->dTargetTime) + "...");
+			model::log->writeLine("[DEBUG] Done updating new target time to " + Util::secondsToTime(this->dTargetTime) + "...");
 #endif
 		}
 
@@ -1055,7 +1040,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
-			pManager->log->writeLine("[DEBUG] Starting batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			model::log->writeLine("[DEBUG] Starting batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 #endif
 			
 		// Schedule a batch-load of work for the device
@@ -1066,7 +1051,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			for (unsigned int i = 0; i < uiQueueAmount; i++)
 			{
 #ifdef DEBUG_MPI
-				pManager->log->writeLine( "Scheduling a new iteration..." );
+				model::log->writeLine( "Scheduling a new iteration..." );
 #endif
 				this->scheduleIteration(
 					bUseAlternateKernel,
@@ -1101,7 +1086,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			this->readKeyStatistics();
 		
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "[DEBUG] Downloading link data at " + Util::secondsToTime(this->dCurrentTime) );
+			model::log->writeLine( "[DEBUG] Downloading link data at " + Util::secondsToTime(this->dCurrentTime) );
 #endif
 			for (unsigned int i = 0; i < this->pDomain->getDependentLinkCount(); i++)
 			{
@@ -1129,10 +1114,10 @@ void CSchemeGodunov::Threaded_runBatch()
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
 		{
-			pManager->log->writeLine("[DEBUG] Finished batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			model::log->writeLine("[DEBUG] Finished batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 			if ( this->dCurrentTimestep < 0.0 )
 			{
-				pManager->log->writeLine( "[DEBUG] We have a negative timestep..." );
+				model::log->writeLine( "[DEBUG] We have a negative timestep..." );
 			}
 		}
 #endif
@@ -1172,11 +1157,11 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 			"Simulation has exceeded target time",
 			model::errorCodes::kLevelWarning
 		);
-		pManager->log->writeLine(
+		model::log->writeLine(
 			"Current time:   "  + toString( dCurrentTime ) + 
 			", Target time:  " + toString( dTargetTime )
 		);
-		pManager->log->writeLine(
+		model::log->writeLine(
 			"Last sync point: "  + toString( dLastSyncTime )
 		);
 		return;
@@ -1319,7 +1304,7 @@ bool	CSchemeGodunov::isSimulationFailure( double dExpectedTargetTime )
 			"Scheme has exceeded target sync time. Rolling back...",
 			model::errorCodes::kLevelWarning
 		);
-		pManager->log->writeLine(
+		model::log->writeLine(
 			"Current time: " + toString(dCurrentTime) + 
 			", target time: " + toString(dExpectedTargetTime)
 		);
@@ -1359,7 +1344,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 		if ( dExpectedTargetTime - dCurrentTime > 1E-5 )
 		{
 #ifdef DEBUG_MPI
-			pManager->log->writeLine( "Expected target: " + toString( dExpectedTargetTime ) + " Current time: " + toString( dCurrentTime ) );
+			model::log->writeLine( "Expected target: " + toString( dExpectedTargetTime ) + " Current time: " + toString( dCurrentTime ) );
 #endif
 			return false;
 		}
@@ -1381,7 +1366,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 
 	// Assume success
 #ifdef DEBUG_MPI
-	//pManager->log->writeLine( "Domain is considered sync ready" );
+	//model::log->writeLine( "Domain is considered sync ready" );
 #endif
 	
 	return true;
@@ -1520,7 +1505,7 @@ void CSchemeGodunov::setTargetTime( double dTime )
 		return;
 
 #ifdef DEBUG_MPI
-	pManager->log->writeLine("[DEBUG] Received request to set target to " + toString(dTime));
+	model::log->writeLine("[DEBUG] Received request to set target to " + toString(dTime));
 #endif
 	this->dTargetTime = dTime;
 	//this->dLastSyncTime = this->dCurrentTime;

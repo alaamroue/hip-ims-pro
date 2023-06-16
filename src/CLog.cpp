@@ -19,7 +19,6 @@
 
 // Includes
 #include "common.h"
-#include "main.h"
 #include <sstream>
 
 /*
@@ -285,23 +284,12 @@ void CLog::writeDivide()
 void CLog::setColour( unsigned short wColour )
 {
 	// This only runs for windows!
-	#ifdef PLATFORM_WIN
 	HANDLE	hOut		= GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetConsoleTextAttribute(		// Future text
 		hOut, 
 		wColour
 	);
-	#endif
-	#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-	{
-		if ( !has_colors() || !can_change_color() )
-			return;
-
-		attron(COLOR_PAIR( (int)wColour ));
-	}
-	#endif
 }
 
 /*
@@ -310,18 +298,12 @@ void CLog::setColour( unsigned short wColour )
 void CLog::resetColour()
 {
 	// This only runs for windows!
-	#ifdef PLATFORM_WIN
 	HANDLE	hOut		= GetStdHandle( STD_OUTPUT_HANDLE );
 
 	SetConsoleTextAttribute(		// Future text
 		hOut, 
 		FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN
 	);
-	#endif
-	#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-		this->setColour( model::cli::colourMain );
-	#endif
 }
 
 /*

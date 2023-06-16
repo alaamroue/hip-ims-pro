@@ -39,48 +39,6 @@ CExecutorControlOpenCL::CExecutorControlOpenCL(void)
 }
 
 /*
- *  Setup the executor using parameters specified in the configuration file
- */
-void CExecutorControlOpenCL::setupFromConfig( XMLElement* pXNode )
-{
-	XMLElement*		pParameter			= pXNode->FirstChildElement();
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
-	unsigned int	uiDeviceFilter		= model::filters::devices::devicesCPU | 
-										  model::filters::devices::devicesGPU |
-										  model::filters::devices::devicesAPU;
-
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-
-		if ( strcmp( cParameterName, "devicefilter" ) == 0 )
-		{ 
-			uiDeviceFilter = 0;
-			if ( strstr( cParameterValue, "cpu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesCPU;
-			if ( strstr( cParameterValue, "gpu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesGPU;
-			if ( strstr( cParameterValue, "apu" ) != NULL )	
-				uiDeviceFilter |= model::filters::devices::devicesAPU;
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement();
-	}
-
-	this->setDeviceFilter( uiDeviceFilter );
-	if ( !this->createDevices() ) return;
-}
-
-/*
  *  Destructor
  */
 CExecutorControlOpenCL::~CExecutorControlOpenCL(void)
@@ -103,7 +61,7 @@ CExecutorControlOpenCL::~CExecutorControlOpenCL(void)
 	this->pDevices.clear();
 	delete [] this->clPlatforms;
 
-	pManager->log->writeLine( "The OpenCL executor is now unloaded." );
+	model::log->writeLine( "The OpenCL executor is now unloaded." );
 }
 
 /*
@@ -176,7 +134,7 @@ bool CExecutorControlOpenCL::getPlatforms(void)
  */
 void CExecutorControlOpenCL::logPlatforms(void)
 {
-	CLog*		pLog			= pManager->log;
+	CLog*		pLog			= model::log;
 	std::string	sPlatformNo;
 
 	unsigned short	wColour		= model::cli::colourInfoBlock;
@@ -258,11 +216,11 @@ bool CExecutorControlOpenCL::createDevices(void)
 					uiDeviceCount++;
 					pDevice->logDevice();
 				} else {
-					pManager->log->writeLine( "Device type is filtered." );
+					model::log->writeLine( "Device type is filtered." );
 					delete pDevice;
 				}
 			} else {
-				pManager->log->writeLine( "Device is not ready." );
+				model::log->writeLine( "Device is not ready." );
 				delete pDevice;
 			}
 		}
@@ -273,7 +231,7 @@ bool CExecutorControlOpenCL::createDevices(void)
 
 	delete[] clDevice;
 
-	pManager->log->writeLine( "The OpenCL executor is now fully loaded." );
+	model::log->writeLine( "The OpenCL executor is now fully loaded." );
 	this->setState( model::executorStates::executorReady );
 
 	return true;
@@ -392,7 +350,7 @@ void	CExecutorControlOpenCL::selectDevice( unsigned int uiDeviceNo )
 		);
 		return;
 	} else {
-		pManager->log->writeLine(
+		model::log->writeLine(
 			"Selected device: #" + toString( uiDeviceNo )
 		);
 	}

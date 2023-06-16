@@ -34,7 +34,7 @@ using std::max;
 CSchemeInertial::CSchemeInertial(void)
 {
 	// Scheme is loaded
-	pManager->log->writeLine( "Inertial scheme loaded for execution on OpenCL platform." );
+	model::log->writeLine( "Inertial scheme loaded for execution on OpenCL platform." );
 
 	// Default setup values
 	this->bDebugOutput					= false;
@@ -52,7 +52,7 @@ CSchemeInertial::CSchemeInertial(void)
 CSchemeInertial::~CSchemeInertial(void)
 {
 	this->releaseResources();
-	pManager->log->writeLine( "The inertial formula scheme was unloaded from memory." );
+	model::log->writeLine( "The inertial formula scheme was unloaded from memory." );
 }
 
 /*
@@ -166,7 +166,7 @@ void CSchemeInertial::prepareAll()
  */
 void CSchemeInertial::logDetails()
 {
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
 
 	std::string sConfiguration	= "Undefined";
@@ -180,19 +180,19 @@ void CSchemeInertial::logDetails()
 		break;
 	}
 
-	pManager->log->writeLine( "SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour );
-	pManager->log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	pManager->log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
-	pManager->log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	pManager->log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
-	pManager->log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
-	pManager->log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
-	pManager->log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
-	pManager->log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	pManager->log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
-	pManager->log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
+	model::log->writeLine( "SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour );
+	model::log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
+	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	model::log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
+	model::log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
+	model::log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
+	model::log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
+	model::log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
+	model::log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
+	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	model::log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 	
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 }
 
 /*
@@ -290,7 +290,7 @@ void CSchemeInertial::releaseResources()
 {
 	this->bReady = false;
 
-	pManager->log->writeLine("Releasing scheme resources held for OpenCL.");
+	model::log->writeLine("Releasing scheme resources held for OpenCL.");
 
 	this->releaseInertialResources();
 	this->release1OResources();
@@ -303,7 +303,7 @@ void CSchemeInertial::releaseInertialResources()
 {
 	this->bReady = false;
 
-	pManager->log->writeLine("Releasing inertial scheme resources held for OpenCL.");
+	model::log->writeLine("Releasing inertial scheme resources held for OpenCL.");
 
 	// Nothing to do?
 }

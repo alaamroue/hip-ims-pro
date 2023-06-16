@@ -45,7 +45,7 @@ CDomainManager::~CDomainManager(void)
 	for (unsigned int uiID = 0; uiID < domains.size(); ++uiID)
 		delete domains[uiID];
 
-	pManager->log->writeLine("The domain manager has been unloaded.");
+	model::log->writeLine("The domain manager has been unloaded.");
 }
 
 /*
@@ -59,7 +59,7 @@ CDomainBase*	CDomainManager::createNewDomain( unsigned char ucType )
 	domains.push_back( pNewDomain );
 	pNewDomain->setID( uiID );
 
-	pManager->log->writeLine( "A new domain has been created within the model." );
+	model::log->writeLine( "A new domain has been created within the model." );
 
 	return pNewDomain;
 }
@@ -201,7 +201,7 @@ bool	CDomainManager::isSetReady()
  */
 void	CDomainManager::generateLinks()
 {
-	pManager->log->writeLine("Generating link data for each domain");
+	model::log->writeLine("Generating link data for each domain");
 
 	for (unsigned int i = 0; i < domains.size(); i++)
 	{
@@ -230,30 +230,30 @@ void	CDomainManager::generateLinks()
  */
 void	CDomainManager::logDetails()
 {
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 	unsigned short	wColour = model::cli::colourInfoBlock;
 
-	pManager->log->writeLine("MODEL DOMAIN SET", true, wColour);
-	pManager->log->writeLine("  Domain count:      " + toString(this->getDomainCount()), true, wColour);
+	model::log->writeLine("MODEL DOMAIN SET", true, wColour);
+	model::log->writeLine("  Domain count:      " + toString(this->getDomainCount()), true, wColour);
 	if (this->getDomainCount() <= 1)
 	{
-		pManager->log->writeLine("  Synchronisation:   Not required", true, wColour);
+		model::log->writeLine("  Synchronisation:   Not required", true, wColour);
 	}
 	else {
 		if (this->getSyncMethod() == model::syncMethod::kSyncForecast)
 		{
-			pManager->log->writeLine("  Synchronisation:   Domain-independent forecast", true, wColour);
-			pManager->log->writeLine("    Forecast method: Aiming for " + toString(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
+			model::log->writeLine("  Synchronisation:   Domain-independent forecast", true, wColour);
+			model::log->writeLine("    Forecast method: Aiming for " + toString(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
 		}
 		if (this->getSyncMethod() == model::syncMethod::kSyncTimestep)
-			pManager->log->writeLine("  Synchronisation:   Explicit timestep exchange", true, wColour);
+			model::log->writeLine("  Synchronisation:   Explicit timestep exchange", true, wColour);
 	}
 
-	pManager->log->writeLine("", false, wColour);
+	model::log->writeLine("", false, wColour);
 
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);	
-	pManager->log->writeLine("| Domain | Node | Device |  Rows  |  Cols  | Maths | Links | Resol |", false, wColour);	
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
+	model::log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);	
+	model::log->writeLine("| Domain | Node | Device |  Rows  |  Cols  | Maths | Links | Resol |", false, wColour);	
+	model::log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
 
 	for (unsigned int i = 0; i < this->getDomainCount(); i++)
 	{
@@ -275,12 +275,12 @@ void	CDomainManager::logDetails()
 			toString(resolutionShort).c_str()
 		);
 
-		pManager->log->writeLine(std::string(cDomainLine), false, wColour);	// 13
+		model::log->writeLine(std::string(cDomainLine), false, wColour);	// 13
 	}
 
-	pManager->log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
+	model::log->writeLine("+--------+------+--------+--------+--------+-------+-------+-------+", false, wColour);
 
-	pManager->log->writeDivide();
+	model::log->writeDivide();
 }
 
 
