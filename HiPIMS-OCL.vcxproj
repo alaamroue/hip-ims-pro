@@ -137,8 +137,6 @@
     <ClInclude Include="src\CLCode.h" />
     <ClInclude Include="src\CLog.h" />
     <ClInclude Include="src\CModel.h" />
-    <ClInclude Include="src\CMPIManager.h" />
-    <ClInclude Include="src\CMPINode.h" />
     <ClInclude Include="src\COCLBuffer.h" />
     <ClInclude Include="src\COCLDevice.h" />
     <ClInclude Include="src\COCLKernel.h" />
@@ -149,7 +147,6 @@
     <ClInclude Include="src\CSchemeGodunov.h" />
     <ClInclude Include="src\CSchemeInertial.h" />
     <ClInclude Include="src\CSchemeMUSCLHancock.h" />
-    <ClInclude Include="src\CXMLDataset.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\opencl.h" />
     <ClInclude Include="src\platforms.h" />
@@ -177,8 +174,6 @@
     <ClCompile Include="src\CExecutorControlOpenCL.cpp" />
     <ClCompile Include="src\CLog.cpp" />
     <ClCompile Include="src\CModel.cpp" />
-    <ClCompile Include="src\CMPIManager.cpp" />
-    <ClCompile Include="src\CMPINode.cpp" />
     <ClCompile Include="src\COCLBuffer.cpp" />
     <ClCompile Include="src\COCLDevice.cpp" />
     <ClCompile Include="src\COCLKernel.cpp" />
@@ -188,10 +183,8 @@
     <ClCompile Include="src\CSchemeGodunov.cpp" />
     <ClCompile Include="src\CSchemeInertial.cpp" />
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp" />
-    <ClCompile Include="src\CXMLDataset.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\tinyxml2.cpp" />
-    <ClCompile Include="src\unix_platform.cpp" />
     <ClCompile Include="src\util.cpp" />
     <ClCompile Include="src\windows_platform.cpp" />
   </ItemGroup>

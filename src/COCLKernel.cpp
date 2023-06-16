@@ -18,12 +18,11 @@
  */
 
 // Includes
-#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <cmath>
 #include <thread>
 
-#include "../../common.h"
+#include "common.h"
 #include "COCLDevice.h"
 #include "COCLProgram.h"
 #include "COCLBuffer.h"

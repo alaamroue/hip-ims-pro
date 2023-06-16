@@ -72,10 +72,6 @@ class CLog
 		std::ofstream	logStream;							// Handle for the log file stream
 		unsigned int	uiDebugFileID;						// Incremental tracking for debug files output
 		unsigned int	uiLineCount;						// Number of lines written
-#ifdef MPI_ON
-		int				iProcID;							// MPI process ID
-		int				iProcCount;							// MPI process count
-#endif
 
 		// Private functions
 		void		writeHeader( void );					// Information about the application

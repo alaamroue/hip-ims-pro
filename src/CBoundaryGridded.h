@@ -19,7 +19,7 @@
 #ifndef HIPIMS_BOUNDARIES_CBOUNDARYGRIDDED_H_
 #define HIPIMS_BOUNDARIES_CBOUNDARYGRIDDED_H_
 
-#include "../common.h"
+#include "common.h"
 #include "CBoundary.h"
 
 class CBoundaryGridded : public CBoundary

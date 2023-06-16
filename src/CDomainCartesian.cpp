@@ -19,19 +19,17 @@
 #include <limits>
 #include <stdio.h>
 #include <cstring>
-#include <boost/lexical_cast.hpp>
 
-#include "../../common.h"
-#include "../../main.h"
-#include "../../CModel.h"
-#include "../CDomainManager.h"
-#include "../CDomain.h"
-#include "../../Schemes/CScheme.h"
-#include "../../Datasets/CXMLDataset.h"
-#include "../../Datasets/CRasterDataset.h"
-#include "../../OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "../../Boundaries/CBoundaryMap.h"
-#include "../../MPI/CMPIManager.h"
+#include "common.h"
+#include "main.h"
+#include "CModel.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CScheme.h"
+
+#include "CRasterDataset.h"
+#include "CExecutorControlOpenCL.h"
+#include "CBoundaryMap.h"
 #include "CDomainCartesian.h"
 
 /*
@@ -68,93 +66,10 @@ CDomainCartesian::~CDomainCartesian(void)
  */
 bool CDomainCartesian::configureDomain( XMLElement* pXDomain )
 {
-	XMLElement* pXData;
-	XMLElement* pXScheme;
-	XMLElement* pXDataSource;
 
-	char	*cSourceType = NULL, 
-			*cSourceValue = NULL,
-			*cSourceFile = NULL;
 
-	// Call the base-class configuration loading stuff first
-	// which will address the device ID and the source/target
-	// dirs.
-	if ( !CDomain::configureDomain( pXDomain ) )
-		return false;
 
-	pXData = pXDomain->FirstChildElement( "data" );
-	pXDataSource	= pXData->FirstChildElement("dataSource");
 
-	while ( pXDataSource != NULL )
-	{
-		Util::toLowercase( &cSourceType,  pXDataSource->Attribute( "type" ) );
-		Util::toLowercase( &cSourceValue, pXDataSource->Attribute( "value" ) );
-		Util::toNewString( &cSourceFile,  pXDataSource->Attribute( "source" ) );
-
-		// TODO: What if there is no structure definition? Should try the DEM instead?
-		if ( strstr( cSourceValue, "structure" ) != NULL )
-		{
-			if ( strcmp( cSourceType, "raster" ) != 0 )
-			{
-				model::doError(
-					"Domain structure can only be loaded from a raster.",
-					model::errorCodes::kLevelWarning
-				);
-				return false;
-			}
-
-			CRasterDataset	pDataset;
-			pManager->log->writeLine( "Attempting to read domain structure data." );
-			pDataset.openFileRead( std::string( cSourceDir ) + std::string( cSourceFile ) );
-			pManager->log->writeLine( "Successfully opened domain dataset for structure data." );
-			pDataset.logDetails();
-			
-			pDataset.applyDimensionsToDomain( this );
-		}
-
-		pXDataSource = pXDataSource->NextSiblingElement("dataSource");
-	}
-
-	pManager->log->writeLine( "Progressing to load boundary conditions." );
-	if ( !this->getBoundaries()->setupFromConfig( pXDomain ) )
-		return false;
-
-	pXScheme = pXDomain->FirstChildElement( "scheme" );
-	if ( pXScheme == NULL )
-	{
-		model::doError(
-			"The <scheme> element is missing.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	} else {
-		pScheme = CScheme::createFromConfig( pXScheme );
-		pScheme->setupFromConfig( pXScheme );
-		pScheme->setDomain( this );
-		pScheme->prepareAll();
-		setScheme( pScheme );
-
-		if ( !pScheme->isReady() )
-		{
-			model::doError(
-				"Numerical scheme is not ready. Check errors.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		} else {
-			pManager->log->writeLine( "Numerical scheme reports it is ready." );
-		}
-	}
-
-	pManager->log->writeLine( "Progressing to load initial conditions." );
-	if ( !this->loadInitialConditions( pXData ) )
-		return false;
-
-	pManager->log->writeLine( "Progressing to load output file definitions." );
-	if ( !this->loadOutputDefinitions( pXData ) )
-		return false;
-
-	return true;
 }
 
 /*
@@ -277,133 +192,6 @@ bool	CDomainCartesian::loadInitialConditions( XMLElement* pXData )
 			);
 			return false;
 		}
-	}
-
-	return true;
-}
-
-/*
- *  Load the output definitions for what should be written to disk
- */
-bool	CDomainCartesian::loadOutputDefinitions( XMLElement* pXData )
-{
-	XMLElement*		pDataTarget		= pXData->FirstChildElement("dataTarget");
-	char			*cOutputType    = NULL, 
-					*cOutputValue   = NULL,
-					*cOutputFormat  = NULL,
-					*cOutputFile    = NULL;
-
-	while ( pDataTarget != NULL )
-	{
-		Util::toLowercase( &cOutputType,   pDataTarget->Attribute( "type" ) );
-		Util::toLowercase( &cOutputValue,  pDataTarget->Attribute( "value" ) );
-		Util::toNewString( &cOutputFormat, pDataTarget->Attribute( "format" ) );
-		Util::toNewString( &cOutputFile,   pDataTarget->Attribute( "target" ) );
-
-		if ( cOutputType   == NULL || 
-			 cOutputValue  == NULL || 
-			 cOutputFormat == NULL || 
-			 cOutputFile   == NULL )
-		{
-			model::doError(
-				"Output definition is missing data.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
-
-		if ( strcmp( cOutputType, "raster" ) == 0 )
-		{
-			sDataTargetInfo	pOutput;
-
-			pOutput.cFormat	= cOutputFormat;
-			pOutput.cType   = cOutputType;
-			pOutput.sTarget = std::string( cTargetDir ) + std::string( cOutputFile );
-			pOutput.ucValue = this->getDataValueCode( cOutputValue );
-
-			addOutput( pOutput );
-		} else {
-			// TODO: Allow for timeseries outputs in specific cells etc.
-			model::doError(
-				"An invalid output format type was given.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pDataTarget = pDataTarget->NextSiblingElement("dataTarget");
-	}
-
-	pManager->log->writeLine( "Identified " + toString( this->pOutputs.size() ) + " output file definition(s)." );
-
-	return true;
-}
-
-/*
- *  Read a data source raster or constant using the pre-parsed data held in the structure
- */
-bool	CDomainCartesian::loadInitialConditionSource( sDataSourceInfo pDataSource, char* cDataDir )
-{
-	if ( strcmp( pDataSource.cSourceType, "raster" ) == 0 )
-	{
-		CRasterDataset	pDataset;
-		pDataset.openFileRead( 
-			std::string( cDataDir ) + std::string( pDataSource.cFileValue ) 
-		);
-		return pDataset.applyDataToDomain( pDataSource.ucValue, this );
-	} 
-	else if ( strcmp( pDataSource.cSourceType, "constant" ) == 0 )
-	{
-		if ( !CXMLDataset::isValidFloat( pDataSource.cFileValue ) )
-		{
-			model::doError(
-				"Invalid source constant given.",
-				model::errorCodes::kLevelWarning
-			);
-			return false;
-		}
-		double	dValue = boost::lexical_cast<double>( pDataSource.cFileValue );
-
-		// NOTE: The outer layer of cells are exempt here, as they are not computed
-		// but there may be some circumstances where we want a value here?
-		for( unsigned long i = 0; i < this->getCols(); i++ )
-		{
-			for( unsigned long j = 0; j < this->getRows(); j++ )
-			{
-				unsigned long ulCellID = this->getCellID( i, j );
-				if (i <= 0 || 
-					j <= 0 ||
-					i >= this->getCols() - 1 || 
-					j >= this->getRows() - 1)
-				{
-					double dEdgeValue = 0.0;
-					if (pDataSource.ucValue == model::rasterDatasets::dataValues::kFreeSurfaceLevel)
-						dEdgeValue = this->getBedElevation( ulCellID );
-					this->handleInputData(
-						ulCellID,
-						dEdgeValue,
-						pDataSource.ucValue,
-						4	// TODO: Allow rounding to be configured for source constants
-					);
-				}
-				else 
-				{
-					this->handleInputData(
-						ulCellID,
-						dValue,
-						pDataSource.ucValue,
-						4	// TODO: Allow rounding to be configured for source constants
-					);
-				}
-			}
-		}
-	} 
-	else 
-	{
-		model::doError(
-			"Unrecognised data source type.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
 	}
 
 	return true;
@@ -838,11 +626,7 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	pSummary.bAuthoritative = true;
 
 	pSummary.uiDomainID		= this->uiID;
-#ifdef MPI_ON
-	pSummary.uiNodeID = pManager->getMPIManager()->getNodeID();
-#else
 	pSummary.uiNodeID = 0;
-#endif
 	pSummary.uiLocalDeviceID = this->getDevice()->getDeviceID();
 	pSummary.dEdgeNorth		= this->dRealExtent[kEdgeN];
 	pSummary.dEdgeEast		= this->dRealExtent[kEdgeE];

@@ -21,10 +21,10 @@
 // executors for the purposes of this model now).
 
 // Includes
-#include "../common.h"
-#include "../Datasets/CXMLDataset.h"
+#include "common.h"
+
 #include "CExecutorControl.h"
-#include "../OpenCL/Executors/CExecutorControlOpenCL.h"
+#include "CExecutorControlOpenCL.h"
 
 /*
  *  Constructor

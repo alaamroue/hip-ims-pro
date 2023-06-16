@@ -19,10 +19,9 @@
 #ifndef HIPIMS_OPENCL_OCLPROGRAM_H
 #define HIPIMS_OPENCL_OCLPROGRAM_H
 
-#include <unordered_map>
-
 #include "CExecutorControlOpenCL.h"
 #include "COCLDevice.h"
+#include <unordered_map>
 
 class COCLKernel;
 class COCLProgram

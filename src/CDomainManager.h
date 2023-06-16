@@ -19,7 +19,7 @@
 #ifndef HIPIMS_DOMAIN_CDOMAINMANAGER_H_
 #define HIPIMS_DOMAIN_CDOMAINMANAGER_H_
 
-#include "../OpenCL/opencl.h"
+#include "opencl.h"
 #include <vector>
 
 class CDomainBase;
@@ -56,6 +56,7 @@ class CDomainManager
 		bool					setupFromConfig( XMLElement* );										// Set up the domain set
 		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
+		std::vector<CDomainBase*>* getDomainBaseVector();											// Fetch a domain base vector
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID
 		CDomain*				getDomain( unsigned int );											// Fetch a domain by ID
 		CDomain*				getDomain( double, double );										// Fetch a domain by coordinate

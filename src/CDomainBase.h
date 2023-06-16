@@ -21,18 +21,7 @@
 
 #include <vector>
 
-#include "../OpenCL/opencl.h"
-
-namespace model {
-
-// Model domain structure types
-namespace domainStructureTypes{ enum domainStructureTypes {
-	kStructureCartesian						= 0,	// Cartesian
-	kStructureRemote						= 1,	// Remotely held domain
-	kStructureInvalid						= 255	// Error state, cannot work with this type of domain
-}; }
-
-}
+#include "opencl.h"
 
 /*
  *  DOMAIN BASE CLASS

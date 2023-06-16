@@ -16,16 +16,14 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-
-#include "../common.h"
+#include "common.h"
 #include "CDomain.h"
-#include "Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
-#include "../Datasets/CRasterDataset.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Schemes/CScheme.h"
-#include "../OpenCL/Executors/COCLDevice.h"
+#include "CDomainCartesian.h"
+
+#include "CRasterDataset.h"
+#include "CBoundaryMap.h"
+#include "CScheme.h"
+#include "COCLDevice.h"
 
 /*
  *  Constructor
@@ -76,74 +74,13 @@ CDomain::~CDomain(void)
 }
 
 /*
- *  Configure the domain using the XML file
- */
-bool CDomain::configureDomain( XMLElement* pXDomain )
-{
-	XMLElement*		pXData;
-
-	// Device number(s) are now declared as part of the domain to allow for
-	// split workloads etc.
-	char			*cDomainDevice		= NULL;
-	Util::toLowercase( &cDomainDevice, pXDomain->Attribute( "deviceNumber" ) );
-
-	// TODO: For now we're only working with 1 device. If we need more than one device,
-	// the domain manager must handle splitting...
-	// TODO: Device selection/assignment should take place in the domain manager class.
-
-	/*
-	// Validate the device number
-	if ( cDomainDevice == NULL )
-	{
-		// Select a device automatically
-		pDevice = pManager->getExecutor()->getDevice();
-	} else {
-		if ( CXMLDataset::isValidUnsignedInt( std::string(cDomainDevice) ) )
-		{
-			pDevice = pManager->getExecutor()->getDevice( boost::lexical_cast<unsigned int>(cDomainDevice) );
-		} else {
-			model::doError(
-				"The domain device specified is invalid.",
-				model::errorCodes::kLevelWarning
-			);
-		}
-	}
-	*/
-
-	if ( pDevice == NULL )
-	{
-		model::doError(
-			"No valid device was identified for the domain.",
-			model::errorCodes::kLevelWarning
-		);
-		return false;
-	}
-
-	pXData = pXDomain->FirstChildElement( "data" );
-	const char*	cDataSourceDir = pXData->Attribute( "sourceDir" );
-	const char*	cDataTargetDir = pXData->Attribute( "targetDir" );
-
-	if ( cDataSourceDir != NULL )
-	{
-		this->cSourceDir = new char[ std::strlen( cDataSourceDir ) + 1 ];
-		std::strcpy( this->cSourceDir, cDataSourceDir );
-	}
-	if ( cDataTargetDir != NULL )
-	{
-		this->cTargetDir = new char[ std::strlen( cDataTargetDir ) + 1 ];
-		std::strcpy( this->cTargetDir, cDataTargetDir );
-	}
-
-	return true;
-}
-
-/*
  *  Creates an OpenCL memory buffer for the specified data store
  */
 void	CDomain::createStoreBuffers(
 			void**			vArrayCellStates,
 			void**			vArrayBedElevations,
 			void**			vArrayManningCoefs,
+			void**			vArrayBoundaryValues,
 			unsigned char	ucFloatSize
 		)
 {
@@ -159,25 +96,31 @@ void	CDomain::createStoreBuffers(
 			this->fCellStates		= new cl_float4[ this->ulCellCount ];
 			this->fBedElevations	= new cl_float[ this->ulCellCount ];
 			this->fManningValues	= new cl_float[ this->ulCellCount ];
+			this->fBoundaryValues	= new cl_float[ this->ulCellCount ];
 			this->dCellStates		= (cl_double4*)( this->fCellStates );
 			this->dBedElevations	= (cl_double*)( this->fBedElevations );
 			this->dManningValues	= (cl_double*)( this->fManningValues );
+			this->dBoundaryValues	= (cl_double*)( this->fBoundaryValues);
 
 			*vArrayCellStates	 = static_cast<void*>( this->fCellStates );
 			*vArrayBedElevations = static_cast<void*>( this->fBedElevations );
 			*vArrayManningCoefs	 = static_cast<void*>( this->fManningValues );
+			*vArrayBoundaryValues= static_cast<void*>( this->fBoundaryValues);
 		} else {
 			// Double precision
 			this->dCellStates		= new cl_double4[ this->ulCellCount ];
 			this->dBedElevations	= new cl_double[ this->ulCellCount ];
 			this->dManningValues	= new cl_double[ this->ulCellCount ];
+			this->dBoundaryValues	= new cl_double[ this->ulCellCount ];
 			this->fCellStates		= (cl_float4*)( this->dCellStates );
 			this->fBedElevations	= (cl_float*)( this->dBedElevations );
 			this->fManningValues	= (cl_float*)( this->dManningValues );
+			this->fBoundaryValues	= (cl_float*)( this->dBoundaryValues);
 
 			*vArrayCellStates	 = static_cast<void*>( this->dCellStates );
 			*vArrayBedElevations = static_cast<void*>( this->dBedElevations );
 			*vArrayManningCoefs	 = static_cast<void*>( this->dManningValues );
+			*vArrayBoundaryValues= static_cast<void*>( this->dBoundaryValues);
 		}
 	}
 	catch( std::bad_alloc )
@@ -276,6 +219,16 @@ double	CDomain::getManningCoefficient( unsigned long ulCellID )
 	if ( this->ucFloatSize == 4 ) 
 		return static_cast<double>( this->fManningValues[ ulCellID ] );
 	return this->dManningValues[ ulCellID ];
+}
+
+/*
+ *  Gets the Manning coefficient for a given cell
+ */
+double	CDomain::getBoundaryCondition( unsigned long ulCellID )
+{
+	if ( this->ucFloatSize == 4 ) 
+		return static_cast<double>( this->fBoundaryValues[ ulCellID ] );
+	return this->dBoundaryValues[ ulCellID ];
 }
 
 /*
@@ -395,6 +348,22 @@ void	CDomain::handleInputData(
 		break;
 	}
 }
+
+
+/*
+ *  Sets the Manning coefficient for a given cell
+ */
+void	CDomain::setBoundaryCondition(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fBoundaryValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dBoundaryValues[ulCellID] = dCoefficient;
+	}
+}
+
 
 /*
  *  Calculate the total volume present in all of the cells

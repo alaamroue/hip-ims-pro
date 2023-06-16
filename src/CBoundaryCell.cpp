@@ -17,14 +17,13 @@
  *
  */
 #include <vector>
-#include <boost/lexical_cast.hpp>
 
 #include "CBoundaryMap.h"
 #include "CBoundaryCell.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../OpenCL/Executors/COCLBuffer.h"
-#include "../OpenCL/Executors/COCLKernel.h"
-#include "../common.h"
+#include "CDomainCartesian.h"
+#include "COCLBuffer.h"
+#include "COCLKernel.h"
+#include "common.h"
 
 using std::vector;
 
@@ -232,67 +231,6 @@ void CBoundaryCell::importTimeseries(CCSVDataset *pCSV)
  */
 void CBoundaryCell::importMap(CCSVDataset *pCSV)
 {
-	unsigned int uiIndex = 0;
-	bool bInvalidEntries = false;
-	bool bProcessedHeaders = false;
-
-	if (!pCSV->isReady())
-		return;
-
-	this->pRelations = new sRelationCell[pCSV->getLength()];
-	this->uiRelationCount = 0;
-
-	for (vector<vector<std::string>>::const_iterator it = pCSV->begin();
-		it != pCSV->end();
-		it++)
-	{
-		// TODO: Check if there are headers first... first time should be zero
-		if (uiIndex == 0 && !bProcessedHeaders)
-		{
-			bProcessedHeaders = true;
-			continue;
-		}
-
-		if (it->size() == 2)
-		{
-			try
-			{
-				this->pRelations[uiIndex].uiCellX = boost::lexical_cast<unsigned int>((*it)[0]);
-				this->pRelations[uiIndex].uiCellY = boost::lexical_cast<unsigned int>((*it)[1]);
-				uiIndex++;
-			}
-			catch (boost::bad_lexical_cast)
-			{
-				bInvalidEntries = true;
-			}
-		} else if (it->size() == 3) {
-			try
-			{
-				if ((*it)[2] == this->getName())
-				{
-					this->pRelations[uiIndex].uiCellX = boost::lexical_cast<unsigned int>((*it)[0]);
-					this->pRelations[uiIndex].uiCellY = boost::lexical_cast<unsigned int>((*it)[1]);
-					uiIndex++;
-				}
-			}
-			catch (boost::bad_lexical_cast)
-			{
-				bInvalidEntries = true;
-			}
-		} else {
-			bInvalidEntries = true;
-		}
-	}
-
-	if (bInvalidEntries)
-	{
-		model::doError(
-			"Some CSV entries were not valid for a boundary map file.",
-			model::errorCodes::kLevelWarning
-		);
-	}
-
-	this->uiRelationCount = uiIndex;
 }
 
 void CBoundaryCell::prepareBoundary(

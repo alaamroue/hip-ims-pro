@@ -19,7 +19,7 @@
 #ifndef HIPIMS_PLATFORMS_UNIX_PLATFORM_H_
 #define HIPIMS_PLATFORMS_UNIX_PLATFORM_H_
 
-#include "../common.h"
+#include "common.h"
 #include <execinfo.h>
 #include <signal.h>
 #include <stdlib.h>

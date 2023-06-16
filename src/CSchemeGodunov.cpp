@@ -16,20 +16,17 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string_regex.hpp>
 #include <algorithm>
 
-#include "../common.h"
-#include "../main.h"
-#include "../Boundaries/CBoundaryMap.h"
-#include "../Boundaries/CBoundary.h"
-#include "../Domain/CDomainManager.h"
-#include "../Domain/CDomain.h"
-#include "../Domain/Links/CDomainLink.h"
-#include "../Domain/Cartesian/CDomainCartesian.h"
-#include "../Datasets/CXMLDataset.h"
+#include "common.h"
+#include "main.h"
+#include "CBoundaryMap.h"
+#include "CBoundary.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CDomainLink.h"
+#include "CDomainCartesian.h"
+
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
@@ -85,6 +82,7 @@ CSchemeGodunov::CSchemeGodunov()
 	oclBufferCellStates					= NULL;
 	oclBufferCellStatesAlt				= NULL;
 	oclBufferCellManning				= NULL;
+	oclBufferCellBoundary				= NULL;
 	oclBufferCellBed					= NULL;
 	oclBufferTimestep					= NULL;
 	oclBufferTimestepReduction			= NULL;
@@ -110,231 +108,21 @@ CSchemeGodunov::~CSchemeGodunov(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeGodunov::setupFromConfig( XMLElement* pXScheme, bool bInheritanceChain )
+void	CSchemeGodunov::setupScheme(model::SchemeSettings schemeSettings)
 {
-	// Call the base class function which handles a couple of things
-	CScheme::setupFromConfig( pXScheme, true );
 
-	// Read the parameters
-	XMLElement		*pParameter		= pXScheme->FirstChildElement("parameter");
-	char			*cParameterName = NULL, *cParameterValue = NULL;
+	this->setCourantNumber(schemeSettings.CourantNumber);
+	this->setDryThreshold(schemeSettings.DryThreshold);
+	this->setTimestepMode(schemeSettings.TimestepMode);
+	this->setTimestep(schemeSettings.Timestep);
+	this->setReductionWavefronts(schemeSettings.ReductionWavefronts);
+	this->setFrictionStatus(schemeSettings.FrictionStatus);
+	this->setRiemannSolver(schemeSettings.RiemannSolver);
+	this->setCachedWorkgroupSize(schemeSettings.CachedWorkgroupSize[0], schemeSettings.CachedWorkgroupSize[1]);
+	this->setNonCachedWorkgroupSize(schemeSettings.CachedWorkgroupSize[0], schemeSettings.CachedWorkgroupSize[1]);
+	this->setCacheMode(schemeSettings.CacheMode);
+	this->setCacheConstraints(schemeSettings.CacheConstraints);
 
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName,  pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-
-		// These parameter apply to Godunov and all its child classes
-		if ( strcmp( cParameterName, "courantnumber" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid Courant number given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setCourantNumber( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "drythreshold" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid dry threshold depth given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setDryThreshold( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepmode" ) == 0 )
-		{ 
-			unsigned char ucTimestepMode = 255;
-			if ( strcmp( cParameterValue, "auto" ) == 0 ||
-					strcmp( cParameterValue, "cfl" ) == 0 )
-				ucTimestepMode = model::timestepMode::kCFL;
-			if ( strcmp( cParameterValue, "fixed" ) == 0 )
-				ucTimestepMode = model::timestepMode::kFixed;
-			if ( ucTimestepMode == 255 )
-			{
-				model::doError(
-					"Invalid timestep mode given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setTimestepMode( ucTimestepMode );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepinitial" ) == 0 ||
-					strcmp( cParameterName, "timestepfixed" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid initial/fixed timestep given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setTimestep( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "timestepreductiondivisions" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidUnsignedInt( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid reduction divisions given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setReductionWavefronts( boost::lexical_cast<unsigned int>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "frictioneffects" ) == 0 )
-		{ 
-			unsigned char ucFriction = 255;
-			if ( strcmp( cParameterValue, "yes" ) == 0 )
-				ucFriction = 1;
-			if ( strcmp( cParameterValue, "no" ) == 0 )
-				ucFriction = 0;
-			if ( ucFriction == 255 )
-			{
-				model::doError(
-					"Invalid friction state given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setFrictionStatus( ucFriction == 1 );
-			}
-		}
-		else if ( strcmp( cParameterName, "riemannsolver" ) == 0 )
-		{ 
-			unsigned char ucSolver = 255;
-			if ( strcmp( cParameterValue, "hllc" ) == 0 )
-				ucSolver = model::solverTypes::kHLLC;
-			if ( ucSolver == 255 )
-			{
-				model::doError(
-					"Invalid Riemann solver given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setRiemannSolver( ucSolver );
-			}
-		}
-		else if ( strcmp( cParameterName, "groupsize" ) == 0 )
-		{
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
-		else if ( strcmp( cParameterName, "cachedgroupsize" ) == 0 )
-		{ 
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid cached group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
-		else if ( strcmp( cParameterName, "noncachedgroupsize" ) == 0 )
-		{ 
-			std::string sParameterValue = std::string( cParameterValue );
-			std::vector<std::string> sSizes;
-			boost::split(sSizes, sParameterValue, boost::is_any_of("x"));
-			if ( (   sSizes.size() == 1 &&   !CXMLDataset::isValidUnsignedInt( sSizes[0] ) ) ||
-				   ( sSizes.size() == 2 && ( !CXMLDataset::isValidUnsignedInt( sSizes[0] )   || !CXMLDataset::isValidUnsignedInt( sSizes[1] ) ) ) ||
-				     sSizes.size() > 2 )
-			{
-				model::doError(
-					"Invalid non-cached group size given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				if ( sSizes.size() == 1 )
-				{
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ) );
-				} else {
-					this->setNonCachedWorkgroupSize( boost::lexical_cast<unsigned int>( sSizes[0] ), boost::lexical_cast<unsigned int>( sSizes[1] ) );
-				}
-			}
-		}
-
-		if ( !bInheritanceChain )
-		{
-			if ( strcmp( cParameterName, "localcachelevel" ) == 0 )
-			{ 
-				unsigned char usCache = 255;
-				if ( strcmp( cParameterValue, "maximum" ) == 0 || strcmp( cParameterValue, "max" ) == 0 || strcmp( cParameterValue, "enabled" ) == 0 )
-					usCache = model::schemeConfigurations::godunovType::kCacheEnabled;
-				if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "no" ) == 0 )
-					usCache = model::schemeConfigurations::godunovType::kCacheNone;
-				if ( usCache == 255 )
-				{
-					model::doError(
-						"Invalid cache level given.",
-						model::errorCodes::kLevelWarning
-					);
-				} else {
-					this->setCacheMode( usCache );
-				}
-			}
-			else if ( strcmp( cParameterName, "localcacheconstraints" ) == 0 )
-			{ 
-				unsigned char ucCacheConstraints = 255;
-				if ( strcmp( cParameterValue, "none" ) == 0 || strcmp( cParameterValue, "normal" ) == 0 || strcmp( cParameterValue, "actual" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
-				if ( strcmp( cParameterValue, "larger" ) == 0 || strcmp( cParameterValue, "oversized" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowOversize;
-				if ( strcmp( cParameterValue, "smaller" ) == 0 || strcmp( cParameterValue, "undersized" ) == 0 )
-					ucCacheConstraints = model::cacheConstraints::godunovType::kCacheAllowUndersize;
-				if ( ucCacheConstraints == 255 )
-				{
-					model::doError(
-						"Invalid cache constraints given.",
-						model::errorCodes::kLevelWarning
-					);
-				} else {
-					this->setCacheConstraints( ucCacheConstraints );
-				}
-			}
-		}
-
-		pParameter = pParameter->NextSiblingElement("parameter");
-	}
 }
 
 /*
@@ -821,27 +609,31 @@ bool CSchemeGodunov::prepare1OMemory()
 	// Domain and cell state data
 	// --
 
-	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL;
+	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL;
 	pDomain->createStoreBuffers(
 		&pCellStates,
 		&pBedElevations,
 		&pManningValues,
+		&pBoundaryValues,
 		ucFloatSize
 	);
 
 	oclBufferCellStates		= new COCLBuffer( "Cell states",			oclModel, false, true );
 	oclBufferCellStatesAlt	= new COCLBuffer( "Cell states (alternate)",oclModel, false, true );
 	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	true ); 
+	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",	oclModel, true,	true );
 	oclBufferCellBed		= new COCLBuffer( "Bed elevations",			oclModel, true, true );
 
 	oclBufferCellStates->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellStatesAlt->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellManning->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
+	oclBufferCellBoundary->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
 	oclBufferCellBed->setPointer( pBedElevations, ucFloatSize * pDomain->getCellCount() );
 
 	oclBufferCellStates->createBuffer();
 	oclBufferCellStatesAlt->createBuffer();
 	oclBufferCellManning->createBuffer();
+	oclBufferCellBoundary->createBuffer();
 	oclBufferCellBed->createBuffer();
 
 	// --
@@ -1006,6 +798,7 @@ void CSchemeGodunov::release1OResources()
 	if ( this->oclBufferCellStates != NULL )				delete oclBufferCellStates;
 	if ( this->oclBufferCellStatesAlt != NULL )				delete oclBufferCellStatesAlt;
 	if ( this->oclBufferCellManning != NULL )				delete oclBufferCellManning;
+	if ( this->oclBufferCellBoundary != NULL )				delete oclBufferCellBoundary;
 	if ( this->oclBufferCellBed != NULL )					delete oclBufferCellBed;
 	if ( this->oclBufferTimestep != NULL )					delete oclBufferTimestep;
 	if ( this->oclBufferTimestepReduction != NULL )			delete oclBufferTimestepReduction;
@@ -1023,6 +816,7 @@ void CSchemeGodunov::release1OResources()
 	oclBufferCellStates				= NULL;
 	oclBufferCellStatesAlt			= NULL;
 	oclBufferCellManning			= NULL;
+	oclBufferCellBoundary = NULL;
 	oclBufferCellBed				= NULL;
 	oclBufferTimestep				= NULL;
 	oclBufferTimestepReduction		= NULL;
@@ -1065,6 +859,7 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBufferCellStatesAlt->queueWriteAll();
 	oclBufferCellBed->queueWriteAll();
 	oclBufferCellManning->queueWriteAll();
+	oclBufferCellBoundary->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();
@@ -1093,22 +888,13 @@ void	CSchemeGodunov::prepareSimulation()
 	bThreadTerminated = false;
 }
 
-#ifdef PLATFORM_WIN
 DWORD CSchemeGodunov::Threaded_runBatchLaunch(LPVOID param)
 {
 	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
 	pScheme->Threaded_runBatch();
 	return 0;
 }
-#endif
-#ifdef PLATFORM_UNIX
-void* CSchemeGodunov::Threaded_runBatchLaunch(void* param)
-{
-	CSchemeGodunov* pScheme = static_cast<CSchemeGodunov*>(param);
-	pScheme->Threaded_runBatch();
-	return 0;
-}
-#endif
+
 
 /*
  *	Create a new thread to run this batch using
@@ -1121,7 +907,6 @@ void CSchemeGodunov::runBatchThread()
 	this->bThreadRunning = true;
 	this->bThreadTerminated = false;
 
-#ifdef PLATFORM_WIN
 	HANDLE hThread = CreateThread(
 		NULL,
 		0,
@@ -1131,13 +916,7 @@ void CSchemeGodunov::runBatchThread()
 		NULL
 		);
 	CloseHandle(hThread);
-#endif
-#ifdef PLATFORM_UNIX
-	pthread_t tid;
-	int result = pthread_create(&tid, 0, CSchemeGodunov::Threaded_runBatchLaunch, this);
-	if (result == 0)
-		pthread_detach(tid);
-#endif
+
 }
 
 /*
@@ -1313,9 +1092,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		oclBufferBatchTimesteps->queueReadAll();
 		uiIterationsSinceProgressCheck = 0;
 
-#ifdef _WINDLL
-		oclBufferCellStates->queueReadAll();
-#endif
 
 		// Download data for each of the dependent domains
 		if (bDownloadLinks)
@@ -1779,12 +1555,6 @@ double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
 		if ( dProposal - dCurrentTime < 1E-5 )
 			dProposal = dCurrentTime + fabs(this->dTimestep);
 	}
-
-	// If using real-time visualisation, force syncs more frequently (?)
-#ifdef _WINDLL
-	// This line is broken... Maybe? Not sure...
-	//dProposal = min( dProposal, dCurrentTime + ( dBatchTimesteps / uiBatchSuccessful ) * 2 * uiQueueAdditionSize );
-#endif
 
 	return dProposal;
 }

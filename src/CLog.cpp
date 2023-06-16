@@ -18,11 +18,9 @@
  */
 
 // Includes
-#include "../common.h"
-#include "../main.h"
+#include "common.h"
+#include "main.h"
 #include <sstream>
-#include <boost/algorithm/string_regex.hpp>
-#include <boost/lexical_cast.hpp>
 
 /*
  *  Constructor
@@ -36,11 +34,6 @@ CLog::CLog(void)
 	this->uiDebugFileID = 1;
 	this->uiLineCount = 0;
 	setlocale( LC_ALL, "" );
-
-#ifdef MPI_ON
-	MPI_Comm_rank(MPI_COMM_WORLD, &this->iProcID);
-	MPI_Comm_size(MPI_COMM_WORLD, &this->iProcCount);
-#endif
 
 	this->writeLine( "Log component fully loaded." );
 }
@@ -127,30 +120,10 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 	if (bTimestamp)
 	{
 		this->setColour(model::cli::colourTimestamp);
-#ifdef MPI_ON
-		ssLine << "[" << (this->iProcID + 1) << "/" << this->iProcCount << " " << std::string(caTimeBuffer) << "] ";
-#else
 		ssLine << "[" << std::string(caTimeBuffer) << "] ";
-#endif
-#ifdef _CONSOLE
-#ifdef PLATFORM_UNIX
-		if ( !model::disableScreen )
-		{
-			addstr( ssLine.str().c_str() );
-		} else if ( !model::disableConsole ) {
-			std::cout << ssLine.str();
-		}
-#else
+
 		std::cout << ssLine.str();
-#endif
-#else
-		std::string	sTimestamp = ssLine.str();
-		char*		cAPIStringTimestamp = const_cast<char*>(sTimestamp.c_str());
-		model::fCallbackLog(
-			cAPIStringTimestamp,
-			wColour
-			);
-#endif
+
 	}
 
 	ssLine << sLine << std::endl;
@@ -158,29 +131,9 @@ void CLog::writeLine(std::string sLine, bool bTimestamp, unsigned short wColour)
 	this->resetColour();
 	this->setColour( wColour );
 
-#ifdef _CONSOLE
-#ifdef PLATFORM_UNIX
-	if ( !model::disableScreen )
-	{
-		addstr( sLine.c_str() );
-		addstr( "\n" );
-		clrtoeol();
-		refresh();
-	} else if ( !model::disableConsole ) {
-		std::cout << sLine << std::endl;
-	}
-#else
 	std::cout << sLine << std::endl;
-#endif
 	this->uiLineCount = ++this->uiLineCount % 1000;
-#else
-	sLine.append("\n");
-	char*		cAPIStringMessage = const_cast<char*>( sLine.c_str() );
-	model::fCallbackLog(
-		cAPIStringMessage,
-		wColour
-	);
-#endif
+
 	sLine = ssLine.str();
 
 	if ( this->isFileAvailable() )
@@ -224,14 +177,9 @@ void CLog::writeHeader(void)
 {
 	std::stringstream		ssHeader;
 
-	boost::cmatch		regmatchRevision;
-	const boost::regex	regexRevision( "\\$Revision\\:\\ ([0-9]+)\\ \\$" );
-
 	time_t tNow;
 	time( &tNow );
 	localtime( &tNow );
-
-	boost::regex_match( model::appRevision.c_str(), regmatchRevision, regexRevision );
 
 	ssHeader << "---------------------------------------------" << std::endl;
 	ssHeader << " " << model::appName << std::endl;
@@ -241,7 +189,6 @@ void CLog::writeHeader(void)
 	ssHeader << " " << model::appUnit << std::endl;
 	ssHeader << " " << model::appOrganisation << std::endl;
 	ssHeader << std::endl << " Contact:     " << model::appContact << std::endl;
-	ssHeader << " Source:      SVN Revision " << std::string( regmatchRevision[1] ) << std::endl;
 	ssHeader << "---------------------------------------------" << std::endl;
 
 	std::string sLogPath = this->getPath();

@@ -16,14 +16,13 @@
  * ------------------------------------------
  *
  */
-#include <boost/lexical_cast.hpp>
 
-#include "../common.h"
+#include "common.h"
 #include "CDomainBase.h"
-#include "Cartesian/CDomainCartesian.h"
-#include "Remote/CDomainRemote.h"
-#include "Links/CDomainLink.h"
-#include "../Datasets/CXMLDataset.h"
+#include "CDomainCartesian.h"
+#include "CDomainRemote.h"
+#include "CDomainLink.h"
+
 
 /*
  *  Constructor

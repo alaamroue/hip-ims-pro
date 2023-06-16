@@ -22,13 +22,12 @@
 #include <math.h>
 #include "common.h"
 #include "main.h"
-#include "OpenCL/Executors/CExecutorControlOpenCL.h"
-#include "Domain/CDomainManager.h"
-#include "Domain/CDomain.h"
-#include "Schemes/CScheme.h"
-#include "Datasets/CXMLDataset.h"
-#include "Datasets/CRasterDataset.h"
-#include "MPI/CMPIManager.h"
+#include "CExecutorControlOpenCL.h"
+#include "CDomainManager.h"
+#include "CDomain.h"
+#include "CScheme.h"
+
+#include "CRasterDataset.h"
 
 using std::min;
 using std::max;
@@ -42,11 +41,7 @@ CModel::CModel(void)
 
 	this->execController	= NULL;
 	this->domains			= new CDomainManager();
-#ifdef MPI_ON
-	this->mpiManager		= new CMPIManager();
-#else
 	this->mpiManager		= NULL;
-#endif
 
 	this->dCurrentTime		= 0.0;
 	this->dSimulationTime	= 60;
@@ -57,79 +52,6 @@ CModel::CModel(void)
 	this->pProgressCoords.sY = -1;
 
 	this->ulRealTimeStart = 0;
-}
-
-/*
- *  Setup the simulation using parameters specified in the configuration file
- */
-void CModel::setupFromConfig( XMLElement* pXNode )
-{
-	XMLElement*		pParameter			= pXNode->FirstChildElement( "parameter" );
-	char			*cParameterName		= NULL;
-	char			*cParameterValue	= NULL;
-	char			*cParameterFormat   = NULL;
-
-	while ( pParameter != NULL )
-	{
-		Util::toLowercase( &cParameterName, pParameter->Attribute( "name" ) );
-		Util::toLowercase( &cParameterValue, pParameter->Attribute( "value" ) );
-		Util::toNewString( &cParameterFormat, pParameter->Attribute( "format" ) );
-
-		if ( strcmp( cParameterName, "duration" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid simulation length given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setSimulationLength( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "realstart" ) == 0 )
-		{ 
-			this->setRealStart( cParameterValue, cParameterFormat );
-		}
-		else if ( strcmp( cParameterName, "outputfrequency" ) == 0 )
-		{ 
-			if ( !CXMLDataset::isValidFloat( cParameterValue ) )
-			{
-				model::doError(
-					"Invalid output frequency given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setOutputFrequency( boost::lexical_cast<double>( cParameterValue ) );
-			}
-		}
-		else if ( strcmp( cParameterName, "floatingpointprecision" ) == 0 )
-		{ 
-			unsigned char ucFPPrecision = 255;
-			if ( strcmp( cParameterValue, "single" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kSingle;
-			if ( strcmp( cParameterValue, "double" ) == 0 )
-				ucFPPrecision = model::floatPrecision::kDouble;
-			if ( ucFPPrecision == 255 )
-			{
-				model::doError(
-					"Invalid float precision given.",
-					model::errorCodes::kLevelWarning
-				);
-			} else {
-				this->setFloatPrecision( ucFPPrecision );
-			}
-		}
-		else 
-		{
-			model::doError(
-				"Unrecognised parameter: " + std::string( cParameterName ),
-				model::errorCodes::kLevelWarning
-			);
-		}
-
-		pParameter = pParameter->NextSiblingElement( "parameter" );
-	}
 }
 
 /*
@@ -389,24 +311,13 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 
 	// String padding stuff
 	sprintf( cTimeLine,		" Simulation time:  %-15sLowest timestep: %15s", Util::secondsToTime( dCurrentTime ).c_str(), Util::secondsToTime( dSmallestTimestep ).c_str() );
-#ifdef PLATFORM_WIN
 	sprintf( cCells,		"%I64u", ulCurrentCellsCalculated );
-#endif
-#ifdef PLATFORM_UNIX
-	sprintf( cCells,		"%llu", ulCurrentCellsCalculated );
-#endif
 	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, toString( ulRate ).c_str() );
 	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
 	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", toString( uiBatchSizeMin ).c_str() );
 	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
-	// DLL callback goes before so the system knows when repeat outputs start
-#ifdef _WINDLL
-	model::fCallbackProgress(
-		dProgress
-	);
-#endif
 
 	pManager->log->writeDivide();																						// 1
 	pManager->log->writeLine( "                                                                  ", false, wColour );	// 2
@@ -469,19 +380,9 @@ void CModel::visualiserUpdate()
 	CDomain*	pDomain = pManager->domains->getDomain(0);
 	COCLDevice*	pDevice	= pManager->domains->getDomain(0)->getDevice();
 
-	#ifdef _WINDLL
-	pManager->domains->getDomain(0)->sendAllToRenderer();
-	#endif
-
 	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 || model::forceAbort )
 		return;
 
-	// Request the next batch of data
-	// TODO: This should read from all of the domains and ask them all to read back their
-	// states...
-	#ifdef _WINDLL
-	//pManager->domains->getDomain(0)->getScheme()->readDomainAll();
-	#endif
 }
 
 /*
@@ -513,13 +414,6 @@ void	CModel::runModelPrepare()
 	dTargetTime			= 0.0;
 	dLastSyncTime		= -1.0;
 	dLastOutputTime		= 0.0;
-
-	// Global block until all domains are ready
-	// Don't use the global block function here as that's for async blocking during 
-	// the simulation
-#ifdef MPI_ON
-	pManager->getMPIManager()->blockOnComm();
-#endif
 }
 
 /*
@@ -635,16 +529,6 @@ void	CModel::runModelDomainAssess(
 			}
 		}
 	}
-
-	// Force this loop to continue without scheduling work until we've sent/received
-	// all our MPI messages 
-#ifdef MPI_ON
-	if ( pManager->getMPIManager()->isWaitingOnTransmission() ||
-		 pManager->getMPIManager()->isWaitingOnBlock() )
-	{
-		bAllIdle = false;
-	}
-#endif
 	
 	// If we're synchronising the timesteps we need all idle
 	if ( bAllIdle && !bWaitOnLinks )
@@ -666,31 +550,9 @@ void	CModel::runModelDomainAssess(
 		}
 
 		// Reduce across all MPI nodes if required
-#ifdef MPI_ON
-		if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
-		{
-			// Force a reduction in cases where we've just had to write outputs as our timestep would have been zero
-			if ( 
-					pManager->getMPIManager()->reduceTimeData( 
-						dMinTimestep, 
-						&this->dGlobalTimestep, 
-						this->dEarliestTime
-					) 
-				)
-			{
-#ifdef DEBUG_MPI
-				pManager->log->writeLine( "[DEBUG] New reduction has cancelled all idle state..." );
-#endif
-				bAllIdle = false;
-			}
-		}
-		
-		if ( this->getDomainSet()->getDomainCount() <= 1 )
-			dCurrentTime = dEarliestTime;
-#else
 		dGlobalTimestep = dMinTimestep;
 		dCurrentTime = dEarliestTime;
-#endif
+
 	}
 }
 
@@ -748,25 +610,10 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 		dEarliestSyncProposal = (floor(dLastSyncTime / dOutputFrequency) + 1) * dOutputFrequency;
 	}
 
-	// Reduce across all MPI nodes if required
-#ifdef MPI_ON
-	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
-	{
-		if ( pManager->getMPIManager()->reduceTimeData( dEarliestSyncProposal, &this->dTargetTime, this->dEarliestTime, true ) )
-		{
-#ifdef DEBUG_MPI
-			pManager->log->writeLine( "Invoked MPI to reduce target time with " + toString( dEarliestSyncProposal ) );
-#endif
-			bAllIdle = false;
-		}
-	} else {
-		dTargetTime = dEarliestSyncProposal;
-	}
-#else
 	// Work scheduler within numerical schemes should identify whether this has changed
 	// and update the buffer if required only...
 	dTargetTime = dEarliestSyncProposal;
-#endif
+
 }
 
 /*
@@ -859,9 +706,6 @@ void	CModel::runModelBlockNode()
 void	CModel::runModelBlockGlobal()
 {
 	this->runModelBlockNode();
-#ifdef MPI_ON
-	pManager->getMPIManager()->asyncBlockOnComm();
-#endif
 }
 
 /*
@@ -890,15 +734,6 @@ void	CModel::runModelOutputs()
 	this->runModelBlockGlobal();
 }
 
-/*
-*  Process incoming and pending MPI messages etc.
-*/
-void	CModel::runModelMPI()
-{
-#ifdef MPI_ON
-	pManager->getMPIManager()->processQueue();
-#endif
-}
 
 /*
 *  Schedule new work in the simulation.
@@ -907,15 +742,6 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 {
 	// Normally we don't wait for all idle to schedule new work (only one device needs to be idle)
 	// but if we're waiting on MPI activity then we can't do anything
-#ifdef MPI_ON
-	if ( pManager->getMPIManager()->isWaitingOnBlock() )
-		return;
-	
-	// Synchronising timesteps so every iteration needs a collective operation
-	if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-	     this->dEarliestTime != pManager->getMPIManager()->getLastCollectiveTime() )
-		return;
-#endif
 
 	// If we're synchronising the timestep we only progress from here
 	// if ALL our domains are idle
@@ -933,12 +759,6 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 		// Either we're not ready to sync, or we were still synced from the last run
 		if (!bSynchronised && bIdle[i])
 		{
-#ifdef MPI_ON
-			// TODO: Review this - shouldn't be needed!
-			if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-			     domains->getDomain(i)->getScheme()->getCurrentTime() != pManager->getMPIManager()->getLastCollectiveTime() )
-				continue;
-#endif
 				
 			// Set the timestep if we're synchronising them
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
@@ -967,11 +787,6 @@ void	CModel::runModelUI( CBenchmark::sPerformanceMetrics * sTotalMetrics )
 	{
 		this->logProgress(sTotalMetrics);
 		dLastProgressUpdate = sTotalMetrics->dSeconds;
-		
-#ifdef MPI_ON
-		// Send data back to root on the COMM if needed
-		pManager->getMPIManager()->sendDataSimulation();
-#endif
 	}
 }
 
@@ -1070,10 +885,6 @@ void	CModel::runModelMain()
 			bIdle
 		);
 
-		// Exchange data over MPI
-#ifdef MPI_ON
-		this->runModelMPI();
-#endif
 		
 		// Perform a rollback if required
 		this->runModelRollback();

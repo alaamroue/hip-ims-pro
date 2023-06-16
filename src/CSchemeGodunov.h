@@ -22,23 +22,6 @@
 #include "CScheme.h"
 #include <mutex>
 
-namespace model {
-
-// Kernel configurations
-namespace schemeConfigurations{ 
-namespace godunovType { enum godunovType {
-	kCacheNone						= 0,		// No caching
-	kCacheEnabled					= 1			// Cache cell state data
-}; }  }
-
-namespace cacheConstraints{ 
-namespace godunovType { enum godunovType {
-	kCacheActualSize				= 0,		// LDS of actual size
-	kCacheAllowOversize				= 1,		// Allow LDS oversizing to avoid bank conflicts
-	kCacheAllowUndersize			= 2			// Allow LDS undersizing to avoid bank conflicts
-}; }  }
-
-}
 
 /*
  *  SCHEME CLASS
@@ -56,7 +39,7 @@ class CSchemeGodunov : public CScheme
 		virtual ~CSchemeGodunov( void );											// Destructor
 
 		// Public functions
-		virtual void		setupFromConfig( XMLElement*, bool = false );			// Set up the scheme
+		virtual void		setupScheme(model::SchemeSettings);			// Set up the scheme
 		virtual void		logDetails();											// Write some details about the scheme
 		virtual void		prepareAll();											// Prepare absolutely everything for a model run
 		virtual void		scheduleIteration( bool,								// Schedule an iteration of the scheme
@@ -83,12 +66,8 @@ class CSchemeGodunov : public CScheme
 		virtual COCLBuffer*	getLastCellSourceBuffer();								// Get the last source cell state buffer
 		virtual COCLBuffer*	getNextCellSourceBuffer();								// Get the next source cell state buffer
 
-#ifdef PLATFORM_WIN
 		static DWORD		Threaded_runBatchLaunch(LPVOID param);
-#endif
-#ifdef PLATFORM_UNIX
-		static void*		Threaded_runBatchLaunch(void* param);
-#endif
+
 		void				runBatchThread();
 		void				Threaded_runBatch();
 

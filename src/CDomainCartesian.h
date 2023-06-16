@@ -19,7 +19,7 @@
 #ifndef HIPIMS_DOMAIN_CARTESIAN_CDOMAINCARTESIAN_H_
 #define HIPIMS_DOMAIN_CARTESIAN_CDOMAINCARTESIAN_H_
 
-#include "../CDomain.h"
+#include "CDomain.h"
 
 /*
  *  DOMAIN CLASS
