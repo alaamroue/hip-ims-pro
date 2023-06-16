@@ -247,15 +247,6 @@ void CSchemeGodunov::prepareAll()
 		return;
 	}
 
-	if (!this->prepareBoundaries())
-	{
-		model::doError(
-			"Failed to prepare boundaries. Cannot continue.",
-			model::errorCodes::kLevelModelStop
-			);
-		this->releaseResources();
-		return;
-	}
 
 	this->logDetails();
 	this->bReady = true;
@@ -564,7 +555,6 @@ bool CSchemeGodunov::prepare1OMemory()
 	bool						bReturnState		= true;
 	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
-	CBoundaryMap*				pBoundaries			= pDomain->getBoundaries();
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 
 	unsigned char ucFloatSize =  ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof( cl_float ) : sizeof( cl_double ) );
@@ -673,7 +663,6 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	bool						bReturnState		= true;
 	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
-	CBoundaryMap*				pBoundaries			= pDomain->getBoundaries();
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 
 	// --
@@ -724,7 +713,7 @@ bool CSchemeGodunov::prepareGeneralKernels()
 bool CSchemeGodunov::prepare1OKernels()
 {
 	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= pManager->getExecutor();
+	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*		pDevice				= pExecutor->getDevice();
 
@@ -831,9 +820,6 @@ void CSchemeGodunov::release1OResources()
  */
 void	CSchemeGodunov::prepareSimulation()
 {
-	// Adjust cell bed elevations if necessary for boundary conditions
-	model::log->writeLine( "Adjusting domain data for boundaries..." );
-	this->pDomain->getBoundaries()->applyDomainModifications();
 
 	// Initial volume in the domain
 	model::log->writeLine( "Initial domain volume: " + toString( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
@@ -932,7 +918,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			model::log->writeLine("[DEBUG] Setting new target time of " + Util::secondsToTime(this->dTargetTime) + "...");
 #endif
 		
-			if (pManager->getFloatPrecision() == model::floatPrecision::kSingle)
+			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
 				*(oclBufferTimeTarget->getHostBlock<float*>()) = static_cast<cl_float>(this->dTargetTime);
 			}
@@ -951,7 +937,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			 *	output files are written otherwise the timestep wont be reduced across MPI and the domains will go out
 			 *  of sync!
 			 */
-			if ( dCurrentTimestep <= 0.0 && pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
+			if ( dCurrentTimestep <= 0.0 && model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
 			{
 				pDomain->getDevice()->queueBarrier();
 				oclKernelTimestepReduction->scheduleExecution();
@@ -978,7 +964,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			 this->dCurrentTime < dTargetTime &&
 			 this->bOverrideTimestep )
 		{		
-			if (pManager->getFloatPrecision() == model::floatPrecision::kSingle)
+			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
 				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(this->dCurrentTimestep);
 			}
@@ -1013,7 +999,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			pDomain->getDevice()->queueBarrier();
 
 			// Force timestep recalculation if necessary
-			if (pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
+			if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
 			{
 				oclKernelTimestepReduction->scheduleExecution();
 				pDomain->getDevice()->queueBarrier();
@@ -1035,7 +1021,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		// Can only schedule one iteration before we need to sync timesteps
 		// if timestep sync method is active.
 		unsigned int uiQueueAmount = this->uiQueueAdditionSize;
-		if (pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep)
+		if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep)
 			uiQueueAmount = 1;
 
 #ifdef DEBUG_MPI
@@ -1169,10 +1155,10 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 
 	// If we've hit our target time, download the data we need for any dependent
 	// domain links (or in timestep sync, hit the iteration limit)
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
 		 dTargetTime - this->dCurrentTime <= 1E-5 )
 		 bDownloadLinks = true;
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		 ( this->uiIterationsSinceSync >= pDomain->getRollbackLimit() ||
 		   dTargetTime - this->dCurrentTime <= 1E-5 ) )
 		 bDownloadLinks = true;
@@ -1181,13 +1167,13 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 	if (  this->bAutomaticQueue		&&
 		 !this->bDebugOutput		&&
 		  dRealTime > 1E-5          &&
-		  pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
+		  model::pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
 	{
 			// We're aiming for a seconds worth of work to be carried out
 			double dBatchDuration = dRealTime - dBatchStartedTime;
 			unsigned int uiOldQueueAdditionSize = this->uiQueueAdditionSize;
 
-			if (pManager->getDomainSet()->getDomainCount() > 1) {
+			if (model::pManager->getDomainSet()->getDomainCount() > 1) {
 				this->uiQueueAdditionSize = static_cast<unsigned int>((dTargetTime - dCurrentTime) / (dBatchTimesteps / static_cast<double>(uiBatchSuccessful)) + 1.0);
 			} else {
 				this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3, static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
@@ -1243,7 +1229,7 @@ void	CSchemeGodunov::rollbackSimulation( double dCurrentTime, double dTargetTime
 	this->dTargetTime = dTargetTime;
 
 	// Update the time
-	if ( pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		*( oclBufferTime->getHostBlock<float*>() )	= static_cast<cl_float>( dCurrentTime );
 		*( oclBufferTimeTarget->getHostBlock<float*>() ) = static_cast<cl_float> (dTargetTime );
@@ -1267,7 +1253,7 @@ void	CSchemeGodunov::rollbackSimulation( double dCurrentTime, double dTargetTime
 	}
 
 	// Timestep update without simulation time update
-	if (pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
+	if (model::pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
 		oclKernelTimestepUpdate->scheduleExecution();
 	bUseForcedTimeAdvance = true;
 
@@ -1287,13 +1273,13 @@ bool	CSchemeGodunov::isSimulationFailure( double dExpectedTargetTime )
 		return false;
 
 	// Can't exceed number of buffer cells in forecast mode
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
 		 uiBatchSuccessful >= pDomain->getRollbackLimit() &&
 		 dExpectedTargetTime - dCurrentTime > 1E-5)
 		return true;
 
 	// This shouldn't happen
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		 uiBatchSuccessful > pDomain->getRollbackLimit() )
 		return true;
 
@@ -1337,7 +1323,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 
 	// Have we hit our target time?
 	// TODO: Review whether this is appropriate (need fabs?) (1E-5?)
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
 	{
 		// Any criteria required for timestep-based sync?
 	} else {
@@ -1351,11 +1337,11 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 	}
 
 	// Have we downloaded the data we need for each domain link?
-	if ( !bCellStatesSynced && pManager->getDomainSet()->getDomainCount() > 1 )
+	if ( !bCellStatesSynced && model::pManager->getDomainSet()->getDomainCount() > 1 )
 		return false;
 
 	// Are we synchronising the timesteps?
-	if ( pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
+	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		 uiIterationsSinceSync < this->pDomain->getRollbackLimit() - 1 &&
 		 dExpectedTargetTime - dCurrentTime > 1E-5 &&
 		 dCurrentTime > 0.0 )
@@ -1396,8 +1382,8 @@ void	CSchemeGodunov::scheduleIteration(
 	}
 
 	// Run the boundary kernels (each bndy has its own kernel now)
-	pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
-	pDevice->queueBarrier();
+	//pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
+	//pDevice->queueBarrier();
 
 	// Main scheme kernel
 	oclKernelFullTimestep->scheduleExecution();

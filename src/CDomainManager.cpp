@@ -24,8 +24,6 @@
 #include "CDomainLink.h"
 #include "CScheme.h"
 
-#include "CRasterDataset.h"
-#include "CBoundaryMap.h"
 #include "COCLDevice.h"
 
 /*
@@ -272,7 +270,7 @@ void	CDomainManager::logDetails()
 			toString(pSummary.ulColCount).c_str(),
 			(pSummary.ucFloatPrecision == model::floatPrecision::kSingle ? std::string("32bit") : std::string("64bit")).c_str(),
 			toString(this->getDomainBase(i)->getLinkCount()).c_str(),
-			toString(resolutionShort).c_str()
+			resolutionShort.c_str()
 		);
 
 		model::log->writeLine(std::string(cDomainLine), false, wColour);	// 13

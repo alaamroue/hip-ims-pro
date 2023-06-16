@@ -21,10 +21,10 @@
 // Includes
 #include "gpudemo.h"
 #include "CModel.h"
-#include "CRasterDataset.h"
 #include "COCLDevice.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
+#include "CDomainCartesian.h"
 #include "CScheme.h"
 
 // Globals
@@ -146,7 +146,7 @@ int model::loadConfiguration()
 	pDomainNew->setID(1);	// Should not be needed, but somehow is?
 	pManager->getDomainSet()->getDomainBaseVector()->push_back(pDomainNew);
 
-
+	return model::appReturnCodes::kAppSuccess;
 }
 
 /*

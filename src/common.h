@@ -19,6 +19,8 @@
 #ifndef HIPIMS_COMMON_H_
 #define HIPIMS_COMMON_H_
 
+#define CL_TARGET_OPENCL_VERSION 300
+
 // Base includes
 #include "util.h"
 #include <Windows.h>					// QueryPerformanceCounter etc

@@ -1,0 +1,291 @@
+---------------------------------------------
+  _    _   _   _____    _____   __  __    _____  
+ | |  | | (_) |  __ \  |_   _| |  \/  |  / ____| 
+ | |__| |  _  | |__) |   | |   | \  / | | (___   
+ |  __  | | | |  ___/    | |   | |\/| |  \___ \  
+ | |  | | | | | |       _| |_  | |  | |  ____) | 
+ |_|  |_| |_| |_|      |_____| |_|  |_| |_____/  
+   High-performance Integrated Modelling System   
+ v0.2.0
+---------------------------------------------
+ Luke S. Smith and Qiuhua Liang
+ School of Civil Engineering and Geosciences
+ Newcastle University
+
+ Contact:     luke@smith.ac
+---------------------------------------------
+ Started:     Fri Jun 16 12:00:11 2023
+ Log file:    promaidesMultiScheme.log
+ Platform:    Microsoft Windows
+---------------------------------------------
+[12:00:11] Log component fully loaded.
+---------------------------------------------                           
+[12:00:11] OPENCL PLATFORMS
+[12:00:11]   1. Intel(R) OpenCL HD Graphics
+[12:00:11]      OpenCL 3.0  with 1 device(s)
+[12:00:11]   2. NVIDIA CUDA
+[12:00:11]      OpenCL 3.0 CUDA 12.1.68 with 1 device(s)
+---------------------------------------------                           
+[12:00:11] Querying the suitability of a discovered device.
+[12:00:11] Creating an OpenCL device context and command queue.
+[12:00:11] Command queue created for device successfully.
+---------------------------------------------                           
+[12:00:11] #1 GRAPHICS PROCESSING UNIT
+[12:00:11]   Suitability:       Available, Compiler found
+[12:00:11]   Processor type:    Intel(R) UHD Graphics 630
+[12:00:11]   Vendor:            Intel(R) Corporation
+[12:00:11]   OpenCL driver:     30.0.101.1122
+[12:00:11]   Compute units:     24
+[12:00:11]   Profile:           Full
+[12:00:11]   Clock speed:       1150 MHz
+[12:00:11]   Memory:            1638 Mb
+[12:00:11]   OpenCL C:          OpenCL 3.0 NEO 
+[12:00:11]   Max global size:   1717985280
+[12:00:11]   Max group items:   256
+[12:00:11]   Max group:         [256, 256, 256]
+[12:00:11]   Max constant args: 8
+[12:00:11]   Max allocation:    819MB
+[12:00:11]   Max argument size: 2kB
+[12:00:11]   Double precision:  Available
+---------------------------------------------                           
+[12:00:11] Querying the suitability of a discovered device.
+[12:00:11] Creating an OpenCL device context and command queue.
+[12:00:11] Command queue created for device successfully.
+---------------------------------------------                           
+[12:00:11] #2 GRAPHICS PROCESSING UNIT
+[12:00:11]   Suitability:       Available, Compiler found
+[12:00:11]   Processor type:    Quadro T2000
+[12:00:11]   Vendor:            NVIDIA Corporation
+[12:00:11]   OpenCL driver:     531.14
+[12:00:11]   Compute units:     16
+[12:00:11]   Profile:           Full
+[12:00:11]   Clock speed:       1785 MHz
+[12:00:11]   Memory:            4095 Mb
+[12:00:11]   OpenCL C:          OpenCL 3.0 CUDA
+[12:00:11]   Max global size:   4294639616
+[12:00:11]   Max group items:   1024
+[12:00:11]   Max group:         [1024, 1024, 64]
+[12:00:11]   Max constant args: 9
+[12:00:11]   Max allocation:    1023MB
+[12:00:11]   Max argument size: 31kB
+[12:00:11]   Double precision:  Available
+---------------------------------------------                           
+[12:00:11] The OpenCL executor is now fully loaded.
+[12:00:11] Selected device: #1
+[12:00:11] Scheme base-class instantiated.
+[12:00:11] Godunov-type scheme loaded for execution on OpenCL platform.
+[12:00:11] Populated scheme with default settings.
+[12:00:11] Starting to prepare program for Godunov-type scheme.
+[12:00:11] Releasing scheme resources held for OpenCL.
+[12:00:11] Releasing 1st-order scheme resources held for OpenCL.
+[12:00:11] Compiling a new program for device #1.
+[12:00:12] Program successfully compiled for device #1.
+---------------------------------------------
+[12:00:12] WARNING: Some messages were reported while building.
+---------------------------------------------
+---------------------------------------------                           
+1:443:16: warning: remainder by zero is undefined
+        *lIdxX = ulID % DOMAIN_COLS;
+                      ^ ~~~~~~~~~~~
+1:444:27: warning: division by zero is undefined
+        *lIdxY = (ulID - *lIdxX) / DOMAIN_COLS;
+                                 ^ ~~~~~~~~~~~
+---------------------------------------------                           
+[12:00:12] Memory buffer created for 'Batch timesteps cumulative' with 8 bytes.
+[12:00:12] Memory buffer created for 'Batch successful iterations' with 4 bytes.
+[12:00:12] Memory buffer created for 'Batch skipped iterations' with 4 bytes.
+---------------------------------------------                           
+[12:00:12] REGULAR CARTESIAN GRID DOMAIN
+[12:00:12]   Projection:        EPSG:3452816845
+[12:00:12]   Device number:     1
+[12:00:12]   Cell count:        0
+[12:00:12]   Cell resolution:   1.000000ÍÍÍÍ Žl
+[12:00:12]   Cell dimensions:   [0, 0]
+[12:00:12]   Real dimensions:   [-6277438562204192487878988888393020692503707483087375482269988814848.000000ÍÍÍÍ Žl, -6277438562204192487878988888393020692503707483087375482269988814848.000000ÍÍÍÍ Žl]
+---------------------------------------------                           
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Cell states' has no size.
+---------------------------------------------
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Cell states (alternate)' has no size.
+---------------------------------------------
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Manning coefficients' has no size.
+---------------------------------------------
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Boundary Values' has no size.
+---------------------------------------------
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Bed elevations' has no size.
+---------------------------------------------
+[12:00:12] Memory buffer created for 'Timestep' with 8 bytes.
+[12:00:12] Memory buffer created for 'Time' with 8 bytes.
+[12:00:12] Memory buffer created for 'Time (hydrological)' with 8 bytes.
+[12:00:12] Memory buffer created for 'Target time (sync)' with 8 bytes.
+---------------------------------------------
+[12:00:12] MODEL FAILURE: Memory buffer 'Timestep reduction scratch' has no size.
+---------------------------------------------
+[12:00:12] Kernel 'tst_Advance_Normal' prepared for device #1.
+[12:00:12] Kernel 'tst_Advance_Normal' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     0 bytes
+[12:00:12]   Arguments:        10
+[12:00:12]   Work-group size:  [ 1,1,1 ]
+[12:00:12] Kernel 'tst_ResetCounters' prepared for device #1.
+[12:00:12] Kernel 'tst_ResetCounters' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     0 bytes
+[12:00:12]   Arguments:        3
+[12:00:12]   Work-group size:  [ 1,1,1 ]
+[12:00:12] Kernel 'tst_Reduce' prepared for device #1.
+[12:00:12] Kernel 'tst_Reduce' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     2048 bytes
+[12:00:12]   Arguments:        3
+[12:00:12]   Work-group size:  [ 256,1,1 ]
+[12:00:12] Kernel 'tst_UpdateTimestep' prepared for device #1.
+[12:00:12] Kernel 'tst_UpdateTimestep' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     0 bytes
+[12:00:12]   Arguments:        5
+[12:00:12]   Work-group size:  [ 1,1,1 ]
+[12:00:12] Global work size for 'tst_Advance_Normal' set to [1,1,1].
+[12:00:12] Global work size for 'tst_UpdateTimestep' set to [1,1,1].
+[12:00:12] Global work size for 'tst_ResetCounters' set to [1,1,1].
+[12:00:12] Global work size for 'tst_Reduce' set to [0,1,1].
+[12:00:12] Assigning arguments for 'tst_Advance_Normal':
+[12:00:12]  1. Time
+[12:00:12]  2. Timestep
+[12:00:12]  3. Time (hydrological)
+[12:00:12]  4. Timestep reduction scratch
+[12:00:12]  5. Cell states
+[12:00:12]  6. Bed elevations
+[12:00:12]  7. Target time (sync)
+[12:00:12]  8. Batch timesteps cumulative
+[12:00:12]  9. Batch successful iterations
+[12:00:12]  10. Batch skipped iterations
+[12:00:12] Assigning arguments for 'tst_ResetCounters':
+[12:00:12]  1. Batch timesteps cumulative
+[12:00:12]  2. Batch successful iterations
+[12:00:12]  3. Batch skipped iterations
+[12:00:12] Assigning arguments for 'tst_Reduce':
+[12:00:12]  1. Cell states
+[12:00:12]  2. Bed elevations
+[12:00:12]  3. Timestep reduction scratch
+[12:00:12] Assigning arguments for 'tst_UpdateTimestep':
+[12:00:12]  1. Time
+[12:00:12]  2. Timestep
+[12:00:12]  3. Timestep reduction scratch
+[12:00:12]  4. Target time (sync)
+[12:00:12]  5. Batch timesteps cumulative
+[12:00:12] Kernel 'per_Friction' prepared for device #1.
+[12:00:12] Kernel 'per_Friction' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     0 bytes
+[12:00:12]   Arguments:        5
+[12:00:12]   Work-group size:  [ 8,8,1 ]
+[12:00:12] Global work size for 'per_Friction' set to [0,0,1].
+[12:00:12] Assigning arguments for 'per_Friction':
+[12:00:12]  1. Timestep
+[12:00:12]  2. Cell states
+[12:00:12]  3. Bed elevations
+[12:00:12]  4. Manning coefficients
+[12:00:12]  5. Time
+[12:00:12] Kernel 'gts_cacheDisabled' prepared for device #1.
+[12:00:12] Kernel 'gts_cacheDisabled' is defined:
+[12:00:12]   Private memory:   0 bytes
+[12:00:12]   Local memory:     0 bytes
+[12:00:12]   Arguments:        5
+[12:00:12]   Work-group size:  [ 8,8,1 ]
+[12:00:12] Global work size for 'gts_cacheDisabled' set to [0,0,1].
+[12:00:12] Assigning arguments for 'gts_cacheDisabled':
+[12:00:12]  1. Timestep
+[12:00:12]  2. Bed elevations
+[12:00:12]  3. Cell states
+[12:00:12]  4. Cell states (alternate)
+[12:00:12]  5. Manning coefficients
+---------------------------------------------                           
+[12:00:12] GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME
+[12:00:12]   Timestep mode:      Dynamic
+[12:00:12]   Courant number:     0.500000
+[12:00:12]   Initial timestep:   0.01000s
+[12:00:12]   Data reduction:     200 divisions
+[12:00:13]   Riemann solver:     HLLC (Approximate)
+[12:00:13]   Configuration:      No local caching
+[12:00:13]   Friction effects:   Disabled
+[12:00:13]   Kernel queue mode:  Automatic
+[12:00:13]   Initial queue:      1 iteration(s)
+[12:00:13]   Debug output:       Disabled
+---------------------------------------------                           
+[12:00:13] Verifying the required data before model run...
+[12:00:13] Verification is complete.
+---------------------------------------------                           
+[12:00:13] Starting a new simulation...
+[12:00:13] Initial domain volume: 0m3
+[12:00:13] Copying domain data to device...
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to write to memory buffer for device
+  Cell states (-38)
+  Offset: 0  Size: 0  Pointer: check COCLBUFFER.CPP  Buf size: 0
+---------------------------------------------
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to write to memory buffer for device
+  Cell states (alternate) (-38)
+  Offset: 0  Size: 0  Pointer: check COCLBUFFER.CPP  Buf size: 0
+---------------------------------------------
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to write to memory buffer for device
+  Bed elevations (-38)
+  Offset: 0  Size: 0  Pointer: check COCLBUFFER.CPP  Buf size: 0
+---------------------------------------------
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to write to memory buffer for device
+  Manning coefficients (-38)
+  Offset: 0  Size: 0  Pointer: check COCLBUFFER.CPP  Buf size: 0
+---------------------------------------------
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to write to memory buffer for device
+  Boundary Values (-38)
+  Offset: 0  Size: 0  Pointer: check COCLBUFFER.CPP  Buf size: 0
+---------------------------------------------
+[12:00:13] Domain #1 is not constrained by overlapping.
+---------------------------------------------                           
+[12:00:13] SIMULATION CONFIGURATION
+[12:00:13]   Name:               Name
+[12:00:13]   Simulation length:  00:16:40
+[12:00:13]   Output frequency:   00:16:40
+[12:00:13]   Floating-point:     Double-precision
+---------------------------------------------                           
+[12:00:13] Collecting time and performance data...
+---------------------------------------------                           
+                                                                  
+ SIMULATION PROGRESS                                              
+                                                                  
+ Simulation time:  0.00000s       Lowest timestep:        0.00000s
+ Cells calculated: 0                         Rate:             0/s
+ Processing time:  0.00001s        Est. remaining:  365 d 00:00:00
+ Batch size:       1                                                
+                                                                  
+ [>                                                      ]    0.0%
+                                                                  
+             +----------+----------------+------------+----------+
+             |  Device  |  Avg.timestep  | Iterations | Bypassed |
++------------+----------+----------------+------------+----------|
+| Domain #1  |    GPU 1 |       0.00000s |          0 |        0 |
++------------+----------+----------------+------------+----------+
+---------------------------------------------                           
+[12:00:13] Error code returned from memory read is -38
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Unable to read memory buffer from device back to host  Cell states (-38)
+---------------------------------------------
+---------------------------------------------
+[12:00:13] MODEL FAILURE: Attaching thread callback failed for device #1.
+---------------------------------------------
+[12:00:13] Simulation time:     0.06490s
+---------------------------------------------                           
+[12:00:13] The domain base has been released.
+[12:00:13] The domain manager has been unloaded.
+[12:00:13] An OpenCL device has been released (#1).
+[12:00:13] An OpenCL device has been released (#2).
+[12:00:13] The OpenCL executor is now unloaded.
+[12:00:13] The model engine is completely unloaded.

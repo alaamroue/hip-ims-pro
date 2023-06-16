@@ -71,8 +71,6 @@ class CModel
 		void					logDetails();									// Spit some info out to the log
 		double					getSimulationLength();							// Get total length of simulation
 		void					setSimulationLength( double );					// Set total length of simulation
-		unsigned long			getRealStart();									// Get the real world start time (relative to epoch)
-		void					setRealStart( char*, char* = NULL );			// Set the real world start time
 		double					getOutputFrequency();							// Get the output frequency
 		void					setOutputFrequency( double );					// Set the output frequency
 		void					setFloatPrecision( unsigned char );				// Set floating point precision

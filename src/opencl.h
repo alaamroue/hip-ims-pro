@@ -23,36 +23,24 @@
 
 /* $Revision: 596 $ on $Date: 2014-08-07 14:50:15 +0100 (Thu, 07 Aug 2014) $ */
 
-#ifndef __OPENCL_H
-#define __OPENCL_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef __APPLE__
-
-#include <OpenCL/cl.h>
-#include <OpenCL/cl_gl.h>
-#ifndef USE_SIMPLE_ARCH_OPENCL
-#include <OpenCL/cl_gl_ext.h>
-#endif
-#include <OpenCL/cl_ext.h>
-
-#else
 
 #include <CL/cl.h>
 #include <CL/cl_gl.h>
+
 #ifndef USE_SIMPLE_ARCH_OPENCL
-#include <CL/cl_gl_ext.h>
+//#include <CL/cl_gl_ext.h>
 #endif
 #include <CL/cl_ext.h>
 
-#endif
+
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif  /* __OPENCL_H   */
 

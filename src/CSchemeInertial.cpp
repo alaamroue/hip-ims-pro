@@ -19,8 +19,6 @@
 #include <algorithm>
 
 #include "common.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
 #include "CSchemeInertial.h"
@@ -64,22 +62,22 @@ void CSchemeInertial::prepareAll()
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		pManager->getExecutor(),
-		pManager->getExecutor()->getDevice()
+		model::pManager->getExecutor(),
+		model::pManager->getExecutor()->getDevice()
 	);
 
 	// Run-time tracking values
-	this->ulCurrentCellsCalculated		= 0;
-	this->dCurrentTimestep				= this->dTimestep;
-	this->dCurrentTime					= 0;
+	this->ulCurrentCellsCalculated = 0;
+	this->dCurrentTimestep = this->dTimestep;
+	this->dCurrentTime = 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision( pManager->getFloatPrecision() == model::floatPrecision::kSingle );
-	unsigned char ucFloatSize =  ( pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof( cl_double ) : sizeof( cl_float ) );
+	this->oclModel->setForcedSinglePrecision(model::pManager->getFloatPrecision() == model::floatPrecision::kSingle);
+	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof(cl_double) : sizeof(cl_float));
 
 	// OpenCL elements
-	if ( !this->prepare1OExecDimensions() ) 
-	{ 
+	if (!this->prepare1OExecDimensions())
+	{
 		model::doError(
 			"Failed to dimension 1st-order task elements. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -88,8 +86,8 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if ( !this->prepare1OConstants() ) 
-	{ 
+	if (!this->prepare1OConstants())
+	{
 		model::doError(
 			"Failed to allocate 1st-order constants. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -98,8 +96,8 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if ( !this->prepareInertialConstants() ) 
-	{ 
+	if (!this->prepareInertialConstants())
+	{
 		model::doError(
 			"Failed to allocate inertial constants. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -108,8 +106,8 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if ( !this->prepareCode() ) 
-	{ 
+	if (!this->prepareCode())
+	{
 		model::doError(
 			"Failed to prepare model codebase. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -118,8 +116,8 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if ( !this->prepare1OMemory() ) 
-	{ 
+	if (!this->prepare1OMemory())
+	{
 		model::doError(
 			"Failed to create 1st-order memory buffers. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -128,8 +126,8 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if ( !this->prepareGeneralKernels() ) 
-	{ 
+	if (!this->prepareGeneralKernels())
+	{
 		model::doError(
 			"Failed to prepare general kernels. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -137,8 +135,8 @@ void CSchemeInertial::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if ( !this->prepareInertialKernels() ) 
-	{ 
+	if (!this->prepareInertialKernels())
+	{
 		model::doError(
 			"Failed to prepare inertial kernels. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -147,15 +145,6 @@ void CSchemeInertial::prepareAll()
 		return;
 	}
 
-	if (!this->prepareBoundaries())
-	{
-		model::doError(
-			"Failed to prepare boundaries. Cannot continue.",
-			model::errorCodes::kLevelModelStop
-			);
-		this->releaseResources();
-		return;
-	}
 
 	this->logDetails();
 	this->bReady = true;
@@ -169,29 +158,28 @@ void CSchemeInertial::logDetails()
 	model::log->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
 
-	std::string sConfiguration	= "Undefined";
-	switch( this->ucConfiguration )
+	std::string sConfiguration = "Undefined";
+	switch (this->ucConfiguration)
 	{
 	case model::schemeConfigurations::inertialFormula::kCacheNone:
-			sConfiguration = "Disabled";
+		sConfiguration = "Disabled";
 		break;
 	case model::schemeConfigurations::inertialFormula::kCacheEnabled:
-			sConfiguration = "Enabled";
+		sConfiguration = "Enabled";
 		break;
 	}
 
-	model::log->writeLine( "SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour );
-	model::log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
-	model::log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	model::log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
-	model::log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
-	model::log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
-	model::log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
-	model::log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
-	model::log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
-	
+	model::log->writeLine("SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour);
+	model::log->writeLine("  Timestep mode:      " + (std::string)(this->bDynamicTimestep ? "Dynamic" : "Fixed"), true, wColour);
+	model::log->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? toString(this->dCourantNumber) : "N/A"), true, wColour);
+	model::log->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
+	model::log->writeLine("  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	model::log->writeLine("  Configuration:      " + sConfiguration, true, wColour);
+	model::log->writeLine("  Friction effects:   " + (std::string)(this->bFrictionEffects ? "Enabled" : "Disabled"), true, wColour);
+	model::log->writeLine("  Kernel queue mode:  " + (std::string)(this->bAutomaticQueue ? "Automatic" : "Fixed size"), true, wColour);
+	model::log->writeLine((std::string)(this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        ") + toString(this->uiQueueAdditionSize) + " iteration(s)", true, wColour);
+	model::log->writeLine("  Debug output:       " + (std::string)(this->bDebugOutput ? "Enabled" : "Disabled"), true, wColour);
+
 	model::log->writeDivide();
 }
 
@@ -202,17 +190,17 @@ bool CSchemeInertial::prepareCode()
 {
 	bool bReturnState = true;
 
-	oclModel->appendCodeFromResource( "CLDomainCartesian_H" );
-	oclModel->appendCodeFromResource( "CLFriction_H" );
-	oclModel->appendCodeFromResource( "CLDynamicTimestep_H" );
-	oclModel->appendCodeFromResource( "CLSchemeInertial_H" );
-	oclModel->appendCodeFromResource( "CLBoundaries_H" );
+	oclModel->appendCodeFromResource("CLDomainCartesian_H");
+	oclModel->appendCodeFromResource("CLFriction_H");
+	oclModel->appendCodeFromResource("CLDynamicTimestep_H");
+	oclModel->appendCodeFromResource("CLSchemeInertial_H");
+	oclModel->appendCodeFromResource("CLBoundaries_H");
 
-	oclModel->appendCodeFromResource( "CLDomainCartesian_C" );
-	oclModel->appendCodeFromResource( "CLFriction_C" );
-	oclModel->appendCodeFromResource( "CLDynamicTimestep_C" );
-	oclModel->appendCodeFromResource( "CLSchemeInertial_C" );
-	oclModel->appendCodeFromResource( "CLBoundaries_C" );
+	oclModel->appendCodeFromResource("CLDomainCartesian_C");
+	oclModel->appendCodeFromResource("CLFriction_C");
+	oclModel->appendCodeFromResource("CLDynamicTimestep_C");
+	oclModel->appendCodeFromResource("CLSchemeInertial_C");
+	oclModel->appendCodeFromResource("CLBoundaries_C");
 
 	bReturnState = oclModel->compileProgram();
 
@@ -230,20 +218,20 @@ bool CSchemeInertial::prepareInertialConstants()
 	// Size of local cache arrays
 	// --
 
-	switch( this->ucCacheConstraints )
+	switch (this->ucCacheConstraints)
 	{
-		case model::cacheConstraints::inertialFormula::kCacheActualSize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
-			break;
-		case model::cacheConstraints::inertialFormula::kCacheAllowUndersize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
-			break;
-		case model::cacheConstraints::inertialFormula::kCacheAllowOversize:
-			oclModel->registerConstant( "INE_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "INE_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
-			break;
+	case model::cacheConstraints::inertialFormula::kCacheActualSize:
+		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		break;
+	case model::cacheConstraints::inertialFormula::kCacheAllowUndersize:
+		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		break;
+	case model::cacheConstraints::inertialFormula::kCacheAllowOversize:
+		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
+		break;
 	}
 
 	return true;
@@ -254,8 +242,8 @@ bool CSchemeInertial::prepareInertialConstants()
  */
 bool CSchemeInertial::prepareInertialKernels()
 {
-	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= pManager->getExecutor();
+	bool						bReturnState = true;
+	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*		pDevice				= pExecutor->getDevice();
 

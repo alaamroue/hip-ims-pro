@@ -124,7 +124,6 @@ class CSchemeGodunov : public CScheme
 		// Private functions
 		virtual bool		prepareCode();											// Prepare the code required
 		virtual void		releaseResources();										// Release OpenCL resources consumed
-		virtual bool		prepareBoundaries();									// Prepare the boundary conditions and time series
 		bool				prepareGeneralKernels();								// Prepare the general kernels required
 		bool				prepare1OKernels();										// Prepare the kernels required
 		bool				prepare1OConstants();									// Assign constants to the executor

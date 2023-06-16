@@ -45,8 +45,6 @@ namespace Util
 	char*			toLowercase( const char * );
 	void			toLowercase( char**, const char * );
 	void			toNewString( char**, const char * );
-	unsigned long	toTimestamp( const char *, const char * = NULL );
-	const char *	fromTimestamp( unsigned long, const char * = NULL );
 	bool			fileExists( const char * );
 }
 

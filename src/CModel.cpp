@@ -26,8 +26,6 @@
 #include "CDomain.h"
 #include "CScheme.h"
 
-#include "CRasterDataset.h"
-
 using std::min;
 using std::max;
 
@@ -124,8 +122,6 @@ void CModel::logDetails()
 	this->log->writeDivide();
 	this->log->writeLine( "SIMULATION CONFIGURATION", true, wColour );
 	this->log->writeLine( "  Name:               " + this->sModelName, true, wColour );
-	this->log->writeLine( "  Start time:         " + std::string( Util::fromTimestamp( this->ulRealTimeStart, "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
-	this->log->writeLine( "  End time:           " + std::string( Util::fromTimestamp( this->ulRealTimeStart + static_cast<unsigned long>( std::ceil( this->dSimulationTime ) ), "%d-%b-%Y %H:%M:%S" ) ), true, wColour );
 	this->log->writeLine( "  Simulation length:  " + Util::secondsToTime( this->dSimulationTime ), true, wColour );
 	this->log->writeLine( "  Output frequency:   " + Util::secondsToTime( this->dOutputFrequency ), true, wColour );
 	this->log->writeLine( "  Floating-point:     " + (std::string)( this->getFloatPrecision() == model::floatPrecision::kDouble ? "Double-precision" : "Single-precision" ), true, wColour );
@@ -208,22 +204,6 @@ void	CModel::setOutputFrequency( double dFrequency )
 }
 
 /*
- *  Sets the real world start time
- */
-void	CModel::setRealStart( char* cTime, char* cFormat )
-{
-	this->ulRealTimeStart = Util::toTimestamp( cTime, cFormat );
-}
-
-/*
- *  Fetch the real world start time
- */
-unsigned long CModel::getRealStart()
-{
-	return this->ulRealTimeStart;
-}
-
-/*
  *  Get the frequency of outputs
  */
 double	CModel::getOutputFrequency()
@@ -244,7 +224,7 @@ void	CModel::writeOutputs()
  */
 void	CModel::setFloatPrecision( unsigned char ucPrecision )
 {
-	if ( !pManager->getExecutor()->getDevice()->isDoubleCompatible() )
+	if ( !model::pManager->getExecutor()->getDevice()->isDoubleCompatible() )
 		ucPrecision = model::floatPrecision::kSingle;
 
 	this->bDoublePrecision = ( ucPrecision == model::floatPrecision::kDouble );
@@ -376,10 +356,10 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
  */
 void CModel::visualiserUpdate()
 {
-	CDomain*	pDomain = pManager->domains->getDomain(0);
-	COCLDevice*	pDevice	= pManager->domains->getDomain(0)->getDevice();
+	CDomain*	pDomain = model::pManager->domains->getDomain(0);
+	COCLDevice*	pDevice	= model::pManager->domains->getDomain(0)->getDevice();
 
-	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 || model::forceAbort )
+	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 )
 		return;
 
 }
@@ -389,7 +369,7 @@ void CModel::visualiserUpdate()
  */
 void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, void * vData )
 {
-	pManager->visualiserUpdate();
+	model::pManager->visualiserUpdate();
 	clReleaseEvent( clEvent );
 }
 
@@ -398,9 +378,6 @@ void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, v
 */
 void	CModel::runModelPrepare()
 {
-	// Allow external influences to interupt the simulation (i.e. UI windows)
-	model::forceAbort = false;
-
 	// Can't have timestep sync if we've only got one domain
 	if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		this->getDomainSet()->getDomainCount() <= 1)
@@ -664,7 +641,7 @@ void	CModel::runModelSync()
 			// for either domain sync/rollbacks or to write outputs
 			if ( 
 					( domains->getDomainCount() > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
-					( fabs(this->dCurrentTime - dLastOutputTime - pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
+					( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
 			   )
 			{
 #ifdef DEBUG_MPI
@@ -715,7 +692,7 @@ void	CModel::runModelOutputs()
 	if ( bRollbackRequired ||
 		 !bSynchronised ||
 		 !bAllIdle ||
-		 !( fabs(this->dCurrentTime - dLastOutputTime - pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
+		 !( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
 		return;
 
 	this->writeOutputs();
@@ -795,7 +772,6 @@ void	CModel::runModelUI( CBenchmark::sPerformanceMetrics * sTotalMetrics )
 void	CModel::runModelRollback()
 {
 	if ( !bRollbackRequired ||
-		 model::forceAbort  ||
 		 !bAllIdle )
 		return;
 
@@ -876,7 +852,7 @@ void	CModel::runModelMain()
 	// Run the main management loop
 	// ---------
 	// Even if user has forced abort, still wait until all idle state is reached
-	while ( ( this->dCurrentTime < dSimulationTime - 1E-5 && !model::forceAbort ) || !bAllIdle )
+	while ( ( this->dCurrentTime < dSimulationTime - 1E-5 ) || !bAllIdle )
 	{
 		// Assess the overall state of the simulation at present
 		this->runModelDomainAssess(
@@ -915,15 +891,6 @@ void	CModel::runModelMain()
 	this->runModelUI(
 		sTotalMetrics
 	);
-
-	// Simulation was aborted?
-	if ( model::forceAbort )
-	{
-		model::doError(
-			"Simulation has been aborted",
-			model::errorCodes::kLevelModelStop
-		);
-	}
 
 	// Get the total number of cells calculated
 	unsigned long long	ulCurrentCellsCalculated = 0;

@@ -34,7 +34,7 @@ COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigne
 	this->uiPlatformID			= iPlatformID;
 	this->uiDeviceNo			= iDeviceNo + 1;
 	this->clDevice				= clDevice;
-	this->execController		= pManager->getExecutor();
+	this->execController		= model::pManager->getExecutor();
 	this->bForceSinglePrecision	= false;
 	this->bErrored				= false;
 	this->bBusy					= false;
@@ -354,13 +354,13 @@ bool COCLDevice::isReady()
  */
 bool COCLDevice::isFiltered()
 {
-	if ( !( pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesGPU ) &&
+	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesGPU ) &&
 			this->clDeviceType == CL_DEVICE_TYPE_GPU )
 			return true;
-	if ( !( pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesCPU ) &&
+	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesCPU ) &&
 			this->clDeviceType == CL_DEVICE_TYPE_CPU )
 			return true;
-	if ( !( pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesAPU ) &&
+	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesAPU ) &&
 			this->clDeviceType == CL_DEVICE_TYPE_ACCELERATOR )
 			return true;
 
@@ -467,7 +467,7 @@ void CL_CALLBACK COCLDevice::markerCallback( cl_event clEvent, cl_int iStatus, v
 	unsigned int uiDeviceNo = *(unsigned int*)vData;
 	clReleaseEvent( clEvent );
 
-	COCLDevice* pDevice = pManager->getExecutor()->getDevice( uiDeviceNo );
+	COCLDevice* pDevice = model::pManager->getExecutor()->getDevice( uiDeviceNo );
 	pDevice->markerCompletion();
 }
 

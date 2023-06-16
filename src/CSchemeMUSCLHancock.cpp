@@ -20,8 +20,6 @@
 #include <algorithm>
 
 #include "common.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
 
@@ -95,21 +93,21 @@ void CSchemeMUSCLHancock::prepareAll()
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		pManager->getExecutor(),
+		model::pManager->getExecutor(),
 		this->pDomain->getDevice()
 	);
 
-	this->ulCurrentCellsCalculated		= 0;
-	this->dCurrentTimestep				= this->dTimestep;
-	this->dCurrentTime					= 0;
+	this->ulCurrentCellsCalculated = 0;
+	this->dCurrentTimestep = this->dTimestep;
+	this->dCurrentTime = 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision( pManager->getFloatPrecision() == model::floatPrecision::kSingle );
-	unsigned char ucFloatSize =  ( pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof( cl_double ) : sizeof( cl_float ) );
+	this->oclModel->setForcedSinglePrecision(model::pManager->getFloatPrecision() == model::floatPrecision::kSingle);
+	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
 
 	// OpenCL elements
-	if ( !this->prepare1OExecDimensions() ) 
-	{ 
+	if (!this->prepare1OExecDimensions())
+	{
 		model::doError(
 			"Failed to dimension 1st-order task elements. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -117,8 +115,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if ( !this->prepare2OExecDimensions() ) 
-	{ 
+	if (!this->prepare2OExecDimensions())
+	{
 		model::doError(
 			"Failed to dimension 2nd-order task elements. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -127,8 +125,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		return;
 	}
 
-	if ( !this->prepare1OConstants() ) 
-	{ 
+	if (!this->prepare1OConstants())
+	{
 		model::doError(
 			"Failed to allocate 1st-order constants. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -136,8 +134,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if ( !this->prepare2OConstants() ) 
-	{ 
+	if (!this->prepare2OConstants())
+	{
 		model::doError(
 			"Failed to allocate 2nd-order constants. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -146,8 +144,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		return;
 	}
 
-	if ( !this->prepareCode() ) 
-	{ 
+	if (!this->prepareCode())
+	{
 		model::doError(
 			"Failed to prepare model codebase. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -156,8 +154,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		return;
 	}
 
-	if ( !this->prepare1OMemory() ) 
-	{ 
+	if (!this->prepare1OMemory())
+	{
 		model::doError(
 			"Failed to create 1st-order memory buffers. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -165,8 +163,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if ( !this->prepare2OMemory() ) 
-	{ 
+	if (!this->prepare2OMemory())
+	{
 		model::doError(
 			"Failed to create 2nd-order memory buffers. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -175,8 +173,8 @@ void CSchemeMUSCLHancock::prepareAll()
 		return;
 	}
 
-	if ( !this->prepareGeneralKernels() ) 
-	{ 
+	if (!this->prepareGeneralKernels())
+	{
 		model::doError(
 			"Failed to prepare general kernels. Cannot continue.",
 			model::errorCodes::kLevelModelStop
@@ -184,22 +182,12 @@ void CSchemeMUSCLHancock::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if ( !this->prepare2OKernels() ) 
-	{ 
+	if (!this->prepare2OKernels())
+	{
 		model::doError(
 			"Failed to prepare 2nd-order kernels. Cannot continue.",
 			model::errorCodes::kLevelModelStop
 		);
-		this->releaseResources();
-		return;
-	}
-
-	if (!this->prepareBoundaries())
-	{
-		model::doError(
-			"Failed to prepare boundaries. Cannot continue.",
-			model::errorCodes::kLevelModelStop
-			);
 		this->releaseResources();
 		return;
 	}
@@ -216,41 +204,40 @@ void CSchemeMUSCLHancock::logDetails()
 	model::log->writeDivide();
 	unsigned short wColour = model::cli::colourInfoBlock;
 
-	std::string sSolver			= "Undefined";
-	switch( this->ucSolverType )
+	std::string sSolver = "Undefined";
+	switch (this->ucSolverType)
 	{
 	case model::solverTypes::kHLLC:
-			sSolver = "HLLC (Approximate)";
+		sSolver = "HLLC (Approximate)";
 		break;
 	}
 
-	std::string sConfiguration	= "Undefined";
-	switch( this->ucConfiguration )
+	std::string sConfiguration = "Undefined";
+	switch (this->ucConfiguration)
 	{
 	case model::schemeConfigurations::musclHancock::kCacheNone:
-			sConfiguration = "No local caching";
+		sConfiguration = "No local caching";
 		break;
 	case model::schemeConfigurations::musclHancock::kCachePrediction:
-			sConfiguration = "Prediction-step caching";
+		sConfiguration = "Prediction-step caching";
 		break;
 	case model::schemeConfigurations::musclHancock::kCacheMaximum:
-			sConfiguration = "Maximum local caching";
+		sConfiguration = "Maximum local caching";
 		break;
 	}
 
-	model::log->writeLine( "MUSCL-HANCOCK 2ND-ORDER-ACCURATE SCHEME", true, wColour );
-	model::log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
-	model::log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	model::log->writeLine( "  Data reduction:     " + toString( this->uiTimestepReductionWavefronts ) + " divisions", true, wColour );
-	model::log->writeLine( "  Boundaries:         " + toString( this->pDomain->getBoundaries()->getBoundaryCount() ), true, wColour );
-	model::log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
-	model::log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
-	model::log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
-	model::log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
-	model::log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
-	
+	model::log->writeLine("MUSCL-HANCOCK 2ND-ORDER-ACCURATE SCHEME", true, wColour);
+	model::log->writeLine("  Timestep mode:      " + (std::string)(this->bDynamicTimestep ? "Dynamic" : "Fixed"), true, wColour);
+	model::log->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? toString(this->dCourantNumber) : "N/A"), true, wColour);
+	model::log->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
+	model::log->writeLine("  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	model::log->writeLine("  Riemann solver:     " + sSolver, true, wColour);
+	model::log->writeLine("  Configuration:      " + sConfiguration, true, wColour);
+	model::log->writeLine("  Friction effects:   " + (std::string)(this->bFrictionEffects ? "Enabled" : "Disabled"), true, wColour);
+	model::log->writeLine("  Kernel queue mode:  " + (std::string)(this->bAutomaticQueue ? "Automatic" : "Fixed size"), true, wColour);
+	model::log->writeLine((std::string)(this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        ") + toString(this->uiQueueAdditionSize) + " iteration(s)", true, wColour);
+	model::log->writeLine("  Debug output:       " + (std::string)(this->bDebugOutput ? "Enabled" : "Disabled"), true, wColour);
+
 	model::log->writeDivide();
 }
 
@@ -261,21 +248,21 @@ bool CSchemeMUSCLHancock::prepareCode()
 {
 	bool bReturnState = true;
 
-	oclModel->appendCodeFromResource( "CLDomainCartesian_H" );
-	oclModel->appendCodeFromResource( "CLFriction_H" );
-	oclModel->appendCodeFromResource( "CLSlopeLimiterMINMOD_H" );
-	oclModel->appendCodeFromResource( "CLSolverHLLC_H" );
-	oclModel->appendCodeFromResource( "CLDynamicTimestep_H" );
-	oclModel->appendCodeFromResource( "CLSchemeMUSCLHancock_H" );
-	oclModel->appendCodeFromResource( "CLBoundaries_H" );
+	oclModel->appendCodeFromResource("CLDomainCartesian_H");
+	oclModel->appendCodeFromResource("CLFriction_H");
+	oclModel->appendCodeFromResource("CLSlopeLimiterMINMOD_H");
+	oclModel->appendCodeFromResource("CLSolverHLLC_H");
+	oclModel->appendCodeFromResource("CLDynamicTimestep_H");
+	oclModel->appendCodeFromResource("CLSchemeMUSCLHancock_H");
+	oclModel->appendCodeFromResource("CLBoundaries_H");
 
-	oclModel->appendCodeFromResource( "CLDomainCartesian_C" );
-	oclModel->appendCodeFromResource( "CLFriction_C" );
-	oclModel->appendCodeFromResource( "CLSlopeLimiterMINMOD_C" );
-	oclModel->appendCodeFromResource( "CLSolverHLLC_C" );
-	oclModel->appendCodeFromResource( "CLDynamicTimestep_C" );
-	oclModel->appendCodeFromResource( "CLSchemeMUSCLHancock_C" );
-	oclModel->appendCodeFromResource( "CLBoundaries_C" );
+	oclModel->appendCodeFromResource("CLDomainCartesian_C");
+	oclModel->appendCodeFromResource("CLFriction_C");
+	oclModel->appendCodeFromResource("CLSlopeLimiterMINMOD_C");
+	oclModel->appendCodeFromResource("CLSolverHLLC_C");
+	oclModel->appendCodeFromResource("CLDynamicTimestep_C");
+	oclModel->appendCodeFromResource("CLSchemeMUSCLHancock_C");
+	oclModel->appendCodeFromResource("CLBoundaries_C");
 
 	bReturnState = oclModel->compileProgram();
 
@@ -288,34 +275,34 @@ bool CSchemeMUSCLHancock::prepareCode()
 bool CSchemeMUSCLHancock::prepare2OExecDimensions()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL*		pExecutor	 = pManager->getExecutor();
-	COCLDevice*		pDevice		 = pExecutor->getDevice();
-	CDomainCartesian*			pDomain		 = static_cast<CDomainCartesian*>( this->pDomain );
+	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
+	COCLDevice* pDevice = pExecutor->getDevice();
+	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
 
 	// --
 	// Maximum permissible work-group dimensions for this device
 	// --
 
-	cl_ulong	ulConstraintWGTotal = static_cast<cl_ulong>( floor( sqrt( static_cast<double> ( pDevice->clDeviceMaxWorkGroupSize ) ) ) );
-	cl_ulong	ulConstraintWGDim   = min( pDevice->clDeviceMaxWorkItemSizes[0], pDevice->clDeviceMaxWorkItemSizes[1] );
-	cl_ulong	ulConstraintWG		= min( ulConstraintWGDim, ulConstraintWGTotal );
+	cl_ulong	ulConstraintWGTotal = static_cast<cl_ulong>(floor(sqrt(static_cast<double> (pDevice->clDeviceMaxWorkGroupSize))));
+	cl_ulong	ulConstraintWGDim = min(pDevice->clDeviceMaxWorkItemSizes[0], pDevice->clDeviceMaxWorkItemSizes[1]);
+	cl_ulong	ulConstraintWG = min(ulConstraintWGDim, ulConstraintWGTotal);
 
 	// --
 	// Main scheme kernels with/without caching (2D)
 	// --
 
-	if ( this->ulCachedWorkgroupSizeX == 0 )
-		ulCachedWorkgroupSizeX = ulConstraintWG + 
-							 ( this->ucCacheConstraints == model::cacheConstraints::musclHancock::kCacheAllowUndersize ? -1 : 0 );
-	if ( this->ulCachedWorkgroupSizeY == 0 )
+	if (this->ulCachedWorkgroupSizeX == 0)
+		ulCachedWorkgroupSizeX = ulConstraintWG +
+		(this->ucCacheConstraints == model::cacheConstraints::musclHancock::kCacheAllowUndersize ? -1 : 0);
+	if (this->ulCachedWorkgroupSizeY == 0)
 		ulCachedWorkgroupSizeY = ulConstraintWG;
 
-	ulCachedGlobalSizeX	= static_cast<unsigned long>( ceil( pDomain->getCols() * 
-						  ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction ? static_cast<double>( ulCachedWorkgroupSizeX ) / static_cast<double>( ulCachedWorkgroupSizeX - 2 ) : 1.0 ) *
-						  ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum    ? static_cast<double>( ulCachedWorkgroupSizeX ) / static_cast<double>( ulCachedWorkgroupSizeX - 4 ) : 1.0 ) ) );
-	ulCachedGlobalSizeY	= static_cast<unsigned long>( ceil( pDomain->getRows() * 
-						  ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction ? static_cast<double>( ulCachedWorkgroupSizeY ) / static_cast<double>( ulCachedWorkgroupSizeY - 2 ) : 1.0 ) *
-						  ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum    ? static_cast<double>( ulCachedWorkgroupSizeY ) / static_cast<double>( ulCachedWorkgroupSizeY - 4 ) : 1.0 ) ) );
+	ulCachedGlobalSizeX = static_cast<unsigned long>(ceil(pDomain->getCols() *
+		(this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction ? static_cast<double>(ulCachedWorkgroupSizeX) / static_cast<double>(ulCachedWorkgroupSizeX - 2) : 1.0) *
+		(this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum ? static_cast<double>(ulCachedWorkgroupSizeX) / static_cast<double>(ulCachedWorkgroupSizeX - 4) : 1.0)));
+	ulCachedGlobalSizeY = static_cast<unsigned long>(ceil(pDomain->getRows() *
+		(this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction ? static_cast<double>(ulCachedWorkgroupSizeY) / static_cast<double>(ulCachedWorkgroupSizeY - 2) : 1.0) *
+		(this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum ? static_cast<double>(ulCachedWorkgroupSizeY) / static_cast<double>(ulCachedWorkgroupSizeY - 4) : 1.0)));
 
 	return bReturnState;
 }
@@ -325,77 +312,78 @@ bool CSchemeMUSCLHancock::prepare2OExecDimensions()
  */
 bool CSchemeMUSCLHancock::prepare2OConstants()
 {
-	CDomainCartesian*	pDomain	= static_cast<CDomainCartesian*>( this->pDomain );
+	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
 
 	// --
 	// Work-group size requirements
 	// --
 
-	if ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheNone )
+	if (this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheNone)
 	{
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_HALF_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulNonCachedWorkgroupSizeX) + ", " + toString(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_FULL_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulNonCachedWorkgroupSizeX) + ", " + toString(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
-	} 
-	if ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction )
+	}
+	if (this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction)
 	{
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_HALF_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulCachedWorkgroupSizeX) + ", " + toString(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_FULL_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulNonCachedWorkgroupSizeX) + ", " + toString(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
-	} 
-	if ( this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum )
+	}
+	if (this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum)
 	{
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_HALF_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_HALF_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulCachedWorkgroupSizeX) + ", " + toString(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
-		oclModel->registerConstant( 
-			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulCachedWorkgroupSizeX )  + ", " + toString( this->ulCachedWorkgroupSizeY )  + ", 1)))"
+		oclModel->registerConstant(
+			"REQD_WG_SIZE_FULL_TS",
+			"__attribute__((reqd_work_group_size(" + toString(this->ulCachedWorkgroupSizeX) + ", " + toString(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
-	} 
+	}
 
 	// --
 	// Storage of face-extrapolated cell data for second-order accuracy
 	// --
 
-	if ( this->bContiguousFaceData )
+	if (this->bContiguousFaceData)
 	{
-		oclModel->registerConstant( "MEM_CONTIGUOUS_FACES",	"1" );
-		oclModel->removeConstant( "MEM_SEPARATE_FACES" );
-	} else {
-		oclModel->registerConstant( "MEM_SEPARATE_FACES",	"1" );
-		oclModel->removeConstant( "MEM_CONTIGUOUS_FACES" );
+		oclModel->registerConstant("MEM_CONTIGUOUS_FACES", "1");
+		oclModel->removeConstant("MEM_SEPARATE_FACES");
+	}
+	else {
+		oclModel->registerConstant("MEM_SEPARATE_FACES", "1");
+		oclModel->removeConstant("MEM_CONTIGUOUS_FACES");
 	}
 
 	// --
 	// Size of local cache arrays
 	// --
 
-	switch( this->ucCacheConstraints )
+	switch (this->ucCacheConstraints)
 	{
-		case model::cacheConstraints::musclHancock::kCacheActualSize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
-			break;
-		case model::cacheConstraints::musclHancock::kCacheAllowUndersize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
-			break;
-		case model::cacheConstraints::musclHancock::kCacheAllowOversize:
-			oclModel->registerConstant( "MCH_STG1_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "MCH_STG1_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
-			break;
+	case model::cacheConstraints::musclHancock::kCacheActualSize:
+		oclModel->registerConstant("MCH_STG1_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		break;
+	case model::cacheConstraints::musclHancock::kCacheAllowUndersize:
+		oclModel->registerConstant("MCH_STG1_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		break;
+	case model::cacheConstraints::musclHancock::kCacheAllowOversize:
+		oclModel->registerConstant("MCH_STG1_DIM1", toString(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", toString(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
+		break;
 	}
 
 	return true;
@@ -406,24 +394,25 @@ bool CSchemeMUSCLHancock::prepare2OConstants()
  */
 bool CSchemeMUSCLHancock::prepare2OMemory()
 {
-	bool						bReturnState		= true;
-	CDomain*					pDomain				= this->pDomain;
+	bool						bReturnState = true;
+	CDomain* pDomain = this->pDomain;
 
-	unsigned char ucFloatSize = (pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
+	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
 
 	// --
 	// Face extrapolated half-timestep data
 	// --
 
-	if ( this->bContiguousFaceData )
+	if (this->bContiguousFaceData)
 	{
-		oclBufferFaceExtrapolations = new COCLBuffer( "Face extrapolations", oclModel, false, true, ucFloatSize * 4 * 4 * pDomain->getCellCount(), true );
+		oclBufferFaceExtrapolations = new COCLBuffer("Face extrapolations", oclModel, false, true, ucFloatSize * 4 * 4 * pDomain->getCellCount(), true);
 		oclBufferFaceExtrapolations->createBuffer();
-	} else {
-		oclBufferFaceExtrapolationN = new COCLBuffer( "Face extrapolations N", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true );
-		oclBufferFaceExtrapolationE = new COCLBuffer( "Face extrapolations E", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true );
-		oclBufferFaceExtrapolationS = new COCLBuffer( "Face extrapolations S", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true );
-		oclBufferFaceExtrapolationW = new COCLBuffer( "Face extrapolations W", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true );
+	}
+	else {
+		oclBufferFaceExtrapolationN = new COCLBuffer("Face extrapolations N", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true);
+		oclBufferFaceExtrapolationE = new COCLBuffer("Face extrapolations E", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true);
+		oclBufferFaceExtrapolationS = new COCLBuffer("Face extrapolations S", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true);
+		oclBufferFaceExtrapolationW = new COCLBuffer("Face extrapolations W", oclModel, false, true, ucFloatSize * 4 * pDomain->getCellCount(), true);
 		oclBufferFaceExtrapolationN->createBuffer();
 		oclBufferFaceExtrapolationE->createBuffer();
 		oclBufferFaceExtrapolationS->createBuffer();
@@ -438,8 +427,8 @@ bool CSchemeMUSCLHancock::prepare2OMemory()
  */
 bool CSchemeMUSCLHancock::prepare2OKernels()
 {
-	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= pManager->getExecutor();
+	bool						bReturnState = true;
+	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 
