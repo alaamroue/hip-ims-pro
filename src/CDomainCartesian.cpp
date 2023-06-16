@@ -26,7 +26,6 @@
 #include "CDomain.h"
 #include "CScheme.h"
 
-#include "CRasterDataset.h"
 #include "CExecutorControlOpenCL.h"
 #include "CDomainCartesian.h"
 
@@ -327,45 +326,7 @@ unsigned long	CDomainCartesian::getCellFromCoordinates( double dX, double dY )
 	return getCellID( ulX, ulY );
 }
 
-#ifdef _WINDLL
-/*
- *  Send the topography to the renderer for visualisation purposes
- */
-void	CDomainCartesian::sendAllToRenderer()
-{
-	// TODO: This needs fixing and changing to account for multi-domain stuff...
-	if ( pManager->getDomainSet()->getDomainCount() > 1 )
-		return;
 
-	if ( !this->isInitialised() ||
-		 ( this->ucFloatSize == 8 && this->dBedElevations == NULL ) ||
-		 ( this->ucFloatSize == 4 && this->fBedElevations == NULL ) ||
-		 ( this->ucFloatSize == 8 && this->dCellStates == NULL ) ||
-		 ( this->ucFloatSize == 4 && this->fCellStates == NULL ) ) 
-		return;
-
-#ifdef _WINDLL
-	if ( model::fSendTopography != NULL )
-		model::fSendTopography(
-			this->ucFloatSize == 8 ? 
-				static_cast<void*>( this->dBedElevations ) :
-				static_cast<void*>( this->fBedElevations ),
-			this->ucFloatSize == 8 ? 
-				static_cast<void*>( this->dCellStates ) : 
-				static_cast<void*>( this->fCellStates ),
-			this->ucFloatSize,
-			this->ulCols,
-			this->ulRows,
-			this->dCellResolution,
-			this->dCellResolution,
-			this->dMinDepth,
-			this->dMaxDepth,
-			this->dMinTopo,
-			this->dMaxTopo
-		);
-#endif
-}
-#endif
 
 
 /*
@@ -440,23 +401,7 @@ void	CDomainCartesian::writeOutputs()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	for( unsigned int i = 0; i < this->pOutputs.size(); ++i )
-	{
-		// Replaces %t with the time in the filename, if required
-		// TODO: Allow for decimal output filenames
-		std::string sFilename		= this->pOutputs[i].sTarget;
-		std::string sTime			= toString( floor( pScheme->getCurrentTime() * 100.0 ) / 100.0 );
-		unsigned int uiTimeLocation = sFilename.find( "%t" );
-		if ( uiTimeLocation != std::string::npos )
-			sFilename.replace( uiTimeLocation, 2, sTime );
-
-		CRasterDataset::domainToRaster(
-			this->pOutputs[i].cFormat,
-			sFilename,
-			this,
-			this->pOutputs[i].ucValue
-		);
-	}
+	//TODO: Alaa handle reads
 }
 
 /*

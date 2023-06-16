@@ -47,7 +47,6 @@ class CScheme
 
 		// Public functions
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
-		static CScheme*		createFromConfig( XMLElement* );										// Parse and configure a scheme class
 
 		virtual void		setupScheme(model::SchemeSettings) = 0 ;										// Set up the scheme
 		bool				isReady();																// Is the scheme ready to run?

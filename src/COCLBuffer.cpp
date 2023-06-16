@@ -292,7 +292,7 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 			+ this->sName + " (" + toString( iReturn ) + ")\n"
 			+ "  Offset: " + toString( ulOffset ) 
 			+ "  Size: " + toString( ulSize ) 
-			+ "  Pointer: " + toString( pMemBlock )
+			+ "  Pointer: check COCLBUFFER.CPP" //+ toString( pMemBlock )
 			+ "  Buf size: " + toString( this->ulSize ),
 			model::errorCodes::kLevelModelStop
 		);

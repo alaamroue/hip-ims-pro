@@ -18,16 +18,12 @@
  */
 
 #include "common.h"
-#include "CBoundaryMap.h"
-#include "CBoundary.h"
 #include "CScheme.h"
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
-
-#include "CRasterDataset.h"
 
 /*
  *  Default constructor

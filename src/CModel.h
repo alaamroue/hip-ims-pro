@@ -46,7 +46,6 @@ class CModel
 		CModel(void);															// Constructor
 		~CModel(void);															// Destructor
 
-		void					setupFromConfig( XMLElement* );					// Setup the simulation
 		bool					setExecutor(CExecutorControl*);					// Sets the type of executor to use for the model
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
 		CDomainManager*			getDomainSet(void);								// Gets the domain set

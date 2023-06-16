@@ -70,9 +70,6 @@ class CDomainCartesian : public CDomain
 		virtual unsigned long	getCellID( unsigned long, unsigned long );		// Get the cell ID using an X and Y index
 		unsigned long	getCellFromCoordinates( double, double );				// Get the cell ID using real coords
 		double			getVolume();											// Calculate the amount of volume in all the cells
-		#ifdef _WINDLL
-		virtual void	sendAllToRenderer();									// Allows the renderer to read off the bed elevations
-		#endif
 
 		enum axis
 		{

@@ -20,8 +20,6 @@
 #include "CDomain.h"
 #include "CDomainCartesian.h"
 
-#include "CRasterDataset.h"
-#include "CBoundaryMap.h"
 #include "CScheme.h"
 #include "COCLDevice.h"
 
@@ -42,10 +40,7 @@ CDomain::CDomain(void)
 	this->dMaxDepth			= -9999.0;
 	this->uiRollbackLimit	= 999999999;
 
-	this->cTargetDir				= NULL;
-	this->cSourceDir				= NULL;
 
-	this->pBoundaries = new CBoundaryMap( this );
 }
 
 /*
@@ -64,7 +59,6 @@ CDomain::~CDomain(void)
 		delete [] this->dManningValues;
 	}
 
-	if ( this->pBoundaries != NULL ) delete pBoundaries;
 	if ( this->pScheme != NULL )     delete pScheme;
 
 	delete [] this->cSourceDir;

@@ -209,7 +209,7 @@ void CLog::writeHeader(void)
  */
 void CLog::setPath()
 {
-	std::string sPath = std::string( model::workingDir ) + "/" + std::string( model::logFile );
+	std::string sPath = "promaidesMultiScheme.log";
 	char*		cPath = new char[ sPath.length() + 1 ];
 
 	std::strcpy( cPath, sPath.c_str() );
@@ -244,7 +244,7 @@ std::string CLog::getPath()
  */
 void CLog::setDir()
 {
-	std::string sDir = std::string( model::workingDir ) + "/";
+	std::string sDir = "/";
 
 	char*		cDir = new char[ sDir.length() + 1 ];
 	std::strcpy( cDir, sDir.c_str() );

@@ -120,7 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CBenchmark.h" />
-    <ClInclude Include="src\CCSVDataset.h" />
     <ClInclude Include="src\CDomain.h" />
     <ClInclude Include="src\CDomainBase.h" />
     <ClInclude Include="src\CDomainCartesian.h" />
@@ -137,7 +136,6 @@
     <ClInclude Include="src\COCLKernel.h" />
     <ClInclude Include="src\COCLProgram.h" />
     <ClInclude Include="src\common.h" />
-    <ClInclude Include="src\CRasterDataset.h" />
     <ClInclude Include="src\CScheme.h" />
     <ClInclude Include="src\CSchemeGodunov.h" />
     <ClInclude Include="src\CSchemeInertial.h" />
@@ -149,7 +147,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CBenchmark.cpp" />
-    <ClCompile Include="src\CCSVDataset.cpp" />
     <ClCompile Include="src\CDomain.cpp" />
     <ClCompile Include="src\CDomainBase.cpp" />
     <ClCompile Include="src\CDomainCartesian.cpp" />
@@ -164,7 +161,6 @@
     <ClCompile Include="src\COCLDevice.cpp" />
     <ClCompile Include="src\COCLKernel.cpp" />
     <ClCompile Include="src\COCLProgram.cpp" />
-    <ClCompile Include="src\CRasterDataset.cpp" />
     <ClCompile Include="src\CScheme.cpp" />
     <ClCompile Include="src\CSchemeGodunov.cpp" />
     <ClCompile Include="src\CSchemeInertial.cpp" />

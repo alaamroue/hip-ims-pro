@@ -1527,7 +1527,7 @@ double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
 	{
 		// Try to accommodate approximately three spare iterations
 		dProposal = dCurrentTime + 
-			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - pManager->getDomainSet()->getSyncBatchSpares()) / pDomain->getRollbackLimit()));
+			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - model::pManager->getDomainSet()->getSyncBatchSpares()) / pDomain->getRollbackLimit()));
 		// Don't allow massive jumps
 		//if ((dProposal - dCurrentTime) > dBatchTimesteps * 3.0)
 		//	dProposal = dCurrentTime + dBatchTimesteps * 3.0;
@@ -1574,7 +1574,7 @@ void	CSchemeGodunov::readKeyStatistics()
 	cl_uint uiLastBatchSuccessful = uiBatchSuccessful;
 
 	// Pull key data back from our buffers to the scheme class
-	if ( pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		dCurrentTimestep = static_cast<cl_double>( *( oclBufferTimestep->getHostBlock<float*>() ) );
 		dCurrentTime = static_cast<cl_double>(*(oclBufferTime->getHostBlock<float*>()));

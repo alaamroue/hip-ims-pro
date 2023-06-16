@@ -81,7 +81,6 @@ class CDomainManager
 
 		// Private functions
 		CDomainBase*			createNewDomain( unsigned char );									// Add a new domain
-		CDomainBase*			createNewDomain( unsigned char, XMLElement* );						// Add a new domain and configure it
 
 };
 
