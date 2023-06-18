@@ -21,15 +21,11 @@ jobs:
       uses: actions/checkout@v2
 
     - name: T1
-      run: | 
-        ls
+      run: ls
     - name: T2
-      run: | 
-        ls ./..
+      run: ls ./..
     - name: T3
-      run: | 
-        ls ./../..
+      run: ls ./../..
     - name: compile
-      run: | 
-        cl /I external/OpenCL-Headers src/gpudemo.cpp /Fe:project /std:c++latest
+      run: cl /I external/OpenCL-Headers src/gpudemo.cpp /Fe:project /std:c++latest
 
