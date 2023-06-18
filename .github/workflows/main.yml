@@ -27,6 +27,10 @@ jobs:
       run: ls ./..
     - name: T3
       run: ls ./../..
+    - name: T4
+      run: ls ./../../..
+    - name: T5
+      run: ls ./../../../..
     - name: compile
       run: cl /I external/OpenCL-Headers src/gpudemo.cpp /Fe:project /std:c++latest
 
