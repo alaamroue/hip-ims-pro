@@ -22,5 +22,11 @@ jobs:
 
     - name: compile
       run: | 
+        ls -l
+      run: | 
+        ls -l ./..
+      run: | 
+        ls -l ./../..
+      run: | 
         cl /I external/OpenCL-Headers src/gpudemo.cpp /Fe:project /std:c++latest
 
