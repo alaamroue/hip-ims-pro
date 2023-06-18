@@ -30,7 +30,7 @@ jobs:
     - name: T4
       run: ls ./../../..
     - name: T5
-      run: ls ./../../../..
+      run: ls $GITHUB_WORKSPACE/OpenCLHeaders
     - name: compile
       run: cl /I $GITHUB_WORKSPACE/OpenCLHeaders src/gpudemo.cpp /Fe:project /std:c++latest
 
