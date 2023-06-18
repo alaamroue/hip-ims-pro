@@ -7,30 +7,14 @@ jobs:
   windows:
     name: run on windows
     runs-on: windows-latest
-    
+
     steps:
-    - name: Get OpenCL Headers
-      uses: actions/checkout@v2
-      with:
-        repository: KhronosGroup/OpenCL-Headers
-        path : OpenCLHeaders
-        
     - name: Install MSVC
       uses: ilammy/msvc-dev-cmd@v1.4.1
-        
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: T1
-      run: ls
-    - name: T2
-      run: ls ./..
-    - name: T3
-      run: ls ./../..
-    - name: T4
-      run: ls ./../../..
-    - name: T5
-      run: ls $GITHUB_WORKSPACE/OpenCLHeaders
     - name: compile
       run: cl /I $GITHUB_WORKSPACE/OpenCLHeaders src/gpudemo.cpp /Fe:project /std:c++latest
 
