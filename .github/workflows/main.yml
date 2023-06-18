@@ -12,8 +12,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install CUDA Toolkit
-      uses: Jimver/cuda-toolkit@v0.2.10
+    - name: Get OpenCL Headers
+      uses: actions/checkout@v3
+      with:
+        repository: KhronosGroup/OpenCL-Headers
+        path: external/OpenCL-Headers
 
     - name: Install MSVC
       uses: ilammy/msvc-dev-cmd@v1.4.1
