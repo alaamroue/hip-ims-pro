@@ -9,18 +9,18 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
     - name: Get OpenCL Headers
       uses: actions/checkout@v3
       with:
         repository: KhronosGroup/OpenCL-Headers
-
+        
     - name: Install MSVC
       uses: ilammy/msvc-dev-cmd@v1.4.1
+        
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
     - name: compile
       run: | 
-        cl /I external/OpenCL-Headers src/*.cpp /Fe:project /std:c++latest
+        cl /I external/OpenCL-Headers src/gpudemo.cpp /Fe:project /std:c++latest
 
