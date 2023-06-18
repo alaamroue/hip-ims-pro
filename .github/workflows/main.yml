@@ -16,5 +16,5 @@ jobs:
       uses: actions/checkout@v2
 
     - name: compile
-      run: cl /I $GITHUB_WORKSPACE/OpenCLHeaders src/gpudemo.cpp /Fe:project /std:c++latest
+      run: cl /I CL src/gpudemo.cpp /Fe:project /std:c++latest
 
