@@ -16,5 +16,5 @@ jobs:
       uses: actions/checkout@v2
 
     - name: compile
-      run: cl /I CL src/gpudemo.cpp /Fe:project /std:c++latest
+      run: cl /I . src/gpudemo.cpp /Fe:project /std:c++latest
 
