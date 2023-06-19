@@ -53,7 +53,6 @@ class CDomainManager
 		// ...
 
 		// Public functions
-		void					writeOutputs();														// Output each domain to disk if required
 		bool					isDomainLocal(unsigned int);										// Is this domain local to this node?
 		std::vector<CDomainBase*>* getDomainBaseVector();											// Fetch a domain base vector
 		CDomainBase*			getDomainBase(unsigned int);										// Fetch a domain base by ID

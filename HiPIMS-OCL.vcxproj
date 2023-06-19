@@ -128,7 +128,6 @@
     <ClInclude Include="src\CDomainRemote.h" />
     <ClInclude Include="src\CExecutorControl.h" />
     <ClInclude Include="src\CExecutorControlOpenCL.h" />
-    <ClInclude Include="src\CLCode.h" />
     <ClInclude Include="src\CLog.h" />
     <ClInclude Include="src\CModel.h" />
     <ClInclude Include="src\COCLBuffer.h" />

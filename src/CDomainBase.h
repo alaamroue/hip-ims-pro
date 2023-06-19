@@ -46,10 +46,6 @@ class CDomainBase
 			unsigned int	uiDomainID;
 			unsigned int	uiNodeID;
 			unsigned int	uiLocalDeviceID;
-			double			dEdgeNorth;
-			double			dEdgeEast;
-			double			dEdgeSouth;
-			double			dEdgeWest;
 			double			dResolution;
 			unsigned long	ulRowCount;
 			unsigned long	ulColCount;

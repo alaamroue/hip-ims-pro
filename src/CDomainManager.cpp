@@ -125,20 +125,6 @@ CDomainManager::Bounds		CDomainManager::getTotalExtent()
 }
 
 /*
- *  Write all of the domain data to disk
- */
-void	CDomainManager::writeOutputs()
-{
-	for( unsigned int i = 0; i < domains.size(); i++ )
-	{
-		if (!domains[i]->isRemote())
-		{
-			getDomain(i)->writeOutputs();
-		}
-	}
-}
-
-/*
 *	Fetch the current sync method being employed
 */
 unsigned char CDomainManager::getSyncMethod()

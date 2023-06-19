@@ -212,14 +212,6 @@ double	CModel::getOutputFrequency()
 }
 
 /*
- *  Write periodical output files to disk
- */
-void	CModel::writeOutputs()
-{
-	this->getDomainSet()->writeOutputs();
-}
-
-/*
  *  Set floating point precision
  */
 void	CModel::setFloatPrecision( unsigned char ucPrecision )
@@ -695,7 +687,8 @@ void	CModel::runModelOutputs()
 		 !( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
 		return;
 
-	this->writeOutputs();
+	double* opt_h = this->getDomainSet()->getDomain(0)->readBuffers_opt_h();
+	delete[] opt_h;
 	dLastOutputTime = this->dCurrentTime;
 	
 	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
@@ -704,9 +697,6 @@ void	CModel::runModelOutputs()
 			domains->getDomain(i)->getScheme()->forceTimeAdvance();
 	}
 	
-#ifdef DEBUG_MPI
-	model::log->writeLine( "[DEBUG] Global block until all output files have been written..." );
-#endif
 	this->runModelBlockGlobal();
 }
 

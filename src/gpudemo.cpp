@@ -72,8 +72,8 @@ int model::loadConfiguration()
 
 	pManager->setName("Name");
 	pManager->setDescription("Desc");
-	pManager->setSimulationLength(1000.0);
-	pManager->setOutputFrequency(1000.0);
+	pManager->setSimulationLength(3600.0);
+	pManager->setOutputFrequency(3600.0);
 	//pManager->setFloatPrecision(model::floatPrecision::kSingle);
 	pManager->setFloatPrecision(model::floatPrecision::kDouble);
 
@@ -92,28 +92,6 @@ int model::loadConfiguration()
 	ourCartesianDomain->setCols(100);
 	ourCartesianDomain->setRows(100);
 
-	unsigned long ulCellID;
-	unsigned char	ucRounding = 5;
-	for (unsigned long iRow = 0; iRow < ourCartesianDomain->getRows(); iRow++) {
-		for (unsigned long iCol = 0; iCol < ourCartesianDomain->getCols(); iCol++) {
-			ulCellID = ourCartesianDomain->getCellID(iCol, ourCartesianDomain->getRows() - iRow - 1);
-			//Elevations
-			ourCartesianDomain->handleInputData(ulCellID, pow(iRow* iRow + iCol * iCol,0.5), model::rasterDatasets::dataValues::kBedElevation, ucRounding);
-			//Manning Coefficient
-			ourCartesianDomain->handleInputData(ulCellID, 0.03, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
-			//Depth
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
-			//VelocityX
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
-			//VelocityY
-			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
-			//Boundary Condition
-			ourCartesianDomain->setBoundaryCondition(ulCellID, 0.0);
-			//Coupling Condition
-			//ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
-
-		}
-	}
 
 	CScheme* pScheme;
 	pScheme = CScheme::createScheme(model::schemeTypes::kGodunov);
@@ -142,6 +120,29 @@ int model::loadConfiguration()
 	pScheme->setDomain(ourCartesianDomain);			// Scheme allocates the memory and thus needs to know the dimensions
 	pScheme->prepareAll();							//Needs Dimension data to alocate memory
 	ourCartesianDomain->setScheme(pScheme);
+
+	unsigned long ulCellID;
+	unsigned char	ucRounding = 5;
+	for (unsigned long iRow = 0; iRow < ourCartesianDomain->getRows(); iRow++) {
+		for (unsigned long iCol = 0; iCol < ourCartesianDomain->getCols(); iCol++) {
+			ulCellID = ourCartesianDomain->getCellID(iCol, ourCartesianDomain->getRows() - iRow - 1);
+			//Elevations
+			ourCartesianDomain->handleInputData(ulCellID, pow(iRow* iRow + iCol * iCol,0.5), model::rasterDatasets::dataValues::kBedElevation, ucRounding);
+			//Manning Coefficient
+			ourCartesianDomain->handleInputData(ulCellID, 0.03, model::rasterDatasets::dataValues::kManningCoefficient, ucRounding);
+			//Depth
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kDepth, ucRounding);
+			//VelocityX
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityX, ucRounding);
+			//VelocityY
+			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
+			//Boundary Condition
+			ourCartesianDomain->setBoundaryCondition(ulCellID, 0.0001);
+			//Coupling Condition
+			//ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
+
+		}
+	}
 
 	pDomainNew->setID(1);	// Should not be needed, but somehow is?
 	pManager->getDomainSet()->getDomainBaseVector()->push_back(pDomainNew);

@@ -71,9 +71,6 @@
     <ClInclude Include="src\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CLCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\CBenchmark.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -21,6 +21,7 @@
 
 // Includes
 #include <sstream>
+#include "opencl.h"
 
 // Structure definitions
 struct cursorCoords {
@@ -34,18 +35,19 @@ struct cursorCoords {
 namespace Util
 {
 	// String conversions
-	std::string secondsToTime( double );
+	std::string		secondsToTime(double);
 
 	// Resource handling
-	char*			getFileResource( const char *, const char * );
+	char* getFileResource(const char*, const char*);
 	cursorCoords	getCursorPosition();
 	void			getHostname(char*);
-	void			setCursorPosition( cursorCoords );
-	double			round( double, unsigned char );
-	char*			toLowercase( const char * );
-	void			toLowercase( char**, const char * );
-	void			toNewString( char**, const char * );
-	bool			fileExists( const char * );
-}
+	void			setCursorPosition(cursorCoords);
+	double			round(double, unsigned char);
+	char* toLowercase(const char*);
+	void			toLowercase(char**, const char*);
+	void			toNewString(char**, const char*);
+	bool			fileExists(const char*);
+	std::string     to_string_exact(double);
 
+}
 #endif

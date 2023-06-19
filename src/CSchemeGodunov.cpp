@@ -71,6 +71,7 @@ CSchemeGodunov::CSchemeGodunov()
 	// Default null values for OpenCL objects
 	oclModel							= NULL;
 	oclKernelFullTimestep				= NULL;
+	oclKernelBoundary					= NULL;
 	oclKernelFriction					= NULL;
 	oclKernelTimestepReduction			= NULL;
 	oclKernelTimeAdvance				= NULL;
@@ -602,7 +603,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferCellStates->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellStatesAlt->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellManning->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
-	oclBufferCellBoundary->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
+	oclBufferCellBoundary->setPointer(pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
 	oclBufferCellBed->setPointer( pBedElevations, ucFloatSize * pDomain->getCellCount() );
 
 	oclBufferCellStates->createBuffer();
@@ -694,7 +695,20 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	oclKernelTimestepUpdate->assignArguments( aryArgsTimestepUpdate );
 
 	// --
-	// Boundaries and friction etc.
+	// Boundary Kernel
+	// --
+
+	oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
+	oclKernelBoundary->setGroupSize(8, 8);
+	oclKernelBoundary->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
+	//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(pDomain->getCols() / 8.0) * 8, (cl_ulong)ceil(pDomain->getRows() / 8.0) * 8);
+
+	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed };
+
+	oclKernelBoundary->assignArguments(aryArgsBdy);
+
+	// --
+	// Friction Kernel
 	// --
 
 	oclKernelFriction			= oclModel->getKernel( "per_Friction" );
@@ -764,6 +778,7 @@ void CSchemeGodunov::release1OResources()
 
 	if ( this->oclModel != NULL )							delete oclModel;
 	if ( this->oclKernelFullTimestep != NULL )				delete oclKernelFullTimestep;
+	if ( this->oclKernelBoundary != NULL )					delete oclKernelBoundary;
 	if ( this->oclKernelFriction != NULL )					delete oclKernelFriction;
 	if ( this->oclKernelTimestepReduction != NULL )			delete oclKernelTimestepReduction;
 	if ( this->oclKernelTimeAdvance != NULL )				delete oclKernelTimeAdvance;
@@ -782,6 +797,7 @@ void CSchemeGodunov::release1OResources()
 
 	oclModel						= NULL;
 	oclKernelFullTimestep			= NULL;
+	oclKernelBoundary = NULL;
 	oclKernelFriction				= NULL;
 	oclKernelTimestepReduction		= NULL;
 	oclKernelTimeAdvance			= NULL;
@@ -1372,11 +1388,13 @@ void	CSchemeGodunov::scheduleIteration(
 	{
 		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStatesAlt );
 		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStates );
+		oclKernelBoundary->assignArgument(2, oclBufferCellStatesAlt);
 		oclKernelFriction->assignArgument( 1, oclBufferCellStates );
 		oclKernelTimestepReduction->assignArgument( 3, oclBufferCellStates );
 	} else {
 		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStates );
 		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStatesAlt );
+		oclKernelBoundary->assignArgument(2, oclBufferCellStates);
 		oclKernelFriction->assignArgument( 1, oclBufferCellStatesAlt );
 		oclKernelTimestepReduction->assignArgument( 3, oclBufferCellStatesAlt );
 	}
@@ -1384,6 +1402,10 @@ void	CSchemeGodunov::scheduleIteration(
 	// Run the boundary kernels (each bndy has its own kernel now)
 	//pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
 	//pDevice->queueBarrier();
+
+	// Boundary Kernel
+	oclKernelBoundary->scheduleExecution();
+	pDevice->queueBarrier();
 
 	// Main scheme kernel
 	oclKernelFullTimestep->scheduleExecution();

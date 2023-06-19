@@ -23,6 +23,8 @@
 #include <math.h>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
+#include <limits>
 #include "common.h"
 
 namespace Util 
@@ -175,5 +177,12 @@ namespace Util
 			return false;
 		}
 	}
+
+	std::string to_string_exact(double x) {
+		std::ostringstream os;
+		os << std::setprecision(std::numeric_limits<double>::max_digits10) << x;
+		return os.str();
+	}
+
 }
 

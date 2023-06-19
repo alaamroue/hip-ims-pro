@@ -28,7 +28,7 @@
 
 //#define DEBUG_MPI 1
 
-#define toString(s) std::to_string(s)
+#define toString(s) Util::to_string_exact(s)
 
 // Windows-specific includes
 #include <tchar.h>

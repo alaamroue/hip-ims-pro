@@ -46,17 +46,8 @@ class CDomainCartesian : public CDomain
 		bool			validateDomain( bool );									// Verify required data is available
 		void			prepareDomain();										// Create memory structures etc.
 		void			logDetails();											// Log details about the domain
-		void			writeOutputs();											// Write output files to disk
-		void			syncWithDomain( CDomain* );								// Synchronise with another domain
-		unsigned int	getOverlapSize( CDomain* );								// Get the size of the overlap zone
 		// - Specific to cartesian grids
 		void			imposeBoundaryModification(unsigned char, unsigned char); // Adjust the topography to impose boundary conditions
-		void			setRealDimensions( double, double );					// Set real domain dimensions (X, Y)
-		void			getRealDimensions( double*, double* );					// Fetch real domain dimensions (X, Y)
-		void			setRealOffset( double, double );						// Set real domain offset (X, Y) for lower-left corner
-		void			getRealOffset( double*, double* );						// Fetch real domain offset (X, Y) for lower-left corner
-		void			setRealExtent( double, double, double, double );		// Set real domain extent (Clockwise: N, E, S, W)
-		void			getRealExtent( double*, double*, double*, double* );	// Fetch real domain extent (Clockwise: N, E, S, W)
 		void			setCellResolution( double );							// Set cell resolution
 		void			getCellResolution( double* );							// Fetch cell resolution
 		void			setUnits( char* );										// Set the units
@@ -65,11 +56,11 @@ class CDomainCartesian : public CDomain
 		unsigned long	getProjectionCode();									// Get the EPSG projection code
 		unsigned long	getRows();												// Get the number of rows in the domain
 		unsigned long	getCols();												// Get the number of columns in the domain
-		void			setRows(unsigned long);										// Fetch cell resolution
-		void			setCols(unsigned long);										// Fetch cell resolution
+		void			setRows(unsigned long);									// Fetch cell resolution
+		void			setCols(unsigned long);									// Fetch cell resolution
 		virtual unsigned long	getCellID( unsigned long, unsigned long );		// Get the cell ID using an X and Y index
-		unsigned long	getCellFromCoordinates( double, double );				// Get the cell ID using real coords
 		double			getVolume();											// Calculate the amount of volume in all the cells
+		double*			readBuffers_opt_h();											// Read GPU Buffers
 
 		enum axis
 		{
@@ -108,18 +99,11 @@ class CDomainCartesian : public CDomain
 		};
 
 		// Private variables
-		double			dRealDimensions[2];
-		double			dRealOffset[2];
-		double			dRealExtent[4];
 		double			dCellResolution;
 		unsigned long	ulRows;
 		unsigned long	ulCols;
-		unsigned long	ulProjectionCode;
-		char			cUnits[2];
-		std::vector<sDataTargetInfo>	pOutputs;									// Structure of details about the outputs
 
 		// Private functions
-		void			addOutput( sDataTargetInfo );								// Adds a new output 
 		void			updateCellStatistics();										// Update the number of rows, cols, etc.
 
 };

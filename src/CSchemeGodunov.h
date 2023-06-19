@@ -134,6 +134,7 @@ class CSchemeGodunov : public CScheme
 		// OpenCL elements
 		COCLProgram*		oclModel;
 		COCLKernel*			oclKernelFullTimestep;
+		COCLKernel*			oclKernelBoundary;
 		COCLKernel*			oclKernelFriction;
 		COCLKernel*			oclKernelTimestepReduction;
 		COCLKernel*			oclKernelTimeAdvance;

@@ -103,81 +103,13 @@ void	CDomainCartesian::logDetails()
 	unsigned short	wColour			= model::cli::colourInfoBlock;
 
 	model::log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
-	if ( this->ulProjectionCode > 0 ) 
-	{
-		model::log->writeLine( "  Projection:        EPSG:" + toString( this->ulProjectionCode ), true, wColour );
-	} else {
-		model::log->writeLine( "  Projection:        Unknown", true, wColour );
-	}
 	model::log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
 	model::log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
-	model::log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ) + this->cUnits, true, wColour );
+	model::log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ), true, wColour );
 	model::log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
 														 toString( this->ulRows ) + "]", true, wColour );
-	model::log->writeLine( "  Real dimensions:   [" + toString( this->dRealDimensions[ kAxisX ] ) + this->cUnits + ", " + 
-														 toString( this->dRealDimensions[ kAxisY ] ) + this->cUnits + "]", true, wColour );
 
 	model::log->writeDivide();
-}
-
-/*
- *  Set real domain dimensions (X, Y)
- */
-void	CDomainCartesian::setRealDimensions( double dSizeX, double dSizeY )
-{
-	this->dRealDimensions[ kAxisX ]	= dSizeX;
-	this->dRealDimensions[ kAxisY ]	= dSizeY;
-	this->updateCellStatistics();
-}
-
-/*	
- *  Fetch real domain dimensions (X, Y)
- */
-void	CDomainCartesian::getRealDimensions( double* dSizeX, double* dSizeY )
-{
-	*dSizeX = this->dRealDimensions[ kAxisX ];
-	*dSizeY = this->dRealDimensions[ kAxisY ];
-}
-
-/*
- *  Set real domain offset (X, Y) for lower-left corner
- */
-void	CDomainCartesian::setRealOffset( double dOffsetX, double dOffsetY )
-{
-	this->dRealOffset[ kAxisX ]	= dOffsetX;
-	this->dRealOffset[ kAxisY ]	= dOffsetY;
-}
-
-/*
- *  Fetch real domain offset (X, Y) for lower-left corner
- */
-void	CDomainCartesian::getRealOffset( double* dOffsetX, double* dOffsetY )
-{
-	*dOffsetX = this->dRealOffset[ kAxisX ];
-	*dOffsetY = this->dRealOffset[ kAxisY ];
-}
-
-/*
- *  Set real domain extent (Clockwise: N, E, S, W)
- */
-void	CDomainCartesian::setRealExtent( double dEdgeN, double dEdgeE, double dEdgeS, double dEdgeW )
-{
-	this->dRealExtent[ kEdgeN ]	= dEdgeN;
-	this->dRealExtent[ kEdgeE ]	= dEdgeE;
-	this->dRealExtent[ kEdgeS ]	= dEdgeS;
-	this->dRealExtent[ kEdgeW ]	= dEdgeW;
-	//this->updateCellStatistics();
-}
-
-/*
- *  Fetch real domain extent (Clockwise: N, E, S, W)
- */
-void	CDomainCartesian::getRealExtent( double* dEdgeN, double* dEdgeE, double* dEdgeS, double* dEdgeW ) 
-{
-	*dEdgeN = this->dRealExtent[kEdgeN];
-	*dEdgeE = this->dRealExtent[kEdgeE];
-	*dEdgeS = this->dRealExtent[kEdgeS];
-	*dEdgeW = this->dRealExtent[kEdgeW];
 }
 
 /*
@@ -198,49 +130,6 @@ void	CDomainCartesian::getCellResolution( double* dResolution )
 }
 
 /*
- *  Set domain units
- */
-void	CDomainCartesian::setUnits( char* cUnits )
-{
-	if ( std::strlen( cUnits ) > 2 ) 
-	{
-		model::doError(
-			"Domain units can only be two characters",
-			model::errorCodes::kLevelWarning
-		);
-		return;
-	}
-
-	// Store the units (2 char max!)
-	std::strcpy( &this->cUnits[0], cUnits );
-}
-
-/*
- *  Return a couple of characters representing the units in use
- */
-char*	CDomainCartesian::getUnits()
-{
-	return &this->cUnits[0];
-}
-
-/*
- *  Set the EPSG projection code currently in use
- *  0 = Not defined
- */
-void	CDomainCartesian::setProjectionCode( unsigned long ulProjectionCode )
-{
-	this->ulProjectionCode = ulProjectionCode;
-}
-
-/*
- *  Return the EPSG projection code currently in use
- */
-unsigned long	CDomainCartesian::getProjectionCode()
-{
-	return this->ulProjectionCode;
-}
-
-/*
  *  Update basic statistics on the number of cells etc.
  */
 void	CDomainCartesian::updateCellStatistics()
@@ -253,24 +142,15 @@ void	CDomainCartesian::updateCellStatistics()
 		return;
 	}
 
-	// Got a size?
-	if ( ( std::isnan( this->dRealDimensions[ kAxisX ] ) || 
-		   std::isnan( this->dRealDimensions[ kAxisY ] ) ) &&
-		 ( std::isnan( this->dRealExtent[ kEdgeN ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeE ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeS ] ) || 
-		   std::isnan( this->dRealExtent[ kEdgeW ] ) ) )
+	if (this->ulRows == NAN)
+	{
+		return;
+	}
+	if (this->ulCols == NAN)
 	{
 		return;
 	}
 
-	// We've got everything we need...
-	this->ulRows	= static_cast<unsigned long>(
-		this->dRealDimensions[ kAxisY ] / this->dCellResolution
-	);
-	this->ulCols	= static_cast<unsigned long>(
-		this->dRealDimensions[ kAxisX ] / this->dCellResolution
-	);
 	this->ulCellCount = this->ulRows * this->ulCols;
 }
 
@@ -317,19 +197,6 @@ unsigned long	CDomainCartesian::getCellID( unsigned long ulX, unsigned long ulY 
 }
 
 /*
- *  Get a cell ID from an X and Y coordinate
- */
-unsigned long	CDomainCartesian::getCellFromCoordinates( double dX, double dY )
-{
-	unsigned long ulX	= floor( ( dX - dRealOffset[ 0 ] ) / dCellResolution );
-	unsigned long ulY	= floor( ( dY - dRealOffset[ 2 ] ) / dCellResolution );
-	return getCellID( ulX, ulY );
-}
-
-
-
-
-/*
  *  Calculate the total volume present in all of the cells
  */
 double	CDomainCartesian::getVolume()
@@ -349,14 +216,6 @@ double	CDomainCartesian::getVolume()
 	}
 
 	return dVolume;
-}
-
-/*
- *  Add a new output
- */
-void	CDomainCartesian::addOutput( sDataTargetInfo pOutput )
-{
-	this->pOutputs.push_back( pOutput );
 }
 
 /*
@@ -393,7 +252,7 @@ void	CDomainCartesian::imposeBoundaryModification(unsigned char ucDirection, uns
 /*
  *  Write output files to disk
  */
-void	CDomainCartesian::writeOutputs()
+double*	CDomainCartesian::readBuffers_opt_h()
 {
 	// Read the data back first...
 	// TODO: Review whether this is necessary, isn't it a sync point anyway?
@@ -401,7 +260,18 @@ void	CDomainCartesian::writeOutputs()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	//TODO: Alaa handle reads
+	unsigned long	ulCellID;
+	double* values = new double[this->getRows() * this->getCols()];
+
+	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
+		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
+			ulCellID = this->getCellID(iCol, iRow);
+			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
+			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
+		}
+	}
+
+	return values;
 }
 
 /*
@@ -416,10 +286,6 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	pSummary.uiDomainID		= this->uiID;
 	pSummary.uiNodeID = 0;
 	pSummary.uiLocalDeviceID = this->getDevice()->getDeviceID();
-	pSummary.dEdgeNorth		= this->dRealExtent[kEdgeN];
-	pSummary.dEdgeEast		= this->dRealExtent[kEdgeE];
-	pSummary.dEdgeSouth		= this->dRealExtent[kEdgeS];
-	pSummary.dEdgeWest		= this->dRealExtent[kEdgeW];
 	pSummary.ulColCount		= this->ulCols;
 	pSummary.ulRowCount		= this->ulRows;
 	pSummary.ucFloatPrecision = ( this->isDoublePrecision() ? model::floatPrecision::kDouble : model::floatPrecision::kSingle );

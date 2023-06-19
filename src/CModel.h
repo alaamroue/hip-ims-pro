@@ -77,7 +77,6 @@ class CModel
 		unsigned char			getFloatPrecision();							// Get floating point precision
 		void					setName( std::string );							// Sets the name
 		void					setDescription( std::string );					// Sets the description
-		void					writeOutputs();									// Produce output files
 		void					logProgress( CBenchmark::sPerformanceMetrics* );// Write the progress bar etc.
 		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );	// Callback event used when memory reads complete, for visualisation updates
 
