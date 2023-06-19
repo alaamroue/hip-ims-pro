@@ -272,6 +272,7 @@ void gts_cacheDisabled (
 	{
 		printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
 		printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
+		printf( "\n");
 	}
 	#endif
 	pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );

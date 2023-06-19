@@ -34,7 +34,7 @@ CLog*					model::log;
 /*
  *  Application entry-point. 
  */
-int gpudemo()
+int main()
 {
 	// Default configurations
 
