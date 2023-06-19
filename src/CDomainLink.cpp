@@ -43,8 +43,8 @@ CDomainLink::CDomainLink( CDomainBase* pTarget, CDomainBase *pSource )
 	this->bSent 		= true;
 	this->uiSmallestOverlap = 999999999;
 
-	model::log->writeLine("Generating link definitions between domains #" + toString(this->uiTargetDomainID + 1) 
-		+ " and #" + toString(this->uiSourceDomainID + 1));
+	model::log->writeLine("Generating link definitions between domains #" + toStringExact(this->uiTargetDomainID + 1) 
+		+ " and #" + toStringExact(this->uiSourceDomainID + 1));
 
 	this->generateDefinitions( pTarget, pSource );
 }
@@ -158,7 +158,7 @@ void	CDomainLink::pushToBuffer(COCLBuffer* pBuffer)
 	for (unsigned int i = 0; i < this->linkDefs.size(); i++)
 	{
 #ifdef DEBUG_MPI
-		model::log->writeLine("[DEBUG] Should now be pushing data to buffer at time " + Util::secondsToTime(dValidityTime) + " (" + toString(this->linkDefs[i].ulSize) + " bytes)");
+		model::log->writeLine("[DEBUG] Should now be pushing data to buffer at time " + Util::secondsToTime(dValidityTime) + " (" + toStringExact(this->linkDefs[i].ulSize) + " bytes)");
 #endif
 		pBuffer->queueWritePartial(
 			this->linkDefs[i].ulOffsetTarget,

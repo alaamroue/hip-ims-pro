@@ -65,6 +65,7 @@ class CSchemeGodunov : public CScheme
 		double				getAverageTimestep();									// Get batch average timestep
 		virtual COCLBuffer*	getLastCellSourceBuffer();								// Get the last source cell state buffer
 		virtual COCLBuffer*	getNextCellSourceBuffer();								// Get the next source cell state buffer
+		void				setDebugger(unsigned int debugX, unsigned int debugY);
 
 		static DWORD		Threaded_runBatchLaunch(LPVOID param);
 

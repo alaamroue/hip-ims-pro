@@ -218,7 +218,7 @@ void	CDomainManager::logDetails()
 	unsigned short	wColour = model::cli::colourInfoBlock;
 
 	model::log->writeLine("MODEL DOMAIN SET", true, wColour);
-	model::log->writeLine("  Domain count:      " + toString(this->getDomainCount()), true, wColour);
+	model::log->writeLine("  Domain count:      " + toStringExact(this->getDomainCount()), true, wColour);
 	if (this->getDomainCount() <= 1)
 	{
 		model::log->writeLine("  Synchronisation:   Not required", true, wColour);
@@ -227,7 +227,7 @@ void	CDomainManager::logDetails()
 		if (this->getSyncMethod() == model::syncMethod::kSyncForecast)
 		{
 			model::log->writeLine("  Synchronisation:   Domain-independent forecast", true, wColour);
-			model::log->writeLine("    Forecast method: Aiming for " + toString(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
+			model::log->writeLine("    Forecast method: Aiming for " + toStringExact(this->uiSyncSpareIterations) + " spare row(s)", true, wColour);
 		}
 		if (this->getSyncMethod() == model::syncMethod::kSyncTimestep)
 			model::log->writeLine("  Synchronisation:   Explicit timestep exchange", true, wColour);
@@ -243,19 +243,19 @@ void	CDomainManager::logDetails()
 	{
 		char cDomainLine[70] = "                                                                    X";
 		CDomainBase::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
-		std::string resolutionShort = toString(pSummary.dResolution);
+		std::string resolutionShort = toStringExact(pSummary.dResolution);
 		resolutionShort.resize(5);
 
 		sprintf(
 			cDomainLine,
 			"| %6s | %4s | %6s | %6s | %6s | %5s | %5s | %5s |",
-			toString(pSummary.uiDomainID + 1).c_str(),
+			toStringExact(pSummary.uiDomainID + 1).c_str(),
 			"N/A",
-			toString(pSummary.uiLocalDeviceID).c_str(),
-			toString(pSummary.ulRowCount).c_str(),
-			toString(pSummary.ulColCount).c_str(),
+			toStringExact(pSummary.uiLocalDeviceID).c_str(),
+			toStringExact(pSummary.ulRowCount).c_str(),
+			toStringExact(pSummary.ulColCount).c_str(),
 			(pSummary.ucFloatPrecision == model::floatPrecision::kSingle ? std::string("32bit") : std::string("64bit")).c_str(),
-			toString(this->getDomainBase(i)->getLinkCount()).c_str(),
+			toStringExact(this->getDomainBase(i)->getLinkCount()).c_str(),
 			resolutionShort.c_str()
 		);
 

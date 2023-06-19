@@ -112,6 +112,15 @@ CMPIManager* CModel::getMPIManager(void)
 	return this->mpiManager;
 }
 
+void CModel::setSelectedDevice(unsigned int id) {
+	this->selectedDevice = id;
+	this->getExecutor()->selectDevice(id);
+}
+
+unsigned int CModel::getSelectedDevice() {
+	return this->selectedDevice;
+}
+
 /*
  *  Log the details for the whole simulation
  */
@@ -283,9 +292,9 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 	// String padding stuff
 	sprintf( cTimeLine,		" Simulation time:  %-15sLowest timestep: %15s", Util::secondsToTime( dCurrentTime ).c_str(), Util::secondsToTime( dSmallestTimestep ).c_str() );
 	sprintf( cCells,		"%I64u", ulCurrentCellsCalculated );
-	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, toString( ulRate ).c_str() );
+	sprintf( cCellsLine,	" Cells calculated: %-24s  Rate: %13s/s", cCells, toStringExact( ulRate ).c_str() );
 	sprintf( cTimeLine2,	" Processing time:  %-16sEst. remaining: %15s", Util::secondsToTime( sTotalMetrics->dSeconds ).c_str(), Util::secondsToTime( min( ( 1.0 - dProgress ) * ( sTotalMetrics->dSeconds / dProgress ), 31536000.0 ) ).c_str() );
-	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", toString( uiBatchSizeMin ).c_str() );
+	sprintf( cBatchSizeLine," Batch size:       %-16s                                 ", toStringExact( uiBatchSizeMin ).c_str() );
 	sprintf( cProgessNumber,"%.1f%%", dProgress * 100 );
 	sprintf( cProgressLine, " [%-55s] %7s", cProgress, cProgessNumber );
 
@@ -322,11 +331,11 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
 		sprintf(
 			cDomainLine,
 			"| Domain #%-2s | %8s | %14s | %10s | %8s |",
-			toString(i + 1).c_str(),
+			toStringExact(i + 1).c_str(),
 			sDeviceName.c_str(),
 			Util::secondsToTime(pProgress.dBatchTimesteps).c_str(),
-			toString(pProgress.uiBatchSuccessful).c_str(),
-			toString(pProgress.uiBatchSkipped).c_str()
+			toStringExact(pProgress.uiBatchSuccessful).c_str(),
+			toStringExact(pProgress.uiBatchSkipped).c_str()
 		);
 
 		model::log->writeLine( std::string( cDomainLine ), false, wColour );	// ++
@@ -399,10 +408,10 @@ void	CModel::runModelPrepareDomains()
 
 		if (domains->getDomainCount() > 1)
 		{
-			model::log->writeLine("Domain #" + toString(i + 1) + " has rollback limit of " +
-				toString(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
+			model::log->writeLine("Domain #" + toStringExact(i + 1) + " has rollback limit of " +
+				toStringExact(domains->getDomain(i)->getRollbackLimit()) + " iterations.");
 		} else {
-			model::log->writeLine("Domain #" + toString(i + 1) + " is not constrained by " +
+			model::log->writeLine("Domain #" + toStringExact(i + 1) + " is not constrained by " +
 				"overlapping.");
 		}
 	}
@@ -637,7 +646,7 @@ void	CModel::runModelSync()
 			   )
 			{
 #ifdef DEBUG_MPI
-				model::log->writeLine( "[DEBUG] Saving domain state for domain #" + toString( i ) );
+				model::log->writeLine( "[DEBUG] Saving domain state for domain #" + toStringExact( i ) );
 #endif
 				domains->getDomain(i)->getScheme()->saveCurrentState();
 			}
@@ -702,6 +711,31 @@ void	CModel::runModelOutputs()
 
 
 /*
+ *  Write output files if required.
+ */
+double* CModel::getBufferOpt()
+{
+	if (bRollbackRequired ||
+		!bSynchronised ||
+		!bAllIdle ||
+		!(fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime))
+		return nullptr;
+
+	double* opt_h = this->getDomainSet()->getDomain(0)->readBuffers_opt_h();
+	return opt_h;
+
+	dLastOutputTime = this->dCurrentTime;
+
+	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	{
+		if (domains->isDomainLocal(i))
+			domains->getDomain(i)->getScheme()->forceTimeAdvance();
+	}
+
+	this->runModelBlockGlobal();
+}
+
+/*
 *  Schedule new work in the simulation.
 */
 void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, bool * bIdle)
@@ -730,10 +764,10 @@ void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, b
 			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 				dGlobalTimestep > 0.0)
 				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//model::log->writeLine( "Global timestep: " + toString( dGlobalTimestep ) + " Current time: " + toString( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
+			//model::log->writeLine( "Global timestep: " + toStringExact( dGlobalTimestep ) + " Current time: " + toStringExact( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
 
 			// Run a batch
-			//model::log->writeLine("[DEBUG] Running scheme to " + toString(dTargetTime));
+			//model::log->writeLine("[DEBUG] Running scheme to " + toStringExact(dTargetTime));
 			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 		}
 	}
@@ -896,8 +930,99 @@ void	CModel::runModelMain()
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
 	model::log->writeLine( "Simulation time:     " + Util::secondsToTime( sTotalMetrics->dSeconds ) );
-	//model::log->writeLine( "Calculation rate:    " + toString( floor(dCellRate) ) + " cells/sec" );
-	//model::log->writeLine( "Final volume:        " + toString( static_cast<int>( dVolume ) ) + "m3" );
+	//model::log->writeLine( "Calculation rate:    " + toStringExact( floor(dCellRate) ) + " cells/sec" );
+	//model::log->writeLine( "Final volume:        " + toStringExact( static_cast<int>( dVolume ) ) + "m3" );
+	model::log->writeDivide();
+
+	delete   pBenchmarkAll;
+	delete[] bSyncReady;
+	delete[] bIdle;
+}
+
+/*
+ *  Run the actual simulation, asking each domain and schemes therein in turn etc.
+ */
+void	CModel::runNext(const double next_time_point)
+{
+	bool* bSyncReady = new bool[domains->getDomainCount()];
+	bool* bIdle = new bool[domains->getDomainCount()];
+	double							dCellRate = 0.0;
+	CBenchmark::sPerformanceMetrics* sTotalMetrics;
+	CBenchmark* pBenchmarkAll;
+
+	// Write out the simulation details
+	this->logDetails();
+
+	// Track time for the whole simulation
+	model::log->writeLine("Collecting time and performance data...");
+	pBenchmarkAll = new CBenchmark(true);
+	sTotalMetrics = pBenchmarkAll->getMetrics();
+
+	// Track total processing time
+	dProcessingTime = sTotalMetrics->dSeconds;
+	dVisualisationTime = dProcessingTime;
+
+	dSimulationTime = next_time_point;
+	// ---------
+	// Run the main management loop
+	// ---------
+	// Even if user has forced abort, still wait until all idle state is reached
+	while ((this->dCurrentTime < dSimulationTime - 1E-5) || !bAllIdle)
+	{
+		// Assess the overall state of the simulation at present
+		this->runModelDomainAssess(
+			bSyncReady,
+			bIdle
+		);
+
+
+		// Perform a rollback if required
+		this->runModelRollback();
+
+		// Perform a sync if possible
+		this->runModelSync();
+
+		// Don't proceed beyond this point if we need to rollback and we're just waiting for 
+		// devices to finish first...
+		if (bRollbackRequired)
+			continue;
+
+		// Schedule new work
+		this->runModelSchedule(
+			sTotalMetrics,
+			bIdle
+		);
+
+		// Update progress bar after each batch, not every time
+		sTotalMetrics = pBenchmarkAll->getMetrics();
+		this->runModelUI(
+			sTotalMetrics
+		);
+	}
+
+	// Update to 100% progress bar
+	pBenchmarkAll->finish();
+	sTotalMetrics = pBenchmarkAll->getMetrics();
+	this->runModelUI(
+		sTotalMetrics
+	);
+
+	// Get the total number of cells calculated
+	unsigned long long	ulCurrentCellsCalculated = 0;
+	double				dVolume = 0.0;
+	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
+	{
+		if (!domains->isDomainLocal(i))
+			continue;
+
+		ulCurrentCellsCalculated += domains->getDomain(i)->getScheme()->getCellsCalculated();
+		dVolume += abs(domains->getDomain(i)->getVolume());
+	}
+	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
+
+	model::log->writeLine("Simulation time:     " + Util::secondsToTime(sTotalMetrics->dSeconds));
+	//model::log->writeLine( "Calculation rate:    " + toStringExact( floor(dCellRate) ) + " cells/sec" );
+	//model::log->writeLine( "Final volume:        " + toStringExact( static_cast<int>( dVolume ) ) + "m3" );
 	model::log->writeDivide();
 
 	delete   pBenchmarkAll;

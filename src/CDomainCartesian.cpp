@@ -103,11 +103,11 @@ void	CDomainCartesian::logDetails()
 	unsigned short	wColour			= model::cli::colourInfoBlock;
 
 	model::log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
-	model::log->writeLine( "  Device number:     " + toString( this->pDevice->uiDeviceNo ), true, wColour );
-	model::log->writeLine( "  Cell count:        " + toString( this->ulCellCount ), true, wColour );
-	model::log->writeLine( "  Cell resolution:   " + toString( this->dCellResolution ), true, wColour );
-	model::log->writeLine( "  Cell dimensions:   [" + toString( this->ulCols ) + ", " + 
-														 toString( this->ulRows ) + "]", true, wColour );
+	model::log->writeLine( "  Device number:     " + toStringExact( this->pDevice->uiDeviceNo ), true, wColour );
+	model::log->writeLine( "  Cell count:        " + toStringExact( this->ulCellCount ), true, wColour );
+	model::log->writeLine( "  Cell resolution:   " + toStringExact( this->dCellResolution ), true, wColour );
+	model::log->writeLine( "  Cell dimensions:   [" + toStringExact( this->ulCols ) + ", " + 
+														 toStringExact( this->ulRows ) + "]", true, wColour );
 
 	model::log->writeDivide();
 }
@@ -267,7 +267,6 @@ double*	CDomainCartesian::readBuffers_opt_h()
 		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
 			ulCellID = this->getCellID(iCol, iRow);
 			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
-			//std::cout << this->getStateValue(ulCellID, model::domainValueIndices::kValueDischargeX)*100000 << std::endl;
 		}
 	}
 
@@ -294,3 +293,16 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	return pSummary;
 }
 
+/*
+ *  Resting Boundary Conditions
+ */
+void	CDomainCartesian::resetBoundaryCondition()
+{
+	if (this->ucFloatSize == 4)
+	{
+		memset(fBoundaryValues, 0, sizeof(cl_float) * this->ulCellCount);
+	}
+	else {
+		memset(dBoundaryValues, 0, sizeof(cl_double) * this->ulCellCount);
+	}
+}

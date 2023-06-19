@@ -34,7 +34,7 @@ CLog*					model::log;
 /*
  *  Application entry-point. 
  */
-int main()
+int gpudemo()
 {
 	// Default configurations
 
@@ -69,7 +69,7 @@ int model::loadConfiguration()
 	pExecutor->createDevices();
 	pManager->setExecutor(pExecutor);
 
-
+	pManager->setSelectedDevice(1);
 	pManager->setName("Name");
 	pManager->setDescription("Desc");
 	pManager->setSimulationLength(3600.0);
@@ -102,7 +102,7 @@ int model::loadConfiguration()
 	pScheme->setQueueMode(model::queueMode::kAuto);
 	pScheme->setQueueSize(1);
 
-	SchemeSettings schemeSettings;
+	model::SchemeSettings schemeSettings;
 	schemeSettings.CourantNumber = 0.5;
 	schemeSettings.DryThreshold = 1e-5;
 	schemeSettings.Timestep = 0.01;

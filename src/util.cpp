@@ -51,7 +51,7 @@ namespace Util
 
 		if ( uiDays > 0 )
 		{
-			sTime = toString( uiDays ) + " d ";
+			sTime = toStringExact( uiDays ) + " d ";
 		}
 
 		if ( dTime > 1 )

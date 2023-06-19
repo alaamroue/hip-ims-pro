@@ -76,7 +76,7 @@ bool COCLProgram::compileProgram(
 	// For intel debugging only!
 	//this->sCompileParameters += " -g";
 
-	model::log->writeLine( "Compiling a new program for device #" + toString( this->device->getDeviceID() ) + "." );
+	model::log->writeLine( "Compiling a new program for device #" + toStringExact( this->device->getDeviceID() ) + "." );
 
 	// Should we add standard elements to the code stack first?
 	if ( bIncludeStandardElements )
@@ -102,7 +102,7 @@ bool COCLProgram::compileProgram(
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not create a program to run on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not create a program to run on device #" + toStringExact( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return false;
@@ -120,7 +120,7 @@ bool COCLProgram::compileProgram(
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not build the program to run on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not build the program to run on device #" + toStringExact( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		model::log->writeDivide();
@@ -130,7 +130,7 @@ bool COCLProgram::compileProgram(
 		return false;
 	}
 
-	model::log->writeLine( "Program successfully compiled for device #" + toString( this->device->getDeviceID() ) + "." );
+	model::log->writeLine( "Program successfully compiled for device #" + toStringExact( this->device->getDeviceID() ) + "." );
 
 	std::string sBuildLog = this->getCompileLog();
 	if ( sBuildLog.length() > 0 )
@@ -249,7 +249,7 @@ std::string COCLProgram::getCompileLog()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Could not obtain a build log for the program on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not obtain a build log for the program on device #" + toStringExact( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return "An error occured";
@@ -270,7 +270,7 @@ std::string COCLProgram::getCompileLog()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Could not obtain a build log for the program on device #" + toString( this->device->getDeviceID() ) + ".",
+			"Could not obtain a build log for the program on device #" + toStringExact( this->device->getDeviceID() ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return "An error occured";

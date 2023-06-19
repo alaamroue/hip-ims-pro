@@ -171,13 +171,13 @@ void CSchemeInertial::logDetails()
 
 	model::log->writeLine("SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour);
 	model::log->writeLine("  Timestep mode:      " + (std::string)(this->bDynamicTimestep ? "Dynamic" : "Fixed"), true, wColour);
-	model::log->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? toString(this->dCourantNumber) : "N/A"), true, wColour);
+	model::log->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? toStringExact(this->dCourantNumber) : "N/A"), true, wColour);
 	model::log->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
-	model::log->writeLine("  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	model::log->writeLine("  Data reduction:     " + toStringExact(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
 	model::log->writeLine("  Configuration:      " + sConfiguration, true, wColour);
 	model::log->writeLine("  Friction effects:   " + (std::string)(this->bFrictionEffects ? "Enabled" : "Disabled"), true, wColour);
 	model::log->writeLine("  Kernel queue mode:  " + (std::string)(this->bAutomaticQueue ? "Automatic" : "Fixed size"), true, wColour);
-	model::log->writeLine((std::string)(this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        ") + toString(this->uiQueueAdditionSize) + " iteration(s)", true, wColour);
+	model::log->writeLine((std::string)(this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        ") + toStringExact(this->uiQueueAdditionSize) + " iteration(s)", true, wColour);
 	model::log->writeLine("  Debug output:       " + (std::string)(this->bDebugOutput ? "Enabled" : "Disabled"), true, wColour);
 
 	model::log->writeDivide();
@@ -221,16 +221,16 @@ bool CSchemeInertial::prepareInertialConstants()
 	switch (this->ucCacheConstraints)
 	{
 	case model::cacheConstraints::inertialFormula::kCacheActualSize:
-		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::inertialFormula::kCacheAllowUndersize:
-		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::inertialFormula::kCacheAllowOversize:
-		oclModel->registerConstant("INE_DIM1", toString(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toString(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
 		break;
 	}
 

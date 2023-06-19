@@ -118,7 +118,7 @@ bool COCLBuffer::createBuffer()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Memory buffer creation failed for '" + this->sName + "'. Error " + toString( iErrorID ) + ".",
+			"Memory buffer creation failed for '" + this->sName + "'. Error " + toStringExact( iErrorID ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return NULL;
@@ -127,7 +127,7 @@ bool COCLBuffer::createBuffer()
 	this->bReady = true;
 
 	model::log->writeLine(
-		"Memory buffer created for '" + this->sName + "' with " + toString( this->ulSize ) + " bytes."
+		"Memory buffer created for '" + this->sName + "' with " + toStringExact( this->ulSize ) + " bytes."
 	);
 
 	return true;
@@ -218,10 +218,10 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 
 	if ( iReturn != CL_SUCCESS )
 	{
-		model::log->writeLine("Error code returned from memory read is " + toString(iReturn));
+		model::log->writeLine("Error code returned from memory read is " + toStringExact(iReturn));
 		model::doError(
 			"Unable to read memory buffer from device back to host  " 
-			+ this->sName + " (" + toString( iReturn ) + ")",
+			+ this->sName + " (" + toStringExact( iReturn ) + ")",
 			model::errorCodes::kLevelModelStop
 		);
 	}
@@ -238,7 +238,7 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 		if ( iReturn != CL_SUCCESS )
 		{
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + toStringExact( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;
@@ -289,11 +289,11 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 	{
 		model::doError(
 			"Unable to write to memory buffer for device\n  " 
-			+ this->sName + " (" + toString( iReturn ) + ")\n"
-			+ "  Offset: " + toString( ulOffset ) 
-			+ "  Size: " + toString( ulSize ) 
-			+ "  Pointer: check COCLBUFFER.CPP" //+ toString( pMemBlock )
-			+ "  Buf size: " + toString( this->ulSize ),
+			+ this->sName + " (" + toStringExact( iReturn ) + ")\n"
+			+ "  Offset: " + toStringExact( ulOffset ) 
+			+ "  Size: " + toStringExact( ulSize ) 
+			+ "  Pointer: check COCLBUFFER.CPP" //+ toStringExact( pMemBlock )
+			+ "  Buf size: " + toStringExact( this->ulSize ),
 			model::errorCodes::kLevelModelStop
 		);
 	}
@@ -311,7 +311,7 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 		if ( iReturn != CL_SUCCESS )
 		{
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + toStringExact( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;

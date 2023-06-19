@@ -50,6 +50,8 @@ class CModel
 		CExecutorControlOpenCL*	getExecutor(void);								// Gets the executor object currently in use
 		CDomainManager*			getDomainSet(void);								// Gets the domain set
 		CMPIManager*			getMPIManager(void);							// Gets the MPI manager
+		void					setSelectedDevice(unsigned int);
+		unsigned int			getSelectedDevice();
 
 		bool					runModel(void);									// Execute the model
 		void					runModelPrepare(void);							// Prepare for model run
@@ -79,6 +81,8 @@ class CModel
 		void					setDescription( std::string );					// Sets the description
 		void					logProgress( CBenchmark::sPerformanceMetrics* );// Write the progress bar etc.
 		static void CL_CALLBACK	visualiserCallback( cl_event, cl_int, void * );	// Callback event used when memory reads complete, for visualisation updates
+		void					runNext(const double);
+		double*					getBufferOpt();
 
 		// Public variables
 		void					setLogger(CLog*);								// Sets the logger class 
@@ -93,6 +97,7 @@ class CModel
 		CExecutorControlOpenCL*	execController;									// Handle for the executor controlling class
 		CDomainManager*			domains;										// Handle for the domain management class
 		CMPIManager*			mpiManager;										// Handle for the MPI manager class
+		unsigned int			selectedDevice;
 		std::string				sModelName;										// Short name for the model
 		std::string				sModelDescription;								// Short description of the model
 		bool					bDoublePrecision;								// Double precision enabled?

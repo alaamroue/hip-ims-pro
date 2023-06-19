@@ -49,7 +49,7 @@ __kernel void bdy_Promaides (
 	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
 
 	// Hydrological processes have their own timesteps
-	if (dLclTimestep <= 0.0)
+	if (dLclTimestep <= 0.0 || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 		return;
 
 	// This would already be represented in the series
@@ -61,7 +61,7 @@ __kernel void bdy_Promaides (
 	pCellData.x = max(dCellBedElev, pCellData.x + dRate * dLclTimestep);
 	if ( lIdxX == 99 && lIdxY == 99)
 	{	
-		//printf("x: %f y: %f z: %f w: %f Rate: %f step: %f \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate, dLclTimestep);
+		printf("x: %f y: %f z: %f w: %f Rate: %f step: %f \n", pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate, dLclTimestep);
 	}
 	// Return to global memory
 	pCellState[ulIdx] = pCellData;

@@ -93,7 +93,7 @@ void COCLKernel::scheduleExecution()
 	{
 		// The model cannot continue in this case
 		model::doError(
-			"Kernel queue failed for device #" + toString( this->uiDeviceID ) + ". Error " + toString( iErrorID ) + ".\n" 
+			"Kernel queue failed for device #" + toStringExact( this->uiDeviceID ) + ". Error " + toStringExact( iErrorID ) + ".\n" 
 			+ "  " + sName,
 			model::errorCodes::kLevelModelStop
 		);
@@ -114,7 +114,7 @@ void COCLKernel::scheduleExecution()
 			// The model cannot continue in this case, odd though it is...
 			// Shouldn't ever really happen, but you never know
 			model::doError(
-				"Attaching thread callback failed for device #" + toString( this->uiDeviceID ) + ".",
+				"Attaching thread callback failed for device #" + toStringExact( this->uiDeviceID ) + ".",
 				model::errorCodes::kLevelModelStop
 			);
 			return;
@@ -142,7 +142,7 @@ void COCLKernel::scheduleExecutionAndFlush()
 		// The model cannot continue in this case, odd though it is...
 		// Shouldn't ever really happen, but you never know
 		model::doError(
-			"Failed flushing commands to device #" + toString( this->uiDeviceID ) + ".",
+			"Failed flushing commands to device #" + toStringExact( this->uiDeviceID ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
 		return;
@@ -164,7 +164,7 @@ bool COCLKernel::assignArguments(
 	{
 		if ( aBuffers[ i ] == NULL )
 		{
-			model::log->writeLine(" " + toString( i + 1 ) + ". NULL" );
+			model::log->writeLine(" " + toStringExact( i + 1 ) + ". NULL" );
 		}
 		else if ( this->assignArgument( i, aBuffers[ i ] ) == false )
 		{
@@ -174,7 +174,7 @@ bool COCLKernel::assignArguments(
 			);
 			return false;
 		} else {
-			model::log->writeLine(" " + toString( i + 1 ) + ". " + aBuffers[i]->getName() );
+			model::log->writeLine(" " + toStringExact( i + 1 ) + ". " + aBuffers[i]->getName() );
 		}
 	}
 
@@ -224,17 +224,17 @@ void COCLKernel::prepareKernel()
 	if ( iErrorID != CL_SUCCESS )
 	{
 		model::doError(
-			"Could not prepare the kernel to run on device #" + toString( this->program->device->uiDeviceNo ) + ".",
+			"Could not prepare the kernel to run on device #" + toStringExact( this->program->device->uiDeviceNo ) + ".",
 			model::errorCodes::kLevelModelStop
 		);
                 model::doError(
-                        " Error code: " + toString( iErrorID ),
+                        " Error code: " + toStringExact( iErrorID ),
                         model::errorCodes::kLevelModelStop
                 );
 		return;
 	}
 
-	model::log->writeLine( "Kernel '" + sName + "' prepared for device #" + toString( this->program->device->uiDeviceNo ) + "." );
+	model::log->writeLine( "Kernel '" + sName + "' prepared for device #" + toStringExact( this->program->device->uiDeviceNo ) + "." );
 
 	// Fetch the kernel details on workgroup sizes etc.
 	iErrorID = clGetKernelInfo(
@@ -319,12 +319,12 @@ void COCLKernel::prepareKernel()
 	this->arguments = new COCLBuffer*[ this->uiArgumentCount ];
 	
 	model::log->writeLine( "Kernel '" + sName + "' is defined:" ); 
-	model::log->writeLine( "  Private memory:   " + toString( this->ulMemPrivate ) + " bytes" ); 
-	model::log->writeLine( "  Local memory:     " + toString( this->ulMemLocal )   + " bytes" ); 
-	model::log->writeLine( "  Arguments:        " + toString( this->uiArgumentCount ) ); 
-	model::log->writeLine( "  Work-group size:  [ " + toString( szRequiredWGSize[0] )   + "," + 
-														 toString( szRequiredWGSize[1] )   + "," +
-														 toString( szRequiredWGSize[2] )   + " ]"); 
+	model::log->writeLine( "  Private memory:   " + toStringExact( this->ulMemPrivate ) + " bytes" ); 
+	model::log->writeLine( "  Local memory:     " + toStringExact( this->ulMemLocal )   + " bytes" ); 
+	model::log->writeLine( "  Arguments:        " + toStringExact( this->uiArgumentCount ) ); 
+	model::log->writeLine( "  Work-group size:  [ " + toStringExact( szRequiredWGSize[0] )   + "," + 
+														 toStringExact( szRequiredWGSize[1] )   + "," +
+														 toStringExact( szRequiredWGSize[2] )   + " ]"); 
 
 	if ( this->uiArgumentCount == 0 )
 		this->bReady = true;
@@ -349,9 +349,9 @@ void COCLKernel::setGlobalSize(
 
 	model::log->writeLine(
 		"Global work size for '" + this->sName + "' set to [" +
-		toString( this->szGlobalSize[0] ) + "," +
-		toString( this->szGlobalSize[1] ) + "," +
-		toString( this->szGlobalSize[2] ) + "]."
+		toStringExact( this->szGlobalSize[0] ) + "," +
+		toStringExact( this->szGlobalSize[1] ) + "," +
+		toStringExact( this->szGlobalSize[2] ) + "]."
 	);
 }
 
@@ -386,8 +386,8 @@ void COCLKernel::setGroupSize(
 
 	model::log->writeLine(
 		"Work-group size for '" + this->sName + "' set to [" +
-		toString( this->szGroupSize[0] ) + "," +
-		toString( this->szGroupSize[1] ) + "," +
-		toString( this->szGroupSize[2] ) + "]."
+		toStringExact( this->szGroupSize[0] ) + "," +
+		toStringExact( this->szGroupSize[1] ) + "," +
+		toStringExact( this->szGroupSize[2] ) + "]."
 	);
 }

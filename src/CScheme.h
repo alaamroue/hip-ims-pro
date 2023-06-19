@@ -49,6 +49,7 @@ class CScheme
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
 
 		virtual void		setupScheme(model::SchemeSettings) = 0 ;										// Set up the scheme
+		virtual void		setDebugger(unsigned int, unsigned int) = 0;
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
 		virtual void		logDetails() = 0;														// Write some details about the scheme

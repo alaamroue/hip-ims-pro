@@ -152,14 +152,14 @@ void CSchemeGodunov::logDetails()
 
 	model::log->writeLine( "GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME", true, wColour );
 	model::log->writeLine( "  Timestep mode:      " + (std::string)( this->bDynamicTimestep ? "Dynamic" : "Fixed" ), true, wColour );
-	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toString( this->dCourantNumber ) : "N/A" ), true, wColour );
+	model::log->writeLine( "  Courant number:     " + (std::string)( this->bDynamicTimestep ? toStringExact( this->dCourantNumber ) : "N/A" ), true, wColour );
 	model::log->writeLine( "  Initial timestep:   " + Util::secondsToTime( this->dTimestep ), true, wColour );
-	model::log->writeLine( "  Data reduction:     " + toString(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
+	model::log->writeLine( "  Data reduction:     " + toStringExact(this->uiTimestepReductionWavefronts) + " divisions", true, wColour);
 	model::log->writeLine( "  Riemann solver:     " + sSolver, true, wColour );
 	model::log->writeLine( "  Configuration:      " + sConfiguration, true, wColour );
 	model::log->writeLine( "  Friction effects:   " + (std::string)( this->bFrictionEffects ? "Enabled" : "Disabled" ), true, wColour );
 	model::log->writeLine( "  Kernel queue mode:  " + (std::string)( this->bAutomaticQueue ? "Automatic" : "Fixed size" ), true, wColour );
-	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toString( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
+	model::log->writeLine( (std::string)( this->bAutomaticQueue ? "  Initial queue:      " : "  Fixed queue:        " ) + toStringExact( this->uiQueueAdditionSize ) + " iteration(s)", true, wColour );
 	model::log->writeLine( "  Debug output:       " + (std::string)( this->bDebugOutput ? "Enabled" : "Disabled" ), true, wColour );
 
 	model::log->writeDivide();
@@ -435,8 +435,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Dry cell threshold depths
 	// --
-	oclModel->registerConstant( "VERY_SMALL",			toString( this->dThresholdVerySmall ) );
-	oclModel->registerConstant( "QUITE_SMALL",			toString( this->dThresholdQuiteSmall ) );
+	oclModel->registerConstant( "VERY_SMALL",			toStringExact( this->dThresholdVerySmall ) );
+	oclModel->registerConstant( "QUITE_SMALL",			toStringExact( this->dThresholdQuiteSmall ) );
 
 	// --
 	// Debug mode 
@@ -445,8 +445,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	if ( this->bDebugOutput )
 	{
 		oclModel->registerConstant( "DEBUG_OUTPUT",		"1" );
-		oclModel->registerConstant( "DEBUG_CELLX",		toString( this->uiDebugCellX ) );
-		oclModel->registerConstant( "DEBUG_CELLY",		toString( this->uiDebugCellY ) );
+		oclModel->registerConstant( "DEBUG_CELLX",		toStringExact( this->uiDebugCellX ) );
+		oclModel->registerConstant( "DEBUG_CELLY",		toStringExact( this->uiDebugCellY ) );
 	} else {
 		oclModel->removeConstant( "DEBUG_OUTPUT" );
 		oclModel->removeConstant( "DEBUG_CELLX" );
@@ -461,20 +461,20 @@ bool CSchemeGodunov::prepare1OConstants()
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + toStringExact( this->ulNonCachedWorkgroupSizeX )  + ", " + toStringExact( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 	if ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled )
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toString( this->ulNonCachedWorkgroupSizeX )  + ", " + toString( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + toStringExact( this->ulNonCachedWorkgroupSizeX )  + ", " + toStringExact( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 
 	oclModel->registerConstant( 
 		"REQD_WG_SIZE_LINE", 
-		"__attribute__((reqd_work_group_size(" + toString( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
+		"__attribute__((reqd_work_group_size(" + toStringExact( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
 	);
 
 	// --
@@ -484,16 +484,16 @@ bool CSchemeGodunov::prepare1OConstants()
 	switch( this->ucCacheConstraints )
 	{
 		case model::cacheConstraints::godunovType::kCacheActualSize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowUndersize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowOversize:
-			oclModel->registerConstant( "GTS_DIM1", toString( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toString( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
 			break;
 	}
 
@@ -506,7 +506,7 @@ bool CSchemeGodunov::prepare1OConstants()
 		oclModel->registerConstant( "TIMESTEP_DYNAMIC",	"1" );
 		oclModel->removeConstant( "TIMESTEP_FIXED" );
 	} else {
-		oclModel->registerConstant( "TIMESTEP_FIXED",	toString(this->dTimestep) );
+		oclModel->registerConstant( "TIMESTEP_FIXED",	toStringExact(this->dTimestep) );
 		oclModel->removeConstant( "TIMESTEP_DYNAMIC" );
 	}
 
@@ -526,11 +526,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Timestep reduction and simulation parameters
 	// --
-	oclModel->registerConstant( "TIMESTEP_WORKERS",		toString( this->ulReductionGlobalSize ) );
-	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	toString( this->ulReductionWorkgroupSize ) );
-	oclModel->registerConstant( "SCHEME_ENDTIME",		toString( model::pManager->getSimulationLength() ) );
-	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toString( model::pManager->getOutputFrequency() ) );
-	oclModel->registerConstant( "COURANT_NUMBER",		toString( this->dCourantNumber ) );
+	oclModel->registerConstant( "TIMESTEP_WORKERS",		toStringExact( this->ulReductionGlobalSize ) );
+	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	toStringExact( this->ulReductionWorkgroupSize ) );
+	oclModel->registerConstant( "SCHEME_ENDTIME",		toStringExact( model::pManager->getSimulationLength() ) );
+	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toStringExact( model::pManager->getOutputFrequency() ) );
+	oclModel->registerConstant( "COURANT_NUMBER",		toStringExact( this->dCourantNumber ) );
 
 	// --
 	// Domain details (size, resolution, etc.)
@@ -539,11 +539,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	double	dResolution;
 	pDomain->getCellResolution( &dResolution );
 
-	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		toString( pDomain->getCellCount() ) );
-	oclModel->registerConstant( "DOMAIN_COLS",			toString( pDomain->getCols() ) );
-	oclModel->registerConstant( "DOMAIN_ROWS",			toString( pDomain->getRows() ) );
-	oclModel->registerConstant( "DOMAIN_DELTAX",		toString( dResolution ) );
-	oclModel->registerConstant( "DOMAIN_DELTAY",		toString( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		toStringExact( pDomain->getCellCount() ) );
+	oclModel->registerConstant( "DOMAIN_COLS",			toStringExact( pDomain->getCols() ) );
+	oclModel->registerConstant( "DOMAIN_ROWS",			toStringExact( pDomain->getRows() ) );
+	oclModel->registerConstant( "DOMAIN_DELTAX",		toStringExact( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_DELTAY",		toStringExact( dResolution ) );
 
 	return true;
 }
@@ -838,7 +838,7 @@ void	CSchemeGodunov::prepareSimulation()
 {
 
 	// Initial volume in the domain
-	model::log->writeLine( "Initial domain volume: " + toString( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
+	model::log->writeLine( "Initial domain volume: " + toStringExact( abs((int)(this->pDomain->getVolume()) ) ) + "m3" );
 
 	// Copy the initial conditions
 	model::log->writeLine( "Copying domain data to device..." );
@@ -1042,7 +1042,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
-			model::log->writeLine("[DEBUG] Starting batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			model::log->writeLine("[DEBUG] Starting batch of " + toStringExact(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 #endif
 			
 		// Schedule a batch-load of work for the device
@@ -1116,7 +1116,7 @@ void CSchemeGodunov::Threaded_runBatch()
 #ifdef DEBUG_MPI
 		if ( uiQueueAmount > 0 )
 		{
-			model::log->writeLine("[DEBUG] Finished batch of " + toString(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
+			model::log->writeLine("[DEBUG] Finished batch of " + toStringExact(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
 			if ( this->dCurrentTimestep < 0.0 )
 			{
 				model::log->writeLine( "[DEBUG] We have a negative timestep..." );
@@ -1160,11 +1160,11 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 			model::errorCodes::kLevelWarning
 		);
 		model::log->writeLine(
-			"Current time:   "  + toString( dCurrentTime ) + 
-			", Target time:  " + toString( dTargetTime )
+			"Current time:   "  + toStringExact( dCurrentTime ) + 
+			", Target time:  " + toStringExact( dTargetTime )
 		);
 		model::log->writeLine(
-			"Last sync point: "  + toString( dLastSyncTime )
+			"Last sync point: "  + toStringExact( dLastSyncTime )
 		);
 		return;
 	}
@@ -1307,8 +1307,8 @@ bool	CSchemeGodunov::isSimulationFailure( double dExpectedTargetTime )
 			model::errorCodes::kLevelWarning
 		);
 		model::log->writeLine(
-			"Current time: " + toString(dCurrentTime) + 
-			", target time: " + toString(dExpectedTargetTime)
+			"Current time: " + toStringExact(dCurrentTime) + 
+			", target time: " + toStringExact(dExpectedTargetTime)
 		);
 		return true;
 	}
@@ -1346,7 +1346,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 		if ( dExpectedTargetTime - dCurrentTime > 1E-5 )
 		{
 #ifdef DEBUG_MPI
-			model::log->writeLine( "Expected target: " + toString( dExpectedTargetTime ) + " Current time: " + toString( dCurrentTime ) );
+			model::log->writeLine( "Expected target: " + toStringExact( dExpectedTargetTime ) + " Current time: " + toStringExact( dCurrentTime ) );
 #endif
 			return false;
 		}
@@ -1513,7 +1513,7 @@ void CSchemeGodunov::setTargetTime( double dTime )
 		return;
 
 #ifdef DEBUG_MPI
-	model::log->writeLine("[DEBUG] Received request to set target to " + toString(dTime));
+	model::log->writeLine("[DEBUG] Received request to set target to " + toStringExact(dTime));
 #endif
 	this->dTargetTime = dTime;
 	//this->dLastSyncTime = this->dCurrentTime;
@@ -1595,4 +1595,10 @@ void	CSchemeGodunov::readKeyStatistics()
 	uiBatchSuccessful = *( oclBufferBatchSuccessful->getHostBlock<cl_uint*>() );
 	uiBatchSkipped	  = *( oclBufferBatchSkipped->getHostBlock<cl_uint*>() );
 	uiBatchRate = uiBatchSuccessful > uiLastBatchSuccessful ? (uiBatchSuccessful - uiLastBatchSuccessful) : 1;
+}
+
+void CSchemeGodunov::setDebugger(unsigned int debugX, unsigned int debugY) {
+	bDebugOutput = true;
+	uiDebugCellX = debugX;
+	uiDebugCellY = debugY;
 }
