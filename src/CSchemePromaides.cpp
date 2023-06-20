@@ -124,10 +124,10 @@ void CSchemePromaides::prepareAll()
 		this->releaseResources();
 		return;
 	}
-	if (!this->prepareInertialKernels())
+	if (!this->preparePromaidesKernels())
 	{
 		model::doError(
-			"Failed to prepare inertial kernels. Cannot continue.",
+			"Failed to prepare promaides kernels. Cannot continue.",
 			model::errorCodes::kLevelModelStop
 		);
 		this->releaseResources();
@@ -150,15 +150,15 @@ void CSchemePromaides::logDetails()
 	std::string sConfiguration = "Undefined";
 	switch (this->ucConfiguration)
 	{
-	case model::schemeConfigurations::inertialFormula::kCacheNone:
+	case model::schemeConfigurations::promaidesFormula::kCacheNone:
 		sConfiguration = "Disabled";
 		break;
-	case model::schemeConfigurations::inertialFormula::kCacheEnabled:
+	case model::schemeConfigurations::promaidesFormula::kCacheEnabled:
 		sConfiguration = "Enabled";
 		break;
 	}
 
-	model::log->writeLine("SIMPLIFIED INERTIAL FORMULATION SCHEME", true, wColour);
+	model::log->writeLine("ProMaIDes SCHEME", true, wColour);
 	model::log->writeLine("  Timestep mode:      " + (std::string)(this->bDynamicTimestep ? "Dynamic" : "Fixed"), true, wColour);
 	model::log->writeLine("  Courant number:     " + (std::string)(this->bDynamicTimestep ? toStringExact(this->dCourantNumber) : "N/A"), true, wColour);
 	model::log->writeLine("  Initial timestep:   " + Util::secondsToTime(this->dTimestep), true, wColour);
@@ -230,18 +230,18 @@ void CSchemePromaides::releaseResources()
 
 	model::log->writeLine("Releasing scheme resources held for OpenCL.");
 
-	this->releaseInertialResources();
+	this->releasePromaidesResources();
 	this->release1OResources();
 }
 
 /*
  *  Release all OpenCL resources consumed using the OpenCL methods
  */
-void CSchemePromaides::releaseInertialResources()
+void CSchemePromaides::releasePromaidesResources()
 {
 	this->bReady = false;
 
-	model::log->writeLine("Releasing inertial scheme resources held for OpenCL.");
+	model::log->writeLine("Releasing Promaides scheme resources held for OpenCL.");
 
 	// Nothing to do?
 }

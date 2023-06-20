@@ -59,9 +59,8 @@ __kernel void bdy_Promaides (
 	//if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 	//	return;
 
-	//Todo: Alaa this goes under the bed elevation. Add a max function
 	// Apply the value...
-	pCellData.x = max(dCellBedElev, pCellData.x + dRate * dLclTimestep);
+	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);
 	
 	//#ifdef DEBUG_OUTPUT
 	if (

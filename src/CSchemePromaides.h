@@ -12,7 +12,7 @@
  *  This code is licensed under GPLv3. See LICENCE
  *  for more information.
  * ------------------------------------------
- *  Inertial formulation (i.e. simplified)
+ *  Promaides formulation (i.e. simplified)
  * ------------------------------------------
  *
  */
@@ -50,6 +50,6 @@ class CSchemePromaides : public CSchemeGodunov
 		virtual bool		prepareCode();									// Prepare the code required
 		virtual void		releaseResources();								// Release OpenCL resources consumed
 		bool				preparePromaidesKernels();						// Prepare the kernels required
-		void				releaseInertialResources();						// Release OpenCL resources consumed
+		void				releasePromaidesResources();						// Release OpenCL resources consumed
 
 };

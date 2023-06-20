@@ -36,7 +36,7 @@ typedef struct sFaceStructure {
 
 // Function definitions
 __kernel  REQD_WG_SIZE_FULL_TS
-void ine_cacheDisabled ( 
+void pro_cacheDisabled ( 
 	__constant	cl_double *,
 	__global	cl_double const * restrict,
 	__global	cl_double4 *,
@@ -44,23 +44,14 @@ void ine_cacheDisabled (
 	__global    cl_double const * restrict
 );
 
-__kernel  REQD_WG_SIZE_FULL_TS
-void ine_cacheEnabled ( 
-	__constant	cl_double *,
-	__global	cl_double const * restrict,
-	__global	cl_double4 *,
-	__global	cl_double4 *,
-	__global    cl_double const * restrict
-);
-
-cl_double calculateInertialFlux(
-	cl_double,
-	cl_double,
-	cl_double,
-	cl_double,
-	cl_double,
-	cl_double,
-	cl_double
-);
+cl_double manning_Solver(
+	cl_double timestep,
+	cl_double opt_s,
+	cl_double opt_s_Neig,
+	cl_double opt_z,
+	cl_double opt_z_Neig,
+	cl_double manning,
+	cl_double manning_Neig
+	);
 
 #endif

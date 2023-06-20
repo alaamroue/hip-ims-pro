@@ -93,7 +93,7 @@ int model::loadConfiguration()
 	ourCartesianDomain->setRows(100);
 
 	CScheme* pScheme;
-	model::schemeTypes::schemeTypes mst = model::schemeTypes::kMUSCLHancock;
+	model::schemeTypes::schemeTypes mst = model::schemeTypes::kPromaidesScheme;
 	pScheme = CScheme::createScheme(mst);
 
 	pScheme->setQueueMode(model::queueMode::kAuto);
@@ -120,6 +120,10 @@ int model::loadConfiguration()
 	else if (mst == model::schemeTypes::kInertialSimplification) {
 		schemeSettings.CacheMode = model::schemeConfigurations::inertialFormula::kCacheNone;
 		schemeSettings.CacheConstraints = model::cacheConstraints::inertialFormula::kCacheActualSize;
+	}
+	else if (mst == model::schemeTypes::kPromaidesScheme) {
+		schemeSettings.CacheMode = model::schemeConfigurations::promaidesFormula::kCacheNone;
+		schemeSettings.CacheConstraints = model::cacheConstraints::promaidesFormula::kCacheActualSize;
 	}
 	else {
 		std::cout << "Error: Scheme not chosen!" << std::endl;
