@@ -123,6 +123,12 @@ namespace model
 				kCacheEnabled = 1			// Cache cell state data
 			};
 		}
+		namespace promaidesFormula {
+			enum promaidesFormula {
+				kCacheNone = 0,		// No caching
+				kCacheEnabled = 1			// Cache cell state data
+			};
+		}
 	}
 
 	namespace cacheConstraints {
@@ -142,6 +148,13 @@ namespace model
 		}
 		namespace godunovType {
 			enum godunovType {
+				kCacheActualSize = 0,		// LDS of actual size
+				kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
+				kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
+			};
+		}
+		namespace promaidesFormula {
+			enum promaidesFormula {
 				kCacheActualSize = 0,		// LDS of actual size
 				kCacheAllowOversize = 1,		// Allow LDS oversizing to avoid bank conflicts
 				kCacheAllowUndersize = 2			// Allow LDS undersizing to avoid bank conflicts
@@ -228,7 +241,8 @@ namespace model
 		enum schemeTypes {
 			kGodunov = 0,	// Godunov (first-order)
 			kMUSCLHancock = 1,	// MUSCL-Hancock (second-order)
-			kInertialSimplification = 2		// Inertial simplification
+			kInertialSimplification = 2,		// Inertial simplification
+			kPromaidesScheme = 3		// Inertial simplification
 		};
 	}
 

@@ -139,6 +139,7 @@
     <ClInclude Include="src\CSchemeGodunov.h" />
     <ClInclude Include="src\CSchemeInertial.h" />
     <ClInclude Include="src\CSchemeMUSCLHancock.h" />
+    <ClInclude Include="src\CSchemePromaides.h" />
     <ClInclude Include="src\gpudemo.h" />
     <ClInclude Include="src\opencl.h" />
     <ClInclude Include="src\resource.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\CScheme.cpp" />
     <ClCompile Include="src\CSchemeGodunov.cpp" />
     <ClCompile Include="src\CSchemeInertial.cpp" />
+    <ClCompile Include="src\CSchemePromaides.cpp" />
     <ClCompile Include="src\CSchemeMUSCLHancock.cpp" />
     <ClCompile Include="src\gpudemo.cpp" />
     <ClCompile Include="src\util.cpp" />
@@ -186,6 +188,8 @@
     <None Include="src\opencl\CLSchemeInertial.clh" />
     <None Include="src\opencl\CLSchemeMUSCLHancock.clc" />
     <None Include="src\opencl\CLSchemeMUSCLHancock.clh" />
+    <None Include="src\opencl\CLSchemePromaides.clc" />
+    <None Include="src\opencl\CLSchemePromaides.clh" />
     <None Include="src\opencl\CLSlopeLimiterMINMOD.clc" />
     <None Include="src\opencl\CLSlopeLimiterMINMOD.clh" />
     <None Include="src\opencl\CLSolverHLLC.clc" />

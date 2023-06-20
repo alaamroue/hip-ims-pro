@@ -22,6 +22,7 @@
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
+#include "CSchemePromaides.h"
 #include "CDomain.h"
 #include "CDomainCartesian.h"
 
@@ -75,6 +76,9 @@ CScheme* CScheme::createScheme( unsigned char ucType )
 		break;
 		case model::schemeTypes::kInertialSimplification:
 			return static_cast<CScheme*>( new CSchemeInertial() );
+		break;
+		case model::schemeTypes::kPromaidesScheme:
+			return static_cast<CScheme*>(new CSchemePromaides() );
 		break;
 	}
 

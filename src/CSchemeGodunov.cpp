@@ -27,6 +27,7 @@
 #include "CSchemeGodunov.h"
 #include "CSchemeMUSCLHancock.h"
 #include "CSchemeInertial.h"
+#include "CSchemePromaides.h"
 
 using std::min;
 using std::max;

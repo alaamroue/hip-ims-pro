@@ -98,6 +98,9 @@
     <ClInclude Include="src\CExecutorControlOpenCL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\CSchemePromaides.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CModel.cpp">
@@ -166,6 +169,9 @@
     <ClCompile Include="src\CExecutorControlOpenCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CSchemePromaides.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\Readme.txt" />
@@ -174,59 +180,65 @@
     <None Include="src\opencl\CLBoundaries.clc">
       <Filter>OpenCl</Filter>
     </None>
-    <None Include="src\opencl\CLBoundaries.clh">
-      <Filter>OpenCl</Filter>
-    </None>
     <None Include="src\opencl\CLDomainCartesian.clc">
-      <Filter>OpenCl</Filter>
-    </None>
-    <None Include="src\opencl\CLDomainCartesian.clh">
       <Filter>OpenCl</Filter>
     </None>
     <None Include="src\opencl\CLDynamicTimestep.clc">
       <Filter>OpenCl</Filter>
     </None>
-    <None Include="src\opencl\CLDynamicTimestep.clh">
-      <Filter>OpenCl</Filter>
-    </None>
     <None Include="src\opencl\CLFriction.clc">
-      <Filter>OpenCl</Filter>
-    </None>
-    <None Include="src\opencl\CLFriction.clh">
       <Filter>OpenCl</Filter>
     </None>
     <None Include="src\opencl\CLSchemeGodunov.clc">
       <Filter>OpenCl</Filter>
     </None>
-    <None Include="src\opencl\CLSchemeGodunov.clh">
-      <Filter>OpenCl</Filter>
-    </None>
     <None Include="src\opencl\CLSchemeInertial.clc">
-      <Filter>OpenCl</Filter>
-    </None>
-    <None Include="src\opencl\CLSchemeInertial.clh">
       <Filter>OpenCl</Filter>
     </None>
     <None Include="src\opencl\CLSchemeMUSCLHancock.clc">
       <Filter>OpenCl</Filter>
     </None>
-    <None Include="src\opencl\CLSchemeMUSCLHancock.clh">
-      <Filter>OpenCl</Filter>
-    </None>
     <None Include="src\opencl\CLSlopeLimiterMINMOD.clc">
-      <Filter>OpenCl</Filter>
-    </None>
-    <None Include="src\opencl\CLSlopeLimiterMINMOD.clh">
       <Filter>OpenCl</Filter>
     </None>
     <None Include="src\opencl\CLSolverHLLC.clc">
       <Filter>OpenCl</Filter>
     </None>
-    <None Include="src\opencl\CLSolverHLLC.clh">
+    <None Include="src\opencl\CLSchemePromaides.clc">
       <Filter>OpenCl</Filter>
     </None>
+    <None Include="src\opencl\CLSchemePromaides.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLBoundaries.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLDomainCartesian.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLDynamicTimestep.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLFriction.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeGodunov.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeInertial.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLSchemeMUSCLHancock.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLSlopeLimiterMINMOD.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
+    <None Include="src\opencl\CLSolverHLLC.clh">
+      <Filter>OpenCl\OpenCl Header</Filter>
+    </None>
     <None Include="src\opencl\CLUniversalHeader.clh">
-      <Filter>OpenCl</Filter>
+      <Filter>OpenCl\OpenCl Header</Filter>
     </None>
   </ItemGroup>
 </Project>
