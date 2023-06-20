@@ -221,16 +221,16 @@ bool CSchemeInertial::prepareInertialConstants()
 	switch (this->ucCacheConstraints)
 	{
 	case model::cacheConstraints::inertialFormula::kCacheActualSize:
-		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::inertialFormula::kCacheAllowUndersize:
-		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::inertialFormula::kCacheAllowOversize:
-		oclModel->registerConstant("INE_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("INE_DIM2", toStringExact(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("INE_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("INE_DIM2", std::to_string(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
 		break;
 	}
 

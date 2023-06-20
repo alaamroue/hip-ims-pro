@@ -14,219 +14,233 @@
 
  Contact:     luke@smith.ac
 ---------------------------------------------
- Started:     Mon Jun 19 14:07:23 2023
+ Started:     Mon Jun 19 17:28:30 2023
  Log file:    promaidesMultiScheme.log
  Platform:    Microsoft Windows
 ---------------------------------------------
-[14:07:23] Log component fully loaded.
+[17:28:30] Log component fully loaded.
 ---------------------------------------------                           
-[14:07:23] OPENCL PLATFORMS
-[14:07:23]   1. NVIDIA CUDA
-[14:07:23]      OpenCL 3.0 CUDA 12.1.68 with 1 device(s)
-[14:07:23]   2. Intel(R) OpenCL HD Graphics
-[14:07:23]      OpenCL 3.0  with 1 device(s)
+[17:28:30] OPENCL PLATFORMS
+[17:28:30]   1. NVIDIA CUDA
+[17:28:30]      OpenCL 3.0 CUDA 12.1.68 with 1 device(s)
+[17:28:30]   2. Intel(R) OpenCL HD Graphics
+[17:28:30]      OpenCL 3.0  with 1 device(s)
 ---------------------------------------------                           
-[14:07:23] Querying the suitability of a discovered device.
-[14:07:23] Creating an OpenCL device context and command queue.
-[14:07:23] Command queue created for device successfully.
+[17:28:30] Querying the suitability of a discovered device.
+[17:28:30] Creating an OpenCL device context and command queue.
+[17:28:30] Command queue created for device successfully.
 ---------------------------------------------                           
-[14:07:23] #1 GRAPHICS PROCESSING UNIT
-[14:07:23]   Suitability:       Available, Compiler found
-[14:07:23]   Processor type:    Quadro T2000
-[14:07:23]   Vendor:            NVIDIA Corporation
-[14:07:23]   OpenCL driver:     531.14
-[14:07:23]   Compute units:     16
-[14:07:23]   Profile:           Full
-[14:07:23]   Clock speed:       1785 MHz
-[14:07:23]   Memory:            4095 Mb
-[14:07:23]   OpenCL C:          OpenCL 3.0 CUDA
-[14:07:23]   Max global size:   4294639616
-[14:07:23]   Max group items:   1024
-[14:07:23]   Max group:         [1024, 1024, 64]
-[14:07:23]   Max constant args: 9
-[14:07:23]   Max allocation:    1023MB
-[14:07:23]   Max argument size: 31kB
-[14:07:23]   Double precision:  Available
+[17:28:30] #1 GRAPHICS PROCESSING UNIT
+[17:28:30]   Suitability:       Available, Compiler found
+[17:28:30]   Processor type:    Quadro T2000
+[17:28:30]   Vendor:            NVIDIA Corporation
+[17:28:30]   OpenCL driver:     531.14
+[17:28:30]   Compute units:     16
+[17:28:30]   Profile:           Full
+[17:28:30]   Clock speed:       1785 MHz
+[17:28:30]   Memory:            4095 Mb
+[17:28:30]   OpenCL C:          OpenCL 3.0 CUDA
+[17:28:30]   Max global size:   4294639616
+[17:28:30]   Max group items:   1024
+[17:28:30]   Max group:         [1024, 1024, 64]
+[17:28:30]   Max constant args: 9
+[17:28:30]   Max allocation:    1023MB
+[17:28:30]   Max argument size: 31kB
+[17:28:30]   Double precision:  Available
 ---------------------------------------------                           
-[14:07:23] Querying the suitability of a discovered device.
-[14:07:23] Creating an OpenCL device context and command queue.
-[14:07:23] Command queue created for device successfully.
+[17:28:30] Querying the suitability of a discovered device.
+[17:28:30] Creating an OpenCL device context and command queue.
+[17:28:30] Command queue created for device successfully.
 ---------------------------------------------                           
-[14:07:23] #2 GRAPHICS PROCESSING UNIT
-[14:07:23]   Suitability:       Available, Compiler found
-[14:07:23]   Processor type:    Intel(R) UHD Graphics 630
-[14:07:23]   Vendor:            Intel(R) Corporation
-[14:07:23]   OpenCL driver:     30.0.101.1122
-[14:07:23]   Compute units:     24
-[14:07:23]   Profile:           Full
-[14:07:23]   Clock speed:       1150 MHz
-[14:07:23]   Memory:            1638 Mb
-[14:07:23]   OpenCL C:          OpenCL 3.0 NEO 
-[14:07:23]   Max global size:   1717985280
-[14:07:23]   Max group items:   256
-[14:07:23]   Max group:         [256, 256, 256]
-[14:07:23]   Max constant args: 8
-[14:07:23]   Max allocation:    819MB
-[14:07:23]   Max argument size: 2kB
-[14:07:23]   Double precision:  Available
+[17:28:30] #2 GRAPHICS PROCESSING UNIT
+[17:28:30]   Suitability:       Available, Compiler found
+[17:28:30]   Processor type:    Intel(R) UHD Graphics 630
+[17:28:30]   Vendor:            Intel(R) Corporation
+[17:28:30]   OpenCL driver:     30.0.101.1122
+[17:28:30]   Compute units:     24
+[17:28:30]   Profile:           Full
+[17:28:30]   Clock speed:       1150 MHz
+[17:28:30]   Memory:            1638 Mb
+[17:28:30]   OpenCL C:          OpenCL 3.0 NEO 
+[17:28:30]   Max global size:   1717985280
+[17:28:30]   Max group items:   256
+[17:28:30]   Max group:         [256, 256, 256]
+[17:28:30]   Max constant args: 8
+[17:28:30]   Max allocation:    819MB
+[17:28:30]   Max argument size: 2kB
+[17:28:30]   Double precision:  Available
 ---------------------------------------------                           
-[14:07:23] The OpenCL executor is now fully loaded.
-[14:07:23] Selected device: #1
-[14:07:23] Scheme base-class instantiated.
-[14:07:23] Godunov-type scheme loaded for execution on OpenCL platform.
-[14:07:23] Populated scheme with default settings.
-[14:07:23] Starting to prepare program for Godunov-type scheme.
-[14:07:23] Releasing scheme resources held for OpenCL.
-[14:07:23] Releasing 1st-order scheme resources held for OpenCL.
-[14:07:23] Compiling a new program for device #1.
-[14:07:24] Program successfully compiled for device #1.
-[14:07:24] Memory buffer created for 'Batch timesteps cumulative' with 8 bytes.
-[14:07:24] Memory buffer created for 'Batch successful iterations' with 4 bytes.
-[14:07:24] Memory buffer created for 'Batch skipped iterations' with 4 bytes.
+[17:28:30] The OpenCL executor is now fully loaded.
+[17:28:30] Selected device: #1
+[17:28:30] Scheme base-class instantiated.
+[17:28:30] Godunov-type scheme loaded for execution on OpenCL platform.
+[17:28:30] Populated scheme with default settings.
+[17:28:30] MUSCL-Hancock scheme loaded for execution on OpenCL platform.
+[17:28:30] Releasing scheme resources held for OpenCL.
+[17:28:30] Releasing 2nd-order scheme resources held for OpenCL.
+[17:28:30] Releasing 1st-order scheme resources held for OpenCL.
+[17:28:30] Compiling a new program for device #1.
+[17:28:31] Program successfully compiled for device #1.
+[17:28:31] Memory buffer created for 'Batch timesteps cumulative' with 8 bytes.
+[17:28:31] Memory buffer created for 'Batch successful iterations' with 4 bytes.
+[17:28:31] Memory buffer created for 'Batch skipped iterations' with 4 bytes.
 ---------------------------------------------                           
-[14:07:24] REGULAR CARTESIAN GRID DOMAIN
-[14:07:24]   Device number:     1
-[14:07:24]   Cell count:        10000
-[14:07:24]   Cell resolution:   1
-[14:07:24]   Cell dimensions:   [100, 100]
+[17:28:31] REGULAR CARTESIAN GRID DOMAIN
+[17:28:31]   Device number:     1
+[17:28:31]   Cell count:        10000
+[17:28:31]   Cell resolution:   1
+[17:28:31]   Cell dimensions:   [100, 100]
 ---------------------------------------------                           
-[14:07:24] Memory buffer created for 'Cell states' with 320000 bytes.
-[14:07:24] Memory buffer created for 'Cell states (alternate)' with 320000 bytes.
-[14:07:24] Memory buffer created for 'Manning coefficients' with 80000 bytes.
-[14:07:24] Memory buffer created for 'Boundary Values' with 80000 bytes.
-[14:07:24] Memory buffer created for 'Bed elevations' with 80000 bytes.
-[14:07:24] Memory buffer created for 'Timestep' with 8 bytes.
-[14:07:24] Memory buffer created for 'Time' with 8 bytes.
-[14:07:24] Memory buffer created for 'Time (hydrological)' with 8 bytes.
-[14:07:24] Memory buffer created for 'Target time (sync)' with 8 bytes.
-[14:07:24] Memory buffer created for 'Timestep reduction scratch' with 4096 bytes.
-[14:07:24] Kernel 'tst_Advance_Normal' prepared for device #1.
-[14:07:24] Kernel 'tst_Advance_Normal' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        10
-[14:07:24]   Work-group size:  [ 1,1,1 ]
-[14:07:24] Kernel 'tst_ResetCounters' prepared for device #1.
-[14:07:24] Kernel 'tst_ResetCounters' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        3
-[14:07:24]   Work-group size:  [ 1,1,1 ]
-[14:07:24] Kernel 'tst_Reduce' prepared for device #1.
-[14:07:24] Kernel 'tst_Reduce' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     4104 bytes
-[14:07:24]   Arguments:        3
-[14:07:24]   Work-group size:  [ 512,1,1 ]
-[14:07:24] Kernel 'tst_UpdateTimestep' prepared for device #1.
-[14:07:24] Kernel 'tst_UpdateTimestep' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        5
-[14:07:24]   Work-group size:  [ 1,1,1 ]
-[14:07:24] Global work size for 'tst_Advance_Normal' set to [1,1,1].
-[14:07:24] Global work size for 'tst_UpdateTimestep' set to [1,1,1].
-[14:07:24] Global work size for 'tst_ResetCounters' set to [1,1,1].
-[14:07:24] Global work size for 'tst_Reduce' set to [512,1,1].
-[14:07:24] Assigning arguments for 'tst_Advance_Normal':
-[14:07:24]  1. Time
-[14:07:24]  2. Timestep
-[14:07:24]  3. Time (hydrological)
-[14:07:24]  4. Timestep reduction scratch
-[14:07:24]  5. Cell states
-[14:07:24]  6. Bed elevations
-[14:07:24]  7. Target time (sync)
-[14:07:24]  8. Batch timesteps cumulative
-[14:07:24]  9. Batch successful iterations
-[14:07:24]  10. Batch skipped iterations
-[14:07:24] Assigning arguments for 'tst_ResetCounters':
-[14:07:24]  1. Batch timesteps cumulative
-[14:07:24]  2. Batch successful iterations
-[14:07:24]  3. Batch skipped iterations
-[14:07:24] Assigning arguments for 'tst_Reduce':
-[14:07:24]  1. Cell states
-[14:07:24]  2. Bed elevations
-[14:07:24]  3. Timestep reduction scratch
-[14:07:24] Assigning arguments for 'tst_UpdateTimestep':
-[14:07:24]  1. Time
-[14:07:24]  2. Timestep
-[14:07:24]  3. Timestep reduction scratch
-[14:07:24]  4. Target time (sync)
-[14:07:24]  5. Batch timesteps cumulative
-[14:07:24] Kernel 'bdy_Promaides' prepared for device #1.
-[14:07:24] Kernel 'bdy_Promaides' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        4
-[14:07:24]   Work-group size:  [ 0,0,0 ]
-[14:07:24] Work-group size for 'bdy_Promaides' set to [8,8,1].
-[14:07:24] Global work size for 'bdy_Promaides' set to [104,104,1].
-[14:07:24] Assigning arguments for 'bdy_Promaides':
-[14:07:24]  1. Boundary Values
-[14:07:24]  2. Timestep
-[14:07:24]  3. Cell states
-[14:07:24]  4. Bed elevations
-[14:07:24] Kernel 'per_Friction' prepared for device #1.
-[14:07:24] Kernel 'per_Friction' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        5
-[14:07:24]   Work-group size:  [ 8,8,1 ]
-[14:07:24] Global work size for 'per_Friction' set to [104,104,1].
-[14:07:24] Assigning arguments for 'per_Friction':
-[14:07:24]  1. Timestep
-[14:07:24]  2. Cell states
-[14:07:24]  3. Bed elevations
-[14:07:24]  4. Manning coefficients
-[14:07:24]  5. Time
-[14:07:24] Kernel 'gts_cacheDisabled' prepared for device #1.
-[14:07:24] Kernel 'gts_cacheDisabled' is defined:
-[14:07:24]   Private memory:   0 bytes
-[14:07:24]   Local memory:     1 bytes
-[14:07:24]   Arguments:        5
-[14:07:24]   Work-group size:  [ 8,8,1 ]
-[14:07:24] Global work size for 'gts_cacheDisabled' set to [104,104,1].
-[14:07:24] Assigning arguments for 'gts_cacheDisabled':
-[14:07:24]  1. Timestep
-[14:07:24]  2. Bed elevations
-[14:07:24]  3. Cell states
-[14:07:24]  4. Cell states (alternate)
-[14:07:24]  5. Manning coefficients
+[17:28:31] Memory buffer created for 'Cell states' with 320000 bytes.
+[17:28:31] Memory buffer created for 'Cell states (alternate)' with 320000 bytes.
+[17:28:31] Memory buffer created for 'Manning coefficients' with 80000 bytes.
+[17:28:31] Memory buffer created for 'Boundary Values' with 80000 bytes.
+[17:28:31] Memory buffer created for 'Bed elevations' with 80000 bytes.
+[17:28:31] Memory buffer created for 'Timestep' with 8 bytes.
+[17:28:31] Memory buffer created for 'Time' with 8 bytes.
+[17:28:31] Memory buffer created for 'Time (hydrological)' with 8 bytes.
+[17:28:31] Memory buffer created for 'Target time (sync)' with 8 bytes.
+[17:28:31] Memory buffer created for 'Timestep reduction scratch' with 4096 bytes.
+[17:28:31] Memory buffer created for 'Face extrapolations' with 1280000 bytes.
+[17:28:31] Kernel 'tst_Advance_Normal' prepared for device #1.
+[17:28:31] Kernel 'tst_Advance_Normal' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        10
+[17:28:31]   Work-group size:  [ 1,1,1 ]
+[17:28:31] Kernel 'tst_ResetCounters' prepared for device #1.
+[17:28:31] Kernel 'tst_ResetCounters' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        3
+[17:28:31]   Work-group size:  [ 1,1,1 ]
+[17:28:31] Kernel 'tst_Reduce' prepared for device #1.
+[17:28:31] Kernel 'tst_Reduce' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     4104 bytes
+[17:28:31]   Arguments:        3
+[17:28:31]   Work-group size:  [ 512,1,1 ]
+[17:28:31] Kernel 'tst_UpdateTimestep' prepared for device #1.
+[17:28:31] Kernel 'tst_UpdateTimestep' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        5
+[17:28:31]   Work-group size:  [ 1,1,1 ]
+[17:28:31] Global work size for 'tst_Advance_Normal' set to [1,1,1].
+[17:28:31] Global work size for 'tst_UpdateTimestep' set to [1,1,1].
+[17:28:31] Global work size for 'tst_ResetCounters' set to [1,1,1].
+[17:28:31] Global work size for 'tst_Reduce' set to [512,1,1].
+[17:28:31] Assigning arguments for 'tst_Advance_Normal':
+[17:28:31]  1. Time
+[17:28:31]  2. Timestep
+[17:28:31]  3. Time (hydrological)
+[17:28:31]  4. Timestep reduction scratch
+[17:28:31]  5. Cell states
+[17:28:31]  6. Bed elevations
+[17:28:31]  7. Target time (sync)
+[17:28:31]  8. Batch timesteps cumulative
+[17:28:31]  9. Batch successful iterations
+[17:28:31]  10. Batch skipped iterations
+[17:28:31] Assigning arguments for 'tst_ResetCounters':
+[17:28:31]  1. Batch timesteps cumulative
+[17:28:31]  2. Batch successful iterations
+[17:28:31]  3. Batch skipped iterations
+[17:28:31] Assigning arguments for 'tst_Reduce':
+[17:28:31]  1. Cell states
+[17:28:31]  2. Bed elevations
+[17:28:31]  3. Timestep reduction scratch
+[17:28:31] Assigning arguments for 'tst_UpdateTimestep':
+[17:28:31]  1. Time
+[17:28:31]  2. Timestep
+[17:28:31]  3. Timestep reduction scratch
+[17:28:31]  4. Target time (sync)
+[17:28:31]  5. Batch timesteps cumulative
+[17:28:31] Kernel 'bdy_Promaides' prepared for device #1.
+[17:28:31] Kernel 'bdy_Promaides' is defined:
+[17:28:31]   Private memory:   56 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        4
+[17:28:31]   Work-group size:  [ 0,0,0 ]
+[17:28:31] Work-group size for 'bdy_Promaides' set to [10,10,1].
+[17:28:31] Global work size for 'bdy_Promaides' set to [100,100,1].
+[17:28:31] Assigning arguments for 'bdy_Promaides':
+[17:28:31]  1. Boundary Values
+[17:28:31]  2. Timestep
+[17:28:31]  3. Cell states
+[17:28:31]  4. Bed elevations
+[17:28:31] Kernel 'per_Friction' prepared for device #1.
+[17:28:31] Kernel 'per_Friction' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        5
+[17:28:31]   Work-group size:  [ 8,8,1 ]
+[17:28:31] Global work size for 'per_Friction' set to [104,104,1].
+[17:28:31] Assigning arguments for 'per_Friction':
+[17:28:31]  1. Timestep
+[17:28:31]  2. Cell states
+[17:28:31]  3. Bed elevations
+[17:28:31]  4. Manning coefficients
+[17:28:31]  5. Time
+[17:28:31] Kernel 'mch_1st_cacheNone' prepared for device #1.
+[17:28:31] Kernel 'mch_1st_cacheNone' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        4
+[17:28:31]   Work-group size:  [ 8,8,1 ]
+[17:28:31] Global work size for 'mch_1st_cacheNone' set to [104,104,1].
+[17:28:31] Kernel 'mch_2nd_cacheNone' prepared for device #1.
+[17:28:31] Kernel 'mch_2nd_cacheNone' is defined:
+[17:28:31]   Private memory:   0 bytes
+[17:28:31]   Local memory:     1 bytes
+[17:28:31]   Arguments:        5
+[17:28:31]   Work-group size:  [ 8,8,1 ]
+[17:28:31] Global work size for 'mch_2nd_cacheNone' set to [104,104,1].
+[17:28:31] Assigning arguments for 'mch_1st_cacheNone':
+[17:28:31]  1. Timestep
+[17:28:31]  2. Bed elevations
+[17:28:31]  3. Cell states
+[17:28:31]  4. Face extrapolations
+[17:28:31] Assigning arguments for 'mch_2nd_cacheNone':
+[17:28:31]  1. Timestep
+[17:28:31]  2. Cell states
+[17:28:31]  3. Bed elevations
+[17:28:31]  4. Manning coefficients
+[17:28:31]  5. Face extrapolations
 ---------------------------------------------                           
-[14:07:24] GODUNOV-TYPE 1ST-ORDER-ACCURATE SCHEME
-[14:07:24]   Timestep mode:      Dynamic
-[14:07:24]   Courant number:     0.5
-[14:07:24]   Initial timestep:   0.01000s
-[14:07:24]   Data reduction:     200 divisions
-[14:07:24]   Riemann solver:     HLLC (Approximate)
-[14:07:24]   Configuration:      No local caching
-[14:07:24]   Friction effects:   Disabled
-[14:07:24]   Kernel queue mode:  Automatic
-[14:07:24]   Initial queue:      1 iteration(s)
-[14:07:24]   Debug output:       Disabled
+[17:28:31] MUSCL-HANCOCK 2ND-ORDER-ACCURATE SCHEME
+[17:28:31]   Timestep mode:      Dynamic
+[17:28:31]   Courant number:     0.5
+[17:28:31]   Initial timestep:   0.01000s
+[17:28:31]   Data reduction:     200 divisions
+[17:28:31]   Riemann solver:     HLLC (Approximate)
+[17:28:31]   Configuration:      No local caching
+[17:28:31]   Friction effects:   Disabled
+[17:28:31]   Kernel queue mode:  Automatic
+[17:28:31]   Initial queue:      1 iteration(s)
+[17:28:31]   Debug output:       Disabled
 ---------------------------------------------                           
-[14:07:24] Verifying the required data before model run...
-[14:07:24] Verification is complete.
+[17:28:31] Verifying the required data before model run...
+[17:28:32] Verification is complete.
 ---------------------------------------------                           
-[14:07:24] Starting a new simulation...
-[14:07:24] Initial domain volume: 0m3
-[14:07:24] Copying domain data to device...
-[14:07:24] Domain #1 is not constrained by overlapping.
+[17:28:32] Starting a new simulation...
+[17:28:32] Initial domain volume: 0m3
+[17:28:32] Copying domain data to device...
+[17:28:32] Domain #1 is not constrained by overlapping.
 ---------------------------------------------                           
-[14:07:24] SIMULATION CONFIGURATION
-[14:07:24]   Name:               Name
-[14:07:24]   Simulation length:  01:00:00
-[14:07:24]   Output frequency:   01:00:00
-[14:07:24]   Floating-point:     Double-precision
+[17:28:32] SIMULATION CONFIGURATION
+[17:28:32]   Name:               Name
+[17:28:32]   Simulation length:  01:00:00
+[17:28:32]   Output frequency:   01:00:00
+[17:28:32]   Floating-point:     Double-precision
 ---------------------------------------------                           
-[14:07:24] Collecting time and performance data...
+[17:28:32] Collecting time and performance data...
 ---------------------------------------------                           
                                                                   
  SIMULATION PROGRESS                                              
                                                                   
  Simulation time:  0.00000s       Lowest timestep:        0.00000s
  Cells calculated: 0                         Rate:             0/s
- Processing time:  0.00002s        Est. remaining:  365 d 00:00:00
+ Processing time:  0.00001s        Est. remaining:  365 d 00:00:00
  Batch size:       1                                                
                                                                   
  [>                                                      ]    0.0%
@@ -241,92 +255,16 @@
                                                                   
  SIMULATION PROGRESS                                              
                                                                   
- Simulation time:  00:03:57.0521  Lowest timestep:        0.20758s
- Cells calculated: 22940000                  Rate:      26987714/s
- Processing time:  0.85002s        Est. remaining:   00:00:12.0588
- Batch size:       1152                                             
+ Simulation time:  00:00:12.6776  Lowest timestep:        0.02240s
+ Cells calculated: 11080000                  Rate:      13035142/s
+ Processing time:  0.85001s        Est. remaining:   00:04:00.5235
+ Batch size:       576                                              
                                                                   
- [==>>                                                   ]    6.6%
-                                                                  
-             +----------+----------------+------------+----------+
-             |  Device  |  Avg.timestep  | Iterations | Bypassed |
-+------------+----------+----------------+------------+----------|
-| Domain #1  |    GPU 1 |       0.20758s |       1142 |        0 |
-+------------+----------+----------------+------------+----------+
----------------------------------------------                           
----------------------------------------------                           
-                                                                  
- SIMULATION PROGRESS                                              
-                                                                  
- Simulation time:  00:10:06       Lowest timestep:        0.26449s
- Cells calculated: 45980000                  Rate:      27046789/s
- Processing time:  00:00:01.7000   Est. remaining:   00:00:08.3868
- Batch size:       2304                                             
-                                                                  
- [========>>                                             ]   16.9%
+ [>                                                      ]    0.4%
                                                                   
              +----------+----------------+------------+----------+
              |  Device  |  Avg.timestep  | Iterations | Bypassed |
 +------------+----------+----------------+------------+----------|
-| Domain #1  |    GPU 1 |       0.29281s |       4598 |        0 |
+| Domain #1  |    GPU 1 |       0.02240s |        566 |        0 |
 +------------+----------+----------------+------------+----------+
 ---------------------------------------------                           
----------------------------------------------                           
-                                                                  
- SIMULATION PROGRESS                                              
-                                                                  
- Simulation time:  00:22:26       Lowest timestep:        0.29281s
- Cells calculated: 71710000                  Rate:      28120935/s
- Processing time:  00:00:02.5501   Est. remaining:   00:00:04.2686
- Batch size:       2830                                             
-                                                                  
- [===================>>                                  ]   37.4%
-                                                                  
-             +----------+----------------+------------+----------+
-             |  Device  |  Avg.timestep  | Iterations | Bypassed |
-+------------+----------+----------------+------------+----------|
-| Domain #1  |    GPU 1 |       0.29281s |       4598 |        0 |
-+------------+----------+----------------+------------+----------+
----------------------------------------------                           
----------------------------------------------                           
-                                                                  
- SIMULATION PROGRESS                                              
-                                                                  
- Simulation time:  00:37:34       Lowest timestep:        0.30351s
- Cells calculated: 95570000                  Rate:      28108348/s
- Processing time:  00:00:03.4001   Est. remaining:   00:00:02.0293
- Batch size:       2752                                             
-                                                                  
- [=================================>>                    ]   62.6%
-                                                                  
-             +----------+----------------+------------+----------+
-             |  Device  |  Avg.timestep  | Iterations | Bypassed |
-+------------+----------+----------------+------------+----------|
-| Domain #1  |    GPU 1 |       0.30351s |       7428 |        0 |
-+------------+----------+----------------+------------+----------+
----------------------------------------------                           
----------------------------------------------                           
-                                                                  
- SIMULATION PROGRESS                                              
-                                                                  
- Simulation time:  00:52:18       Lowest timestep:        0.30827s
- Cells calculated: 121000000                 Rate:      28470200/s
- Processing time:  00:00:04.2501   Est. remaining:        0.62551s
- Batch size:       2837                                             
-                                                                  
- [==============================================>>       ]   87.2%
-                                                                  
-             +----------+----------------+------------+----------+
-             |  Device  |  Avg.timestep  | Iterations | Bypassed |
-+------------+----------+----------------+------------+----------|
-| Domain #1  |    GPU 1 |       0.30827s |      10180 |        0 |
-+------------+----------+----------------+------------+----------+
----------------------------------------------                           
-[14:07:28] Simulation time:     00:00:04.4431
----------------------------------------------                           
-[14:07:28] The domain base has been released.
-[14:07:28] The domain manager has been unloaded.
-[14:07:28] An OpenCL device has been released (#1).
-[14:07:28] An OpenCL device has been released (#2).
-[14:07:28] The OpenCL executor is now unloaded.
-[14:07:28] The model engine is completely unloaded.

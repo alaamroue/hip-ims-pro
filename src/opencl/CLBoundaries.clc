@@ -22,7 +22,7 @@
 
 __kernel void bdy_Promaides (
 	__global		cl_double const * restrict	pBoundaryArray,
-	__global		cl_double *					pTime,
+	__global		cl_double *					pTimeHydrological,
 	__global		cl_double4 *				pCellState,
 	__global		cl_double *					pCellBed
 	)
@@ -44,14 +44,17 @@ __kernel void bdy_Promaides (
 	ulIdx = getCellID(lIdxX, lIdxY);
 
 	__private cl_double					dRate			= pBoundaryArray[ulIdx];
-	__private cl_double					dLclTimestep	= *pTime;
+	__private cl_double					dLclTimestep	= *pTimeHydrological;
 	__private cl_double4				pCellData		= pCellState[ulIdx];
 	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
 
 	// Hydrological processes have their own timesteps
-	if (dLclTimestep <= 0.0 || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
+	if (dLclTimestep < TIMESTEP_HYDROLOGICAL || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 		return;
 
+	if(dLclTimestep <= 0.0){
+		printf("dLclTimestep is <= 0.0 in CLBOUNDRIES.CLC");
+	}
 	// This would already be represented in the series
 	//if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 	//	return;
@@ -60,12 +63,15 @@ __kernel void bdy_Promaides (
 	// Apply the value...
 	pCellData.x = max(dCellBedElev, pCellData.x + dRate * dLclTimestep);
 	
-	#ifdef DEBUG_OUTPUT
-	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
-	{
-		printf("ulIdx: %i x: %f y: %f z: %f w: %f Rate: %f step: %f \n", ulIdx, pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate*1000000, dLclTimestep);
+	//#ifdef DEBUG_OUTPUT
+	if (
+	//	lIdxX == 98 && lIdxY == 98
+	ulIdx==8878
+	){
+		//printf("Before: %f After: %f step: %f \n", pCellState[ulIdx].x, pCellData.x, dLclTimestep);
+		//printf("ulIdx: %i x: %f y: %f z: %f w: %f Rate: %f step: %f \n", ulIdx, pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate*1000000, dLclTimestep);
 	}
-	#endif
+	//#endif
 	// Return to global memory
 	pCellState[ulIdx] = pCellData;
 }

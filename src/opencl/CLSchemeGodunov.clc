@@ -235,13 +235,11 @@ void gts_cacheDisabled (
 	pNeigDataE		= pCellStateSrc	[ ulIdxNeig ];
 
 	#ifdef DEBUG_OUTPUT
-	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
+	if (
+		//lIdxX == 98 && lIdxY == 98
+		ulIdx == 8878)
 	{
-		printf( "Current data:  { %f, %f, %f, %f )\n", pCellData.x, pCellData.y, pCellData.z, pCellData.w );
-		printf( "Neighbour N:   { %f, %f, %f, %f )\n", pNeigDataN.x, dNeigBedElevN, pNeigDataN.z, pNeigDataN.w );
-		printf( "Neighbour E:   { %f, %f, %f, %f )\n", pNeigDataE.x, dNeigBedElevE, pNeigDataE.z, pNeigDataE.w );
-		printf( "Neighbour S:   { %f, %f, %f, %f )\n", pNeigDataS.x, dNeigBedElevS, pNeigDataS.z, pNeigDataS.w );
-		printf( "Neighbour W:   { %f, %f, %f, %f )\n", pNeigDataW.x, dNeigBedElevW, pNeigDataW.z, pNeigDataW.w );
+		//printf( "Cell: %f N: %f E: %f S: %f W: %f T: %f \n", pCellData.x - dCellBedElev, pNeigDataN.x, pNeigDataE.x,pNeigDataS.x,pNeigDataW.x, dLclTimestep);
 	}
 	#endif
 
@@ -270,9 +268,9 @@ void gts_cacheDisabled (
 	#ifdef DEBUG_OUTPUT
 	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
 	{
-		printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
-		printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
-		printf( "\n");
+		//printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
+		//printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
+		//printf( "\n");
 	}
 	#endif
 	pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );

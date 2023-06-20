@@ -322,33 +322,33 @@ bool CSchemeMUSCLHancock::prepare2OConstants()
 	{
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_HALF_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulNonCachedWorkgroupSizeX) + ", " + toStringExact(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulNonCachedWorkgroupSizeX) + ", " + std::to_string(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_FULL_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulNonCachedWorkgroupSizeX) + ", " + toStringExact(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulNonCachedWorkgroupSizeX) + ", " + std::to_string(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
 	}
 	if (this->ucConfiguration == model::schemeConfigurations::musclHancock::kCachePrediction)
 	{
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_HALF_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulCachedWorkgroupSizeX) + ", " + toStringExact(this->ulCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulCachedWorkgroupSizeX) + ", " + std::to_string(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_FULL_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulNonCachedWorkgroupSizeX) + ", " + toStringExact(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulNonCachedWorkgroupSizeX) + ", " + std::to_string(this->ulNonCachedWorkgroupSizeY) + ", 1)))"
 		);
 	}
 	if (this->ucConfiguration == model::schemeConfigurations::musclHancock::kCacheMaximum)
 	{
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_HALF_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulCachedWorkgroupSizeX) + ", " + toStringExact(this->ulCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulCachedWorkgroupSizeX) + ", " + std::to_string(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
 		oclModel->registerConstant(
 			"REQD_WG_SIZE_FULL_TS",
-			"__attribute__((reqd_work_group_size(" + toStringExact(this->ulCachedWorkgroupSizeX) + ", " + toStringExact(this->ulCachedWorkgroupSizeY) + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string(this->ulCachedWorkgroupSizeX) + ", " + std::to_string(this->ulCachedWorkgroupSizeY) + ", 1)))"
 		);
 	}
 
@@ -373,16 +373,16 @@ bool CSchemeMUSCLHancock::prepare2OConstants()
 	switch (this->ucCacheConstraints)
 	{
 	case model::cacheConstraints::musclHancock::kCacheActualSize:
-		oclModel->registerConstant("MCH_STG1_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("MCH_STG1_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("MCH_STG1_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::musclHancock::kCacheAllowUndersize:
-		oclModel->registerConstant("MCH_STG1_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("MCH_STG1_DIM2", toStringExact(this->ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("MCH_STG1_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", std::to_string(this->ulCachedWorkgroupSizeY));
 		break;
 	case model::cacheConstraints::musclHancock::kCacheAllowOversize:
-		oclModel->registerConstant("MCH_STG1_DIM1", toStringExact(this->ulCachedWorkgroupSizeX));
-		oclModel->registerConstant("MCH_STG1_DIM2", toStringExact(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
+		oclModel->registerConstant("MCH_STG1_DIM1", std::to_string(this->ulCachedWorkgroupSizeX));
+		oclModel->registerConstant("MCH_STG1_DIM2", std::to_string(this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY));
 		break;
 	}
 
@@ -576,6 +576,9 @@ void	CSchemeMUSCLHancock::scheduleIteration(
 					CDomain*					pDomain
 		)
 {
+	oclKernelBoundary->scheduleExecution();
+	pDevice->queueBarrier();
+
 	// Half-timestep and full-timestep kernels
 	if ( this->ucConfiguration != model::schemeConfigurations::musclHancock::kCacheMaximum )
 	{

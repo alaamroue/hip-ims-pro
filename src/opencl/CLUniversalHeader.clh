@@ -25,10 +25,10 @@
 #define USE_ALTERNATE_CONSTRUCTS	1
 
 // Enable to use printf with AMD devices
-#ifdef DEBUG_OUTPUT
-#pragma		OPENCL EXTENSION cl_amd_printf   : enable
+//#ifdef DEBUG_OUTPUT
+//#pragma		OPENCL EXTENSION cl_amd_printf   : enable
 //#pragma		OPENCL EXTENSION cl_intel_printf : enable
-#endif
+//#endif
 
 #define		GRAVITY					9.81		// 9.80665
 

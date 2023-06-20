@@ -92,19 +92,16 @@ int model::loadConfiguration()
 	ourCartesianDomain->setCols(100);
 	ourCartesianDomain->setRows(100);
 
-
 	CScheme* pScheme;
-	pScheme = CScheme::createScheme(model::schemeTypes::kGodunov);
-	//pScheme = CScheme::createScheme(model::schemeTypes::kMUSCLHancock);
-	//pScheme = CScheme::createScheme(model::schemeTypes::kInertialSimplification);
+	model::schemeTypes::schemeTypes mst = model::schemeTypes::kMUSCLHancock;
+	pScheme = CScheme::createScheme(mst);
 
-	//General Scheme Config
 	pScheme->setQueueMode(model::queueMode::kAuto);
 	pScheme->setQueueSize(1);
 
 	model::SchemeSettings schemeSettings;
 	schemeSettings.CourantNumber = 0.5;
-	schemeSettings.DryThreshold = 1e-5;
+	schemeSettings.DryThreshold = 1e-10;
 	schemeSettings.Timestep = 0.01;
 	schemeSettings.ReductionWavefronts = 200;
 	schemeSettings.FrictionStatus = false;
@@ -112,9 +109,22 @@ int model::loadConfiguration()
 	schemeSettings.CachedWorkgroupSize[1] = 8;
 	schemeSettings.NonCachedWorkgroupSize[0] = 8;
 	schemeSettings.NonCachedWorkgroupSize[1] = 8;
-	schemeSettings.CacheMode = model::schemeConfigurations::godunovType::kCacheNone;
-	schemeSettings.CacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
-	schemeSettings.ExtrapolatedContiguity = false;
+	if (mst == model::schemeTypes::kGodunov) {
+		schemeSettings.CacheMode = model::schemeConfigurations::godunovType::kCacheNone;
+		schemeSettings.CacheConstraints = model::cacheConstraints::godunovType::kCacheActualSize;
+	}
+	else if (mst == model::schemeTypes::kMUSCLHancock) {
+		schemeSettings.CacheMode = model::schemeConfigurations::musclHancock::kCacheNone;
+		schemeSettings.CacheConstraints = model::cacheConstraints::musclHancock::kCacheActualSize;
+	}
+	else if (mst == model::schemeTypes::kInertialSimplification) {
+		schemeSettings.CacheMode = model::schemeConfigurations::inertialFormula::kCacheNone;
+		schemeSettings.CacheConstraints = model::cacheConstraints::inertialFormula::kCacheActualSize;
+	}
+	else {
+		std::cout << "Error: Scheme not chosen!" << std::endl;
+	}
+	schemeSettings.ExtrapolatedContiguity = true;
 
 	pScheme->setupScheme(schemeSettings);
 	pScheme->setDomain(ourCartesianDomain);			// Scheme allocates the memory and thus needs to know the dimensions

@@ -445,8 +445,8 @@ bool CSchemeGodunov::prepare1OConstants()
 	if ( this->bDebugOutput )
 	{
 		oclModel->registerConstant( "DEBUG_OUTPUT",		"1" );
-		oclModel->registerConstant( "DEBUG_CELLX",		toStringExact( this->uiDebugCellX ) );
-		oclModel->registerConstant( "DEBUG_CELLY",		toStringExact( this->uiDebugCellY ) );
+		oclModel->registerConstant( "DEBUG_CELLX",		std::to_string( this->uiDebugCellX ) );
+		oclModel->registerConstant( "DEBUG_CELLY",		std::to_string( this->uiDebugCellY ) );
 	} else {
 		oclModel->removeConstant( "DEBUG_OUTPUT" );
 		oclModel->removeConstant( "DEBUG_CELLX" );
@@ -461,20 +461,20 @@ bool CSchemeGodunov::prepare1OConstants()
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toStringExact( this->ulNonCachedWorkgroupSizeX )  + ", " + toStringExact( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 	if ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled )
 	{
 		oclModel->registerConstant( 
 			"REQD_WG_SIZE_FULL_TS", 
-			"__attribute__((reqd_work_group_size(" + toStringExact( this->ulNonCachedWorkgroupSizeX )  + ", " + toStringExact( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
+			"__attribute__((reqd_work_group_size(" + std::to_string( this->ulNonCachedWorkgroupSizeX )  + ", " + std::to_string( this->ulNonCachedWorkgroupSizeY )  + ", 1)))"
 		);
 	} 
 
 	oclModel->registerConstant( 
 		"REQD_WG_SIZE_LINE", 
-		"__attribute__((reqd_work_group_size(" + toStringExact( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
+		"__attribute__((reqd_work_group_size(" + std::to_string( this->ulReductionWorkgroupSize )  + ", 1, 1)))"
 	);
 
 	// --
@@ -484,16 +484,16 @@ bool CSchemeGodunov::prepare1OConstants()
 	switch( this->ucCacheConstraints )
 	{
 		case model::cacheConstraints::godunovType::kCacheActualSize:
-			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowUndersize:
-			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY ) );
 			break;
 		case model::cacheConstraints::godunovType::kCacheAllowOversize:
-			oclModel->registerConstant( "GTS_DIM1", toStringExact( this->ulCachedWorkgroupSizeX ) );
-			oclModel->registerConstant( "GTS_DIM2", toStringExact( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
+			oclModel->registerConstant( "GTS_DIM1", std::to_string( this->ulCachedWorkgroupSizeX ) );
+			oclModel->registerConstant( "GTS_DIM2", std::to_string( this->ulCachedWorkgroupSizeY == 16 ? 17 : ulCachedWorkgroupSizeY ) );
 			break;
 	}
 
@@ -506,7 +506,7 @@ bool CSchemeGodunov::prepare1OConstants()
 		oclModel->registerConstant( "TIMESTEP_DYNAMIC",	"1" );
 		oclModel->removeConstant( "TIMESTEP_FIXED" );
 	} else {
-		oclModel->registerConstant( "TIMESTEP_FIXED",	toStringExact(this->dTimestep) );
+		oclModel->registerConstant( "TIMESTEP_FIXED",	std::to_string(this->dTimestep) );
 		oclModel->removeConstant( "TIMESTEP_DYNAMIC" );
 	}
 
@@ -526,11 +526,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	// --
 	// Timestep reduction and simulation parameters
 	// --
-	oclModel->registerConstant( "TIMESTEP_WORKERS",		toStringExact( this->ulReductionGlobalSize ) );
-	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	toStringExact( this->ulReductionWorkgroupSize ) );
-	oclModel->registerConstant( "SCHEME_ENDTIME",		toStringExact( model::pManager->getSimulationLength() ) );
-	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	toStringExact( model::pManager->getOutputFrequency() ) );
-	oclModel->registerConstant( "COURANT_NUMBER",		toStringExact( this->dCourantNumber ) );
+	oclModel->registerConstant( "TIMESTEP_WORKERS",		std::to_string( this->ulReductionGlobalSize ) );
+	oclModel->registerConstant( "TIMESTEP_GROUPSIZE",	std::to_string( this->ulReductionWorkgroupSize ) );
+	oclModel->registerConstant( "SCHEME_ENDTIME",		std::to_string( model::pManager->getSimulationLength() ) );
+	oclModel->registerConstant( "SCHEME_OUTPUTTIME",	std::to_string( model::pManager->getOutputFrequency() ) );
+	oclModel->registerConstant( "COURANT_NUMBER",		std::to_string( this->dCourantNumber ) );
 
 	// --
 	// Domain details (size, resolution, etc.)
@@ -539,11 +539,11 @@ bool CSchemeGodunov::prepare1OConstants()
 	double	dResolution;
 	pDomain->getCellResolution( &dResolution );
 
-	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		toStringExact( pDomain->getCellCount() ) );
-	oclModel->registerConstant( "DOMAIN_COLS",			toStringExact( pDomain->getCols() ) );
-	oclModel->registerConstant( "DOMAIN_ROWS",			toStringExact( pDomain->getRows() ) );
-	oclModel->registerConstant( "DOMAIN_DELTAX",		toStringExact( dResolution ) );
-	oclModel->registerConstant( "DOMAIN_DELTAY",		toStringExact( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		std::to_string( pDomain->getCellCount() ) );
+	oclModel->registerConstant( "DOMAIN_COLS",			std::to_string( pDomain->getCols() ) );
+	oclModel->registerConstant( "DOMAIN_ROWS",			std::to_string( pDomain->getRows() ) );
+	oclModel->registerConstant( "DOMAIN_DELTAX",		std::to_string( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_DELTAY",		std::to_string( dResolution ) );
 
 	return true;
 }
@@ -697,13 +697,15 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	// --
 	// Boundary Kernel
 	// --
-
+	CDomainCartesian* cd = (CDomainCartesian*) pDomain;
+	//TODO: Alaa fix group size
 	oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
-	oclKernelBoundary->setGroupSize(8, 8);
+	oclKernelBoundary->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
 	oclKernelBoundary->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-	//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(pDomain->getCols() / 8.0) * 8, (cl_ulong)ceil(pDomain->getRows() / 8.0) * 8);
+	//oclKernelBoundary->setGroupSize(8, 8);
+	//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(cd->getCols() / 8.0) * 8, (cl_ulong)ceil(cd->getRows() / 8.0) * 8);
 
-	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimestep,oclBufferCellStates, oclBufferCellBed };
+	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimeHydrological ,oclBufferCellStates, oclBufferCellBed };
 
 	oclKernelBoundary->assignArguments(aryArgsBdy);
 
