@@ -144,6 +144,10 @@ void pro_cacheDisabled (
 		pNeigManW
 	);
 
+	if(ulIdx==51174){
+		//printf("Q_N: %f Q_E: %f Q_S: %f Q_W: %f\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
+	}
+
 	pCellData.z		= dDischarge[DOMAIN_DIR_W];
 	pCellData.w		= dDischarge[DOMAIN_DIR_S];
 
@@ -183,23 +187,21 @@ cl_double manning_Solver(
 		//cl_double dSlope	 = ( opt_s_Neig - opt_s ) / DOMAIN_DELTAX;
 
 		//diffusive wave
-		cl_double delta_h = opt_s_Neig - opt_s;
+		cl_double delta_h = (opt_s_Neig - opt_s);
 		cl_double abs_delta_h = fabs(delta_h);
 
-		if(abs_delta_h<=0.005078){
-			dDischarge = 0.5* (1/manning+1/manning_Neig)/pow(DOMAIN_DELTAX,1.5) * pow(flow_depth, (5.0/3.0)) * 0.10449968880528*atan(159.877741951379*delta_h) * timestep ; //0.0152
-		}
-		else{
-			dDischarge = 0.5* (1/manning+1/manning_Neig)/pow(DOMAIN_DELTAX,1.5)  * pow(flow_depth, (5.0/3.0)) * (delta_h/pow(abs_delta_h,0.5)) * timestep;
-		}
+		// TODO: Alaa Check Domain DeltaX should it be 0.5 or 1.5
+		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(DOMAIN_DELTAX,0.5) * pow(flow_depth,5.0/3.0) * delta_h/ pow(abs_delta_h,0.5);
 
-		// Froude number discharge limiter
+		
+		//Froude number discharge limiter
 		if ( dDischarge > 0.0 &&
 			 ( ( fabs( dDischarge ) / flow_depth ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 			dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
 		if ( dDischarge < 0.0 &&
 			 ( ( fabs( dDischarge ) / flow_depth ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 			dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+		
 
 		// Alaa: Does this make better memory access here or should we put it directly after calculation?
 		if ( flow_depth < VERY_SMALL )
