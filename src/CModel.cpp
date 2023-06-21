@@ -995,9 +995,7 @@ void	CModel::runNext(const double next_time_point)
 
 		// Update progress bar after each batch, not every time
 		sTotalMetrics = pBenchmarkAll->getMetrics();
-		this->runModelUI(
-			sTotalMetrics
-		);
+		this->runModelUI(sTotalMetrics);
 	}
 
 	// Update to 100% progress bar

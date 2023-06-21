@@ -101,7 +101,11 @@ void pro_cacheDisabled (
 
 	// All neighbours are dry? Don't bother calculating
 	if ( ucDryCount >= 5 ) return;
-
+	
+	bool debug = false;
+	if(ulIdx==9897){
+	//	debug = true;
+	}
 	// Calculate fluxes
 	// -> North
 	dDischarge[ DOMAIN_DIR_N ] = manning_Solver(
@@ -111,7 +115,8 @@ void pro_cacheDisabled (
 		dCellBedElev,
 		dNeigBedElevN,
 		dManningCoef,
-		pNeigManN
+		pNeigManN,
+		debug
 	);
 	// -> East
 	dDischarge[ DOMAIN_DIR_E ] = manning_Solver(
@@ -121,7 +126,8 @@ void pro_cacheDisabled (
 		dCellBedElev,
 		dNeigBedElevE,
 		dManningCoef,
-		pNeigManE
+		pNeigManE,
+		debug
 	);
 	// -> South
 	dDischarge[ DOMAIN_DIR_S ] = manning_Solver(
@@ -131,7 +137,8 @@ void pro_cacheDisabled (
 		dCellBedElev,
 		dNeigBedElevS,
 		dManningCoef,
-		pNeigManS
+		pNeigManS,
+		debug
 	);
 	// -> West
 	dDischarge[ DOMAIN_DIR_W ] = manning_Solver(
@@ -141,11 +148,27 @@ void pro_cacheDisabled (
 		dCellBedElev,
 		dNeigBedElevW,
 		dManningCoef,
-		pNeigManW
+		pNeigManW,
+		debug
 	);
 
-	if(ulIdx==51174){
-		//printf("Q_N: %f Q_E: %f Q_S: %f Q_W: %f\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
+	if(lIdxX == DOMAIN_ROWS - 2 ){
+		dDischarge[DOMAIN_DIR_E] = 0.0;
+	} 
+	if( lIdxY == DOMAIN_COLS - 2 ) {
+		dDischarge[DOMAIN_DIR_N] = 0.0;
+	}
+	if( lIdxX == 1 ) {
+		dDischarge[DOMAIN_DIR_W]= 0.0;
+	}
+	if( lIdxY == 1 ) {
+		dDischarge[DOMAIN_DIR_S] = 0.0;
+	}
+
+	if(ulIdx==9897 && debug){
+		printf("Opt_s: %f opt_h: %f opt_z: %f\n",pCellData.x,pCellData.x-dCellBedElev,dCellBedElev);
+		printf("OPTH N: %f E: %f S: %f W: %f\n",pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE, pNeigDataS.x-dNeigBedElevS, pNeigDataW.x-dNeigBedElevW);
+		printf("V_N: %f V_E: %f V_S: %f V_W: %f\n\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
 	}
 
 	pCellData.z		= dDischarge[DOMAIN_DIR_W];
@@ -178,7 +201,8 @@ cl_double manning_Solver(
 	cl_double opt_z,
 	cl_double opt_z_Neig,
 	cl_double manning,
-	cl_double manning_Neig
+	cl_double manning_Neig,
+	bool debug
 	)
 	{
 		
@@ -187,20 +211,24 @@ cl_double manning_Solver(
 		//cl_double dSlope	 = ( opt_s_Neig - opt_s ) / DOMAIN_DELTAX;
 
 		//diffusive wave
-		cl_double delta_h = (opt_s_Neig - opt_s);
+		cl_double delta_h =  opt_s - opt_s_Neig;
 		cl_double abs_delta_h = fabs(delta_h);
 
 		// TODO: Alaa Check Domain DeltaX should it be 0.5 or 1.5
-		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(DOMAIN_DELTAX,0.5) * pow(flow_depth,5.0/3.0) * delta_h/ pow(abs_delta_h,0.5) / ;
+		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(flow_depth,2.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * flow_depth * DOMAIN_DELTAX / delta_h;
 
-		
+		if(debug){
+		//	printf("flow_depth: %f delta_h: %f dDischarge %f\n",flow_depth,delta_h,dDischarge);
+		}
+
 		//Froude number discharge limiter
 		if ( dDischarge > 0.0 &&
-			 ( ( fabs( dDischarge ) / flow_depth ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+			 ( ( fabs( dDischarge ) / delta_h ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 			dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
 		if ( dDischarge < 0.0 &&
-			 ( ( fabs( dDischarge ) / flow_depth ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+			 ( ( fabs( dDischarge ) / delta_h) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 			dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+		
 		
 
 		// Alaa: Does this make better memory access here or should we put it directly after calculation?
