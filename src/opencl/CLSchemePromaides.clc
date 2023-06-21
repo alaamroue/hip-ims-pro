@@ -191,7 +191,7 @@ cl_double manning_Solver(
 		cl_double abs_delta_h = fabs(delta_h);
 
 		// TODO: Alaa Check Domain DeltaX should it be 0.5 or 1.5
-		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(DOMAIN_DELTAX,0.5) * pow(flow_depth,5.0/3.0) * delta_h/ pow(abs_delta_h,0.5);
+		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(DOMAIN_DELTAX,0.5) * pow(flow_depth,5.0/3.0) * delta_h/ pow(abs_delta_h,0.5) / ;
 
 		
 		//Froude number discharge limiter
