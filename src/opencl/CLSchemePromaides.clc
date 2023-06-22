@@ -52,7 +52,7 @@ void pro_cacheDisabled (
 	__private cl_double		dManningCoef, dDeltaFSL, pNeigManN, pNeigManE, pNeigManS,pNeigManW;
 	__private cl_double		dCellBedElev,dNeigBedElevN,dNeigBedElevE,dNeigBedElevS,dNeigBedElevW;
 	__private cl_double4	pCellData,pNeigDataN,pNeigDataE,pNeigDataS,pNeigDataW;					// Z, Zmax, Qx, Qy
-	__private cl_double		dDischarge[4];															// Qn, Qe, Qs, Qw
+	__private cl_double2	dDischarges[4];															// Qn, Qe, Qs, Qw
 	__private cl_uchar		ucDryCount		= 0;
 	
 
@@ -103,80 +103,92 @@ void pro_cacheDisabled (
 	if ( ucDryCount >= 5 ) return;
 	
 	bool debug = false;
-	if(ulIdx==9897){
+	if(ulIdx==9696){
 	//	debug = true;
 	}
 	// Calculate fluxes
 	// -> North
-	dDischarge[ DOMAIN_DIR_N ] = manning_Solver(
+	dDischarges[ DOMAIN_DIR_N ] = manning_Solver(
 		dLclTimestep,
+		dManningCoef,
+		pNeigManN,
 		pCellData.x,
 		pNeigDataN.x,
 		dCellBedElev,
 		dNeigBedElevN,
-		dManningCoef,
-		pNeigManN,
 		debug
 	);
+
 	// -> East
-	dDischarge[ DOMAIN_DIR_E ] = manning_Solver(
+	dDischarges[ DOMAIN_DIR_E ] = manning_Solver(
 		dLclTimestep,
+		dManningCoef,
+		pNeigManE,
 		pCellData.x,
 		pNeigDataE.x,
 		dCellBedElev,
 		dNeigBedElevE,
-		dManningCoef,
-		pNeigManE,
 		debug
 	);
 	// -> South
-	dDischarge[ DOMAIN_DIR_S ] = manning_Solver(
+	dDischarges[ DOMAIN_DIR_S ] = manning_Solver(
 		dLclTimestep,
+		dManningCoef,
+		pNeigManS,
 		pCellData.x,
 		pNeigDataS.x,
 		dCellBedElev,
 		dNeigBedElevS,
-		dManningCoef,
-		pNeigManS,
 		debug
 	);
 	// -> West
-	dDischarge[ DOMAIN_DIR_W ] = manning_Solver(
+	dDischarges[ DOMAIN_DIR_W ] = manning_Solver(
 		dLclTimestep,
+		dManningCoef,
+		pNeigManW,
 		pCellData.x,
 		pNeigDataW.x,
 		dCellBedElev,
 		dNeigBedElevW,
-		dManningCoef,
-		pNeigManW,
 		debug
 	);
 
 	if(lIdxX == DOMAIN_ROWS - 2 ){
-		dDischarge[DOMAIN_DIR_E] = 0.0;
+		dDischarges[DOMAIN_DIR_E].x = 0.0;
+		dDischarges[DOMAIN_DIR_E].y = 0.0;
 	} 
 	if( lIdxY == DOMAIN_COLS - 2 ) {
-		dDischarge[DOMAIN_DIR_N] = 0.0;
+		dDischarges[DOMAIN_DIR_N].x = 0.0;
+		dDischarges[DOMAIN_DIR_N].y = 0.0;
 	}
 	if( lIdxX == 1 ) {
-		dDischarge[DOMAIN_DIR_W]= 0.0;
+		dDischarges[DOMAIN_DIR_W].x = 0.0;
+		dDischarges[DOMAIN_DIR_W].y = 0.0;
 	}
 	if( lIdxY == 1 ) {
-		dDischarge[DOMAIN_DIR_S] = 0.0;
+		dDischarges[DOMAIN_DIR_S].x = 0.0;
+		dDischarges[DOMAIN_DIR_S].y = 0.0;
 	}
 
-	if(ulIdx==9897 && debug){
-		printf("Opt_s: %f opt_h: %f opt_z: %f\n",pCellData.x,pCellData.x-dCellBedElev,dCellBedElev);
-		printf("OPTH N: %f E: %f S: %f W: %f\n",pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE, pNeigDataS.x-dNeigBedElevS, pNeigDataW.x-dNeigBedElevW);
-		printf("V_N: %f V_E: %f V_S: %f V_W: %f\n\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
+	if(ulIdx==9696 && debug){
+		//for(int i=0; i<log10(pNeigDataW.x-dNeigBedElevW)-1;i++){printf(" ");}
+		//printf("         %f   \n",						pNeigDataN.x-dNeigBedElevN);
+		//printf("%f %f %f\n",pNeigDataW.x-dNeigBedElevW,pCellData.x-dCellBedElev,pNeigDataE.x-dNeigBedElevE);
+		//for(int i=0; i<log10(pNeigDataW.x-dNeigBedElevW)-1;i++){printf(" ");}
+		//printf("         %f   \n\n",						pNeigDataS.x-dNeigBedElevS);
+		printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+3)].x-dBedElevation[getCellID(lIdxX,lIdxY+3)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+3)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+3)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+3)]);
+		printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+2)].x-dBedElevation[getCellID(lIdxX,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+2)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+2)]);
+		printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+1)].x-dBedElevation[getCellID(lIdxX,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+1)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+1)]);
+		printf("%f %f %f %f\n\n", pCellStateSrc[getCellID(lIdxX,lIdxY)].x-dBedElevation[getCellID(lIdxX,lIdxY  )], pCellStateSrc[getCellID(lIdxX+1,lIdxY  )].x-dBedElevation[getCellID(lIdxX+1,lIdxY)]   ,pCellStateSrc[getCellID(lIdxX+2,lIdxY)].x-dBedElevation[getCellID(lIdxX+2,lIdxY)],   pCellStateSrc[getCellID(lIdxX+3,lIdxY)].x-dBedElevation[getCellID(lIdxX+3,lIdxY)]);
+		printf("dTimestep: %f N: %f E: %f S: %f W: %f\n\n",dTimestep,dDischarges[DOMAIN_DIR_N].x,dDischarges[DOMAIN_DIR_E].x,dDischarges[DOMAIN_DIR_S].x,dDischarges[DOMAIN_DIR_W].x);
 	}
 
-	pCellData.z		= dDischarge[DOMAIN_DIR_W];
-	pCellData.w		= dDischarge[DOMAIN_DIR_S];
 
-	// Calculation of change values per timestep and spatial dimension
-	dDeltaFSL		= ( dDischarge[DOMAIN_DIR_E] - dDischarge[DOMAIN_DIR_W] + 
-					    dDischarge[DOMAIN_DIR_N] - dDischarge[DOMAIN_DIR_S] )/DOMAIN_DELTAY;
+	dDeltaFSL	= (dDischarges[DOMAIN_DIR_E].x + dDischarges[DOMAIN_DIR_W].x + dDischarges[DOMAIN_DIR_N].x + dDischarges[DOMAIN_DIR_S].x)/(DOMAIN_DELTAX*DOMAIN_DELTAY);
+	
+
+	pCellData.z		= dDischarges[DOMAIN_DIR_W].y;
+	pCellData.w		= dDischarges[DOMAIN_DIR_S].y;
 
 	// Update the flow state
 	pCellData.x		= pCellData.x + dLclTimestep * dDeltaFSL;
@@ -194,47 +206,58 @@ void pro_cacheDisabled (
 }
 
 
-cl_double manning_Solver(
-	cl_double timestep,
-	cl_double opt_s,
-	cl_double opt_s_Neig,
-	cl_double opt_z,
-	cl_double opt_z_Neig,
+cl_double2 manning_Solver(
+	cl_double Timestep,
 	cl_double manning,
 	cl_double manning_Neig,
+	cl_double opt_s_Cell,
+	cl_double opt_s_Neig,
+	cl_double opt_z_Cell,
+	cl_double opt_z_Neig,
 	bool debug
 	)
 	{
+		cl_double2 output;
+
+		cl_double dDischarge	= 0.0;
 		
-		cl_double dDischarge = 0.0;
-		cl_double flow_depth	 = fmax( opt_s_Neig, opt_s ) - fmax( opt_z, opt_z_Neig );
-		//cl_double dSlope	 = ( opt_s_Neig - opt_s ) / DOMAIN_DELTAX;
+		if (opt_s_Neig-opt_z_Neig > VERY_SMALL || opt_s_Cell-opt_z_Cell > VERY_SMALL){
 
-		//diffusive wave
-		cl_double delta_h =  opt_s - opt_s_Neig;
-		cl_double abs_delta_h = fabs(delta_h);
+			cl_double flow_depth	= fmax( opt_s_Cell, opt_s_Neig ) - fmax( opt_z_Neig, opt_z_Cell );
 
-		// TODO: Alaa Check Domain DeltaX should it be 0.5 or 1.5
-		dDischarge = 0.5 * (1.0/manning+1.0/manning_Neig) * pow(flow_depth,2.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * flow_depth * DOMAIN_DELTAX / delta_h;
+			if (flow_depth > VERY_SMALL){
 
-		if(debug){
-		//	printf("flow_depth: %f delta_h: %f dDischarge %f\n",flow_depth,delta_h,dDischarge);
+				cl_double delta_h		= opt_s_Neig - opt_s_Cell;
+				cl_double abs_delta_h	= fabs(delta_h);
+
+				if(abs_delta_h > VERY_SMALL){
+
+					//if (abs_delta_h <= 0.005078){dDischarge = 1/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DOMAIN_DELTAY;
+					
+					//}else{
+						dDischarge = 1/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DOMAIN_DELTAY;
+					//}
+				}
+
+				//Froude number discharge limiter
+				//if ( dDischarge > 0.0 &&
+				//	 ( ( fabs( dDischarge ) / delta_h ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+				//	dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+				//if ( dDischarge < 0.0 &&
+				//	 ( ( fabs( dDischarge ) / delta_h) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+				//	dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+		
+		
+				// Alaa: Does this make better memory access here or should we put it directly after calculation?
+				//if ( flow_depth < VERY_SMALL )
+				//	dDischarge = 0.0;
+
+			}
 		}
 
-		//Froude number discharge limiter
-		if ( dDischarge > 0.0 &&
-			 ( ( fabs( dDischarge ) / delta_h ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
-			dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
-		if ( dDischarge < 0.0 &&
-			 ( ( fabs( dDischarge ) / delta_h) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
-			dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
-		
-		
+		output.x = dDischarge;
+		output.y = dDischarge/DOMAIN_DELTAX/DOMAIN_DELTAY;
 
-		// Alaa: Does this make better memory access here or should we put it directly after calculation?
-		if ( flow_depth < VERY_SMALL )
-			dDischarge = 0.0;
-
-		return dDischarge;
+		return output;
 
 	}
