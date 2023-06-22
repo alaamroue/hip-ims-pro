@@ -104,7 +104,7 @@ void pro_cacheDisabled (
 	
 	bool debug = false;
 	if(ulIdx==9696){
-	//	debug = true;
+		//debug = true;
 	}
 	// Calculate fluxes
 	// -> North
@@ -207,18 +207,17 @@ void pro_cacheDisabled (
 
 
 cl_double2 manning_Solver(
-	cl_double Timestep,
-	cl_double manning,
-	cl_double manning_Neig,
-	cl_double opt_s_Cell,
-	cl_double opt_s_Neig,
-	cl_double opt_z_Cell,
-	cl_double opt_z_Neig,
-	bool debug
+	cl_double timestep,		// Current Time-step
+	cl_double manning,     	// Manning of Main Cell
+	cl_double manning_Neig,	// Manning of Neighbor cell
+	cl_double opt_s_Cell,	// Water surface level of Main Cell
+	cl_double opt_s_Neig,	// Water surface level of Neighbor cell
+	cl_double opt_z_Cell, 	// Bed Elevation of main Cell
+	cl_double opt_z_Neig,	// Bed Elevation of Neighbor Cell
+	bool debug				// Debug Flag
 	)
 	{
 		cl_double2 output;
-
 		cl_double dDischarge	= 0.0;
 		
 		if (opt_s_Neig-opt_z_Neig > VERY_SMALL || opt_s_Cell-opt_z_Cell > VERY_SMALL){
@@ -232,19 +231,53 @@ cl_double2 manning_Solver(
 
 				if(abs_delta_h > VERY_SMALL){
 
-					//if (abs_delta_h <= 0.005078){dDischarge = 1/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DOMAIN_DELTAY;
-					
-					//}else{
+					if (abs_delta_h <= 0.005078){
 						dDischarge = 1/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DOMAIN_DELTAY;
-					//}
+					}else{
+						dDischarge = 1/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DOMAIN_DELTAY;
+					}
+
 				}
+
+				//waveVelocity = sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
+				
+				#define FROUDE_LIMIT			0.8
+				//#define mainVelocity fabs(dDischarge) / (flow_depth * DOMAIN_DELTAY)
+				#define mainVelocity fabs(dDischarge)/flow_depth
+				//#define waveVelocity sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
+				#define waveVelocity sqrt(GRAVITY*flow_depth)
+
+				//Froude number discharge limiter
+				if ( dDischarge > 0.0 &&
+										( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){
+					//dDischarge += 0.5;
+					dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+				
+				}else if ( dDischarge < 0.0 &&
+												( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){		
+					
+					//dDischarge += 0.5;
+					dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
+				}
+
+				cl_double water_depth = opt_s_Neig-opt_s_Cell;
+				//TODO: Alaa this shouldn't be the negative of water depth, rather the ops_nieg_neig - opt_s_Neig, no?
+				cl_double Nwater_depth = opt_s_Cell - opt_s_Neig;
+
+                if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX > water_depth / 4.0 ){
+					dDischarge = water_depth * DOMAIN_DELTAX / 5.0 / timestep;
+				}
+                if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX) > Nwater_depth / 4.0){
+					dDischarge = 0.0 - Nwater_depth * DOMAIN_DELTAX / 5.0 / timestep;
+				}
+
 
 				//Froude number discharge limiter
 				//if ( dDischarge > 0.0 &&
-				//	 ( ( fabs( dDischarge ) / delta_h ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+				//		( ( fabs( dDischarge ) / (flow_depth * DOMAIN_DELTAY) ) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 				//	dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
 				//if ( dDischarge < 0.0 &&
-				//	 ( ( fabs( dDischarge ) / delta_h) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
+				//	 ( ( fabs( dDischarge ) / (flow_depth * DOMAIN_DELTAY)) / sqrt( GRAVITY * flow_depth ) ) > FROUDE_LIMIT )
 				//	dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
 		
 		

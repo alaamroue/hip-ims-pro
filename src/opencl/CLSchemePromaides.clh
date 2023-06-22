@@ -21,7 +21,6 @@
  *
  */
 
-#define FROUDE_LIMIT			0.8
 #define TIMESTEP_SIMPLIFIED		1			// Calculated based on sqrt(gh) instead of u + sqrt(gh)
 
 // Structure definitions
