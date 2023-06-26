@@ -264,10 +264,12 @@ cl_double2 manning_Solver(
 				//TODO: Alaa this shouldn't be the negative of water depth, rather the ops_nieg_neig - opt_s_Neig, no?
 				cl_double Nwater_depth = opt_s_Cell - opt_s_Neig;
 
-                if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX > water_depth / 4.0 ){
+				//TODO: Alaa check Domain delta X equation
+				// For checkboarding
+                if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY > water_depth / 4.0 ){
 					dDischarge = water_depth * DOMAIN_DELTAX / 5.0 / timestep;
 				}
-                if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX) > Nwater_depth / 4.0){
+                if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY) > Nwater_depth / 4.0){
 					dDischarge = 0.0 - Nwater_depth * DOMAIN_DELTAX / 5.0 / timestep;
 				}
 

@@ -141,9 +141,9 @@ void ine_cacheDisabled (
 	);
 	
 	if(ulIdx==9897){
-		printf("Opt_s: %f opt_h: %f opt_z: %f\n",pCellData.x,pCellData.x-dCellBedElev,dCellBedElev);
-		printf("OPTH N: %f E: %f S: %f W: %f\n",pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE, pNeigDataS.x-dNeigBedElevS, pNeigDataW.x-dNeigBedElevW);
-		printf("V_N: %f V_E: %f V_S: %f V_W: %f\n\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
+		//printf("Opt_s: %f opt_h: %f opt_z: %f\n",pCellData.x,pCellData.x-dCellBedElev,dCellBedElev);
+		//printf("OPTH N: %f E: %f S: %f W: %f\n",pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE, pNeigDataS.x-dNeigBedElevS, pNeigDataW.x-dNeigBedElevW);
+		//printf("V_N: %f V_E: %f V_S: %f V_W: %f\n\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
 	}
 
 	pCellData.z		= dDischarge[DOMAIN_DIR_W];
