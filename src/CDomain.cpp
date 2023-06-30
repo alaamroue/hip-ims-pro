@@ -75,6 +75,7 @@ void	CDomain::createStoreBuffers(
 			void**			vArrayBedElevations,
 			void**			vArrayManningCoefs,
 			void**			vArrayBoundaryValues,
+			void**			vArrayPoleniValues,
 			unsigned char	ucFloatSize
 		)
 {
@@ -111,11 +112,13 @@ void	CDomain::createStoreBuffers(
 			this->fManningValues	= (cl_float*)( this->dManningValues );
 			this->fBoundaryValues	= (cl_float*)( this->dBoundaryValues);
 
-			*vArrayCellStates	 = static_cast<void*>( this->dCellStates );
-			*vArrayBedElevations = static_cast<void*>( this->dBedElevations );
-			*vArrayManningCoefs	 = static_cast<void*>( this->dManningValues );
-			*vArrayBoundaryValues= static_cast<void*>( this->dBoundaryValues);
+			*vArrayCellStates		= static_cast<void*>( this->dCellStates );
+			*vArrayBedElevations	= static_cast<void*>( this->dBedElevations );
+			*vArrayManningCoefs		= static_cast<void*>( this->dManningValues );
+			*vArrayBoundaryValues	= static_cast<void*>( this->dBoundaryValues);
 		}
+		this->bPoleniValues = new bool[this->ulCellCount];
+		*vArrayPoleniValues			= static_cast<void*>(this->bPoleniValues);
 	}
 	catch( std::bad_alloc )
 	{
@@ -345,7 +348,7 @@ void	CDomain::handleInputData(
 
 
 /*
- *  Sets the Manning coefficient for a given cell
+ *  Sets the Boundary values for a given cell
  */
 void	CDomain::setBoundaryCondition(unsigned long ulCellID, double dCoefficient)
 {
@@ -356,6 +359,14 @@ void	CDomain::setBoundaryCondition(unsigned long ulCellID, double dCoefficient)
 	else {
 		this->dBoundaryValues[ulCellID] = dCoefficient;
 	}
+}
+
+/*
+ *  Sets the Poleni condition for a given cell
+ */
+void	CDomain::setPoleniCondition(unsigned long ulCellID, bool condition)
+{
+		this->bPoleniValues[ulCellID] = condition;
 }
 
 

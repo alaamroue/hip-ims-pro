@@ -35,7 +35,8 @@
 CDomainCartesian::CDomainCartesian(void)
 {
 	// Default values will trigger errors on validation
-	this->dCellResolution			= std::numeric_limits<double>::quiet_NaN();
+	this->dCellResolutionX			= std::numeric_limits<double>::quiet_NaN();
+	this->dCellResolutionY			= std::numeric_limits<double>::quiet_NaN();
 	this->ulRows					= std::numeric_limits<unsigned long>::quiet_NaN();
 	this->ulCols					= std::numeric_limits<unsigned long>::quiet_NaN();
 }
@@ -55,9 +56,17 @@ CDomainCartesian::~CDomainCartesian(void)
 bool	CDomainCartesian::validateDomain( bool bQuiet )
 {
 	// Got a resolution?
-	if ( this->dCellResolution == NAN )
+	if ( this->dCellResolutionX == NAN )
 	{
 		if ( !bQuiet ) model::doError(
+			"Domain cell resolution not defined",
+			model::errorCodes::kLevelWarning
+		);
+		return false;
+	}
+	if (this->dCellResolutionY == NAN)
+	{
+		if (!bQuiet) model::doError(
 			"Domain cell resolution not defined",
 			model::errorCodes::kLevelWarning
 		);
@@ -105,7 +114,7 @@ void	CDomainCartesian::logDetails()
 	model::log->writeLine( "REGULAR CARTESIAN GRID DOMAIN", true, wColour );
 	model::log->writeLine( "  Device number:     " + toStringExact( this->pDevice->uiDeviceNo ), true, wColour );
 	model::log->writeLine( "  Cell count:        " + toStringExact( this->ulCellCount ), true, wColour );
-	model::log->writeLine( "  Cell resolution:   " + toStringExact( this->dCellResolution ), true, wColour );
+	model::log->writeLine( "  Cell resolution:   " + toStringExact( this->dCellResolutionX ), true, wColour );
 	model::log->writeLine( "  Cell dimensions:   [" + toStringExact( this->ulCols ) + ", " + 
 														 toStringExact( this->ulRows ) + "]", true, wColour );
 
@@ -115,18 +124,20 @@ void	CDomainCartesian::logDetails()
 /*
  *  Set cell resolution
  */
-void	CDomainCartesian::setCellResolution( double dResolution )
+void	CDomainCartesian::setCellResolution( double dResolutionX, double dResolutionY)
 {
-	this->dCellResolution = dResolution;
+	this->dCellResolutionX = dResolutionX;
+	this->dCellResolutionY = dResolutionY;
 	this->updateCellStatistics();
 }
 
 /*
  *   Fetch cell resolution
  */
-void	CDomainCartesian::getCellResolution( double* dResolution )
+void	CDomainCartesian::getCellResolution( double* dResolutionX, double* dResolutionY)
 {
-	*dResolution = this->dCellResolution;
+	*dResolutionX = this->dCellResolutionX;
+	*dResolutionY = this->dCellResolutionY;
 }
 
 /*
@@ -137,7 +148,11 @@ void	CDomainCartesian::updateCellStatistics()
 	// Do we have enough information to proceed?...
 
 	// Got a resolution?
-	if ( this->dCellResolution == NAN )
+	if ( this->dCellResolutionX == NAN )
+	{
+		return;
+	}
+	if (this->dCellResolutionY == NAN)
 	{
 		return;
 	}
@@ -208,10 +223,10 @@ double	CDomainCartesian::getVolume()
 		if ( this->isDoublePrecision() )
 		{
 			dVolume += ( this->dCellStates[i].s[0] - this->dBedElevations[i] ) *
-					   this->dCellResolution * this->dCellResolution;
+					   this->dCellResolutionX * this->dCellResolutionY;
 		} else {
 			dVolume += ( this->fCellStates[i].s[0] - this->fBedElevations[i] ) *
-					   this->dCellResolution * this->dCellResolution;
+					   this->dCellResolutionX * this->dCellResolutionY;
 		}
 	}
 
@@ -298,7 +313,8 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	pSummary.ulColCount		= this->ulCols;
 	pSummary.ulRowCount		= this->ulRows;
 	pSummary.ucFloatPrecision = ( this->isDoublePrecision() ? model::floatPrecision::kDouble : model::floatPrecision::kSingle );
-	pSummary.dResolution	= this->dCellResolution;
+	pSummary.dResolutionX	= this->dCellResolutionX;
+	pSummary.dResolutionY = this->dCellResolutionY;
 
 	return pSummary;
 }

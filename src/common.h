@@ -287,7 +287,8 @@ namespace model
 	// Data structures used in interop
 	struct DomainData
 	{
-		double			dResolution;
+		double			dResolutionX;
+		double			dResolutionY;
 		double			dWidth;
 		double			dHeight;
 		double			dCornerWest;

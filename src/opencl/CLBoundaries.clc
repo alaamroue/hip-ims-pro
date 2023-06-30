@@ -35,10 +35,10 @@ __kernel void bdy_Promaides (
 
 	//Todo: Alaa change this to accomidate for new size of grid
 	// Don't bother if we've gone beyond the domain bounds
-	if (lIdxX >= DOMAIN_COLS - 1 ||
-		lIdxY >= DOMAIN_ROWS - 1 ||
-		lIdxX <= 0 ||
-		lIdxY <= 0 )
+	if (lIdxX > DOMAIN_COLS - 1 ||
+		lIdxY > DOMAIN_ROWS - 1 ||
+		lIdxX < 0 ||
+		lIdxY < 0 )
 		return;
 
 	ulIdx = getCellID(lIdxX, lIdxY);

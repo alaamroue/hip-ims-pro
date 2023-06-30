@@ -82,6 +82,7 @@ CSchemeGodunov::CSchemeGodunov()
 	oclBufferCellStatesAlt				= NULL;
 	oclBufferCellManning				= NULL;
 	oclBufferCellBoundary				= NULL;
+	oclBufferUsePoleni					= NULL;
 	oclBufferCellBed					= NULL;
 	oclBufferTimestep					= NULL;
 	oclBufferTimestepReduction			= NULL;
@@ -537,14 +538,14 @@ bool CSchemeGodunov::prepare1OConstants()
 	// Domain details (size, resolution, etc.)
 	// --
 
-	double	dResolution;
-	pDomain->getCellResolution( &dResolution );
+	double	dResolutionX, dResolutionY;
+	pDomain->getCellResolution( &dResolutionX, &dResolutionY);
 
 	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		std::to_string( pDomain->getCellCount() ) );
 	oclModel->registerConstant( "DOMAIN_COLS",			std::to_string( pDomain->getCols() ) );
 	oclModel->registerConstant( "DOMAIN_ROWS",			std::to_string( pDomain->getRows() ) );
-	oclModel->registerConstant( "DOMAIN_DELTAX",		std::to_string( dResolution ) );
-	oclModel->registerConstant( "DOMAIN_DELTAY",		std::to_string( dResolution ) );
+	oclModel->registerConstant( "DOMAIN_DELTAX",		std::to_string( dResolutionX ));
+	oclModel->registerConstant( "DOMAIN_DELTAY",		std::to_string( dResolutionY ));
 
 	return true;
 }
@@ -586,31 +587,35 @@ bool CSchemeGodunov::prepare1OMemory()
 	// Domain and cell state data
 	// --
 
-	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL;
+	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL, * pPoleniValues = NULL;
 	pDomain->createStoreBuffers(
 		&pCellStates,
 		&pBedElevations,
 		&pManningValues,
 		&pBoundaryValues,
+		&pPoleniValues,
 		ucFloatSize
 	);
 
 	oclBufferCellStates		= new COCLBuffer( "Cell states",			oclModel, false, true );
 	oclBufferCellStatesAlt	= new COCLBuffer( "Cell states (alternate)",oclModel, false, true );
 	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	true ); 
-	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",	oclModel, true,	true );
+	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",	oclModel, false,	true );
+	oclBufferUsePoleni		= new COCLBuffer( "Poleni Boolean",	oclModel, true,	true );
 	oclBufferCellBed		= new COCLBuffer( "Bed elevations",			oclModel, true, true );
 
 	oclBufferCellStates->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellStatesAlt->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellManning->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
 	oclBufferCellBoundary->setPointer(pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
+	oclBufferUsePoleni->setPointer(pPoleniValues, sizeof(bool) * pDomain->getCellCount() );
 	oclBufferCellBed->setPointer( pBedElevations, ucFloatSize * pDomain->getCellCount() );
 
 	oclBufferCellStates->createBuffer();
 	oclBufferCellStatesAlt->createBuffer();
 	oclBufferCellManning->createBuffer();
 	oclBufferCellBoundary->createBuffer();
+	oclBufferUsePoleni->createBuffer();
 	oclBufferCellBed->createBuffer();
 
 	// --
@@ -743,7 +748,7 @@ bool CSchemeGodunov::prepare1OKernels()
 		oclKernelFullTimestep = oclModel->getKernel( "gts_cacheDisabled" );
 		oclKernelFullTimestep->setGroupSize( this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY );
 		oclKernelFullTimestep->setGlobalSize( this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY );
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };	
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning};	
 		oclKernelFullTimestep->assignArguments( aryArgsFullTimestep );
 	}
 	if ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled )
@@ -751,7 +756,7 @@ bool CSchemeGodunov::prepare1OKernels()
 		oclKernelFullTimestep = oclModel->getKernel( "gts_cacheEnabled" );
 		oclKernelFullTimestep->setGroupSize( this->ulCachedWorkgroupSizeX, this->ulCachedWorkgroupSizeY );
 		oclKernelFullTimestep->setGlobalSize( this->ulCachedGlobalSizeX, this->ulCachedGlobalSizeY );
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };	
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };
 		oclKernelFullTimestep->assignArguments( aryArgsFullTimestep );
 	}
 
@@ -791,6 +796,7 @@ void CSchemeGodunov::release1OResources()
 	if ( this->oclBufferCellStatesAlt != NULL )				delete oclBufferCellStatesAlt;
 	if ( this->oclBufferCellManning != NULL )				delete oclBufferCellManning;
 	if ( this->oclBufferCellBoundary != NULL )				delete oclBufferCellBoundary;
+	if ( this->oclBufferUsePoleni != NULL )					delete oclBufferUsePoleni;
 	if ( this->oclBufferCellBed != NULL )					delete oclBufferCellBed;
 	if ( this->oclBufferTimestep != NULL )					delete oclBufferTimestep;
 	if ( this->oclBufferTimestepReduction != NULL )			delete oclBufferTimestepReduction;
@@ -809,7 +815,8 @@ void CSchemeGodunov::release1OResources()
 	oclBufferCellStates				= NULL;
 	oclBufferCellStatesAlt			= NULL;
 	oclBufferCellManning			= NULL;
-	oclBufferCellBoundary = NULL;
+	oclBufferCellBoundary			= NULL;
+	oclBufferUsePoleni = NULL;
 	oclBufferCellBed				= NULL;
 	oclBufferTimestep				= NULL;
 	oclBufferTimestepReduction		= NULL;
@@ -850,6 +857,7 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBufferCellBed->queueWriteAll();
 	oclBufferCellManning->queueWriteAll();
 	oclBufferCellBoundary->queueWriteAll();
+	oclBufferUsePoleni->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();
@@ -1003,11 +1011,8 @@ void CSchemeGodunov::Threaded_runBatch()
 		// Have we been asked to import data for our domain links?
 		if (this->bImportLinks)
 		{
-			// Import data from links which are 'dependent' on this domain
-			for (unsigned int i = 0; i < pDomain->getLinkCount(); i++)
-			{
-				pDomain->getLink(i)->pushToBuffer(this->getNextCellSourceBuffer());
-			}
+
+			this->oclBufferCellBoundary->queueWriteAll();
 
 			// Last sync time
 			this->dLastSyncTime = this->dCurrentTime;

@@ -46,7 +46,8 @@ class CDomainBase
 			unsigned int	uiDomainID;
 			unsigned int	uiNodeID;
 			unsigned int	uiLocalDeviceID;
-			double			dResolution;
+			double			dResolutionX;
+			double			dResolutionY;
 			unsigned long	ulRowCount;
 			unsigned long	ulColCount;
 			unsigned char	ucFloatPrecision;

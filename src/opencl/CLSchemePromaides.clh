@@ -40,10 +40,23 @@ void pro_cacheDisabled (
 	__global	cl_double const * restrict,
 	__global	cl_double4 *,
 	__global	cl_double4 *,
-	__global    cl_double const * restrict
+	__global    cl_double const * restrict,
+	__global    bool const * restrict
 );
 
 cl_double2 manning_Solver(
+	cl_double Timestep,
+	cl_double manning,
+	cl_double manning_Neig,
+	cl_double opt_s_Cell,
+	cl_double opt_s_Neig,
+	cl_double opt_z_Cell,
+	cl_double opt_z_Neig,
+	cl_long DeltaXY,
+	bool debug
+	);
+
+cl_double2 poleni_Solver(
 	cl_double Timestep,
 	cl_double manning,
 	cl_double manning_Neig,

@@ -243,7 +243,7 @@ void	CDomainManager::logDetails()
 	{
 		char cDomainLine[70] = "                                                                    X";
 		CDomainBase::DomainSummary pSummary = this->getDomainBase(i)->getSummary();
-		std::string resolutionShort = toStringExact(pSummary.dResolution);
+		std::string resolutionShort = toStringExact(pSummary.dResolutionX);
 		resolutionShort.resize(5);
 
 		sprintf(

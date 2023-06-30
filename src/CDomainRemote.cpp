@@ -27,7 +27,8 @@ CDomainRemote::CDomainRemote(void)
 {
 	// Populate summary details to avoid errors
 	pSummary.bAuthoritative = false;
-	pSummary.dResolution = 0.0;
+	pSummary.dResolutionX = 0.0;
+	pSummary.dResolutionY = 0.0;
 	pSummary.ucFloatPrecision = 0;
 	pSummary.uiNodeID = 0;
 	pSummary.uiDomainID = 0;

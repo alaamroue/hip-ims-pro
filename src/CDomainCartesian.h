@@ -48,8 +48,8 @@ class CDomainCartesian : public CDomain
 		void			logDetails();											// Log details about the domain
 		// - Specific to cartesian grids
 		void			imposeBoundaryModification(unsigned char, unsigned char); // Adjust the topography to impose boundary conditions
-		void			setCellResolution( double );							// Set cell resolution
-		void			getCellResolution( double* );							// Fetch cell resolution
+		void			setCellResolution( double, double);						// Set cell resolution
+		void			getCellResolution( double* , double*);					// Fetch cell resolution
 		void			setUnits( char* );										// Set the units
 		char*			getUnits();												// Get the units
 		void			setProjectionCode( unsigned long );						// Set the EPSG projection code
@@ -100,7 +100,8 @@ class CDomainCartesian : public CDomain
 		};
 
 		// Private variables
-		double			dCellResolution;
+		double			dCellResolutionX;
+		double			dCellResolutionY;
 		unsigned long	ulRows;
 		unsigned long	ulCols;
 

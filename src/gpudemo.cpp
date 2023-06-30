@@ -88,7 +88,7 @@ int model::loadConfiguration()
 	static_cast<CDomain*>(pDomainNew)->setDevice(pManager->getExecutor()->getDevice(1));
 	CDomainCartesian* ourCartesianDomain = (CDomainCartesian*) pDomainNew;
 
-	ourCartesianDomain->setCellResolution(1);
+	ourCartesianDomain->setCellResolution(1,1);
 	ourCartesianDomain->setCols(100);
 	ourCartesianDomain->setRows(100);
 
@@ -152,6 +152,8 @@ int model::loadConfiguration()
 			ourCartesianDomain->handleInputData(ulCellID, 0.0, model::rasterDatasets::dataValues::kVelocityY, ucRounding);
 			//Boundary Condition
 			ourCartesianDomain->setBoundaryCondition(ulCellID, 0.0001);
+			//Poleni Condition
+			ourCartesianDomain->setPoleniCondition(ulCellID, 0.0001);
 			//Coupling Condition
 			//ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
 

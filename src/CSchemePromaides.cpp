@@ -214,7 +214,7 @@ bool CSchemePromaides::preparePromaidesKernels()
 	oclKernelFullTimestep = oclModel->getKernel( "pro_cacheDisabled" );
 	oclKernelFullTimestep->setGroupSize( this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY );
 	oclKernelFullTimestep->setGlobalSize( this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY );
-	COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };	
+	COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferUsePoleni };
 	oclKernelFullTimestep->assignArguments( aryArgsFullTimestep );
 
 
