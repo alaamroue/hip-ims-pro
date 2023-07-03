@@ -230,7 +230,7 @@ void pro_cacheDisabled (
 		dDischarges[DOMAIN_DIR_S].y = 0.0;
 	}
 
-	if(ulIdx==66689 && debug){
+	if(ulIdx==8887){
 		//for(int i=0; i<log10(pNeigDataW.x-dNeigBedElevW)-1;i++){printf(" ");}
 		//printf("         %f   \n",						pNeigDataN.x-dNeigBedElevN);
 		//printf("%f %f %f\n",pNeigDataW.x-dNeigBedElevW,pCellData.x-dCellBedElev,pNeigDataE.x-dNeigBedElevE);
@@ -240,7 +240,7 @@ void pro_cacheDisabled (
 		//printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+2)].x-dBedElevation[getCellID(lIdxX,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+2)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+2)]);
 		//printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+1)].x-dBedElevation[getCellID(lIdxX,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+1)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+1)]);
 		//printf("%f %f %f %f\n\n", pCellStateSrc[getCellID(lIdxX,lIdxY)].x-dBedElevation[getCellID(lIdxX,lIdxY  )], pCellStateSrc[getCellID(lIdxX+1,lIdxY  )].x-dBedElevation[getCellID(lIdxX+1,lIdxY)]   ,pCellStateSrc[getCellID(lIdxX+2,lIdxY)].x-dBedElevation[getCellID(lIdxX+2,lIdxY)],   pCellStateSrc[getCellID(lIdxX+3,lIdxY)].x-dBedElevation[getCellID(lIdxX+3,lIdxY)]);
-		//printf("lIdxX: %f/%f lIdxY %f/%f dTimestep: %f N: %f E: %f S: %f W: %f\n\n",lIdxX*1.0,DOMAIN_ROWS*1.0,lIdxY*1.0,DOMAIN_COLS*1.0,dTimestep,dDischarges[DOMAIN_DIR_N].x,dDischarges[DOMAIN_DIR_E].x,dDischarges[DOMAIN_DIR_S].x,dDischarges[DOMAIN_DIR_W].x);
+		//printf("lIdxX: %f/%f lIdxY %f/%f dTimestep: %f N: %f E: %f S: %f W: %f t: %f dDeltaFSL: %f\n\n",lIdxX*1.0,DOMAIN_COLS*1.0,lIdxY*1.0,DOMAIN_ROWS*1.0,dTimestep,dDischarges[DOMAIN_DIR_N].x,dDischarges[DOMAIN_DIR_E].x, dDischarges[DOMAIN_DIR_S].x,dDischarges[DOMAIN_DIR_W].x,dLclTimestep, dDeltaFSL);
 	}
 
 
@@ -260,7 +260,7 @@ void pro_cacheDisabled (
 	// Crazy low depths?
 	if ( pCellData.x - dCellBedElev < VERY_SMALL )
 		pCellData.x = dCellBedElev;
-
+	
 	// Commit to global memory
 	pCellStateDst[ ulIdx ] = pCellData;
 }
@@ -303,12 +303,12 @@ cl_double2 manning_Solver(
 
 				//waveVelocity = sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
 				
-				#define FROUDE_LIMIT			0.8
+				#define FROUDE_LIMIT			0.1
 				//#define mainVelocity fabs(dDischarge) / (flow_depth * DOMAIN_DELTAY)
 				#define mainVelocity fabs(dDischarge)/flow_depth
 				//#define waveVelocity sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
 				#define waveVelocity sqrt(GRAVITY*flow_depth)
-
+				
 				//Froude number discharge limiter
 				if ( dDischarge > 0.0 &&
 										( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){
@@ -328,13 +328,18 @@ cl_double2 manning_Solver(
 				
 				//TODO: Alaa check Domain delta X equation
 				// For checkboarding
-                if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY > water_depth / 4.0 ){
-					dDischarge = water_depth * DOMAIN_DELTAX / 5.0 / timestep;
+                if (dDischarge > 0.0 &&  dDischarge * timestep > water_depth / 4.0 ){
+					dDischarge = water_depth / 5.0 / timestep;
 				}
-                if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY) > Nwater_depth / 4.0){
-					dDischarge = 0.0 - Nwater_depth * DOMAIN_DELTAX / 5.0 / timestep;
+                if (dDischarge < 0.0 && fabs(dDischarge * timestep) > Nwater_depth / 4.0){
+					dDischarge = 0.0 - Nwater_depth / 5.0 / timestep;
 				}
-
+							//if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY > water_depth / 4.0 ){
+							//	dDischarge = water_depth * DOMAIN_DELTAX / 5.0 / timestep;
+							//}
+							//if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY) > Nwater_depth / 4.0){
+							//	dDischarge = 0.0 - Nwater_depth * DOMAIN_DELTAX / 5.0 / timestep;
+							//}
 		
 				// Alaa: Does this make better memory access here or should we put it directly after calculation?
 				//if ( flow_depth < flow_epsilon )
@@ -361,7 +366,6 @@ cl_double2 poleni_Solver(
 	bool debug				// Debug Flag
 	)
 	{
-		
 		cl_double2 output;
 		cl_double dDischarge = 0.0;
 		cl_double opt_zmax_Neig = fmax( opt_z_Neig, opt_z_Cell );
