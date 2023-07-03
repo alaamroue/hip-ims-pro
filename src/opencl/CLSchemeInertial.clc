@@ -42,10 +42,10 @@ void ine_cacheDisabled (
 	ulIdx = getCellID(lIdxX, lIdxY);
 
 	// Don't bother if we've gone beyond the domain bounds
-	if ( lIdxX >= DOMAIN_COLS - 1 || 
-		 lIdxY >= DOMAIN_ROWS - 1 || 
-		 lIdxX <= 0 || 
-		 lIdxY <= 0 ) 
+	if ( lIdxX > DOMAIN_COLS - 1 || 
+		 lIdxY > DOMAIN_ROWS - 1 || 
+		 lIdxX < 0 || 
+		 lIdxY < 0 ) 
 		return;
 
 	__private cl_double		dLclTimestep	= *dTimestep;
@@ -140,10 +140,17 @@ void ine_cacheDisabled (
 		dNeigBedElevW
 	);
 	
-	if(ulIdx==9897){
-		//printf("Opt_s: %f opt_h: %f opt_z: %f\n",pCellData.x,pCellData.x-dCellBedElev,dCellBedElev);
-		//printf("OPTH N: %f E: %f S: %f W: %f\n",pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE, pNeigDataS.x-dNeigBedElevS, pNeigDataW.x-dNeigBedElevW);
-		//printf("V_N: %f V_E: %f V_S: %f V_W: %f\n\n",dDischarge[DOMAIN_DIR_N],dDischarge[DOMAIN_DIR_E],dDischarge[DOMAIN_DIR_S],dDischarge[DOMAIN_DIR_W]);
+	if(lIdxX == DOMAIN_COLS - 1 ){
+		dDischarge[DOMAIN_DIR_E] = 0.0;
+	} 
+	if( lIdxY == DOMAIN_ROWS - 1 ) {
+		dDischarge[DOMAIN_DIR_N] = 0.0;
+	}
+	if( lIdxX == 0 ) {
+		dDischarge[DOMAIN_DIR_W] = 0.0;
+	}
+	if( lIdxY == 0 ) {
+		dDischarge[DOMAIN_DIR_S] = 0.0;
 	}
 
 	pCellData.z		= dDischarge[DOMAIN_DIR_W];

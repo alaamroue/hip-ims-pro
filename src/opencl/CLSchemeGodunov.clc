@@ -253,70 +253,78 @@ void gts_cacheDisabled (
 	if ( ucDryCount >= 5 ) return;
 
 	// Reconstruct interfaces
-	// -> North
-	ucStop += reconstructInterface(
-		pCellData,							// Left cell data
-		dCellBedElev,						// Left bed elevation
-		pNeigDataN,							// Right cell data
-		dNeigBedElevN,						// Right bed elevation
-		&pLeft,								// Output for left
-		&pRight,							// Output for right
-		DOMAIN_DIR_N
-	);
-	pNeigDataN.x  = pRight.S0;
-	dNeigBedElevN = pRight.S6;
-	#ifdef DEBUG_OUTPUT
-	if ( lIdxX == DEBUG_CELLX && lIdxY == DEBUG_CELLY )
-	{
-		//printf( "Reconstruct NL:{ %f, %f, %f, %f )\n", pLeft.S0, pLeft.S6, pLeft.S2, pLeft.S3 );
-		//printf( "Reconstruct NR:{ %f, %f, %f, %f )\n", pRight.S0, pRight.S6, pRight.S2, pRight.S3 );
-		//printf( "\n");
+	
+	if( lIdxY != DOMAIN_ROWS - 1 ) {
+		// -> North
+		ucStop += reconstructInterface(
+			pCellData,							// Left cell data
+			dCellBedElev,						// Left bed elevation
+			pNeigDataN,							// Right cell data
+			dNeigBedElevN,						// Right bed elevation
+			&pLeft,								// Output for left
+			&pRight,							// Output for right
+			DOMAIN_DIR_N
+		);
+		pNeigDataN.x  = pRight.S0;
+		dNeigBedElevN = pRight.S6;
+		pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );
+	}else{
+		pFlux[DOMAIN_DIR_N] = 0.0;
 	}
-	#endif
-	pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );
 
-	// -> South
-	ucStop += reconstructInterface(
-		pNeigDataS,							// Left cell data
-		dNeigBedElevS,						// Left bed elevation
-		pCellData,							// Right cell data
-		dCellBedElev,						// Right bed elevation
-		&pLeft,								// Output for left
-		&pRight,							// Output for right
-		DOMAIN_DIR_S
-	);
-	pNeigDataS.x  = pLeft.S0;
-	dNeigBedElevS = pLeft.S6;
-	pFlux[DOMAIN_DIR_S] = riemannSolver( DOMAIN_DIR_S, pLeft, pRight, false );
-
-	// -> East
-	ucStop += reconstructInterface(
-		pCellData,							// Left cell data
-		dCellBedElev,						// Left bed elevation
-		pNeigDataE,							// Right cell data
-		dNeigBedElevE,						// Right bed elevation
-		&pLeft,								// Output for left
-		&pRight,							// Output for right
-		DOMAIN_DIR_E
-	);
-	pNeigDataE.x  = pRight.S0;
-	dNeigBedElevE = pRight.S6;
-	pFlux[DOMAIN_DIR_E] = riemannSolver( DOMAIN_DIR_E, pLeft, pRight, false );
-
-	// -> West
-	ucStop += reconstructInterface(
-		pNeigDataW,							// Left cell data
-		dNeigBedElevW,						// Left bed elevation
-		pCellData,							// Right cell data
-		dCellBedElev,						// Right bed elevation
-		&pLeft,								// Output for left
-		&pRight,							// Output for right
-		DOMAIN_DIR_W
-	);
-	pNeigDataW.x  = pLeft.S0;
-	dNeigBedElevW = pLeft.S6;
-	pFlux[DOMAIN_DIR_W] = riemannSolver( DOMAIN_DIR_W, pLeft, pRight, false );
-
+	if( lIdxY != 0 ) {
+		// -> South
+		ucStop += reconstructInterface(
+			pNeigDataS,							// Left cell data
+			dNeigBedElevS,						// Left bed elevation
+			pCellData,							// Right cell data
+			dCellBedElev,						// Right bed elevation
+			&pLeft,								// Output for left
+			&pRight,							// Output for right
+			DOMAIN_DIR_S
+		);
+		pNeigDataS.x  = pLeft.S0;
+		dNeigBedElevS = pLeft.S6;
+		pFlux[DOMAIN_DIR_S] = riemannSolver( DOMAIN_DIR_S, pLeft, pRight, false );
+	}else{
+		pFlux[DOMAIN_DIR_S] = 0.0;
+	}
+	
+	if(lIdxX != DOMAIN_COLS - 1 ){
+		// -> East
+		ucStop += reconstructInterface(
+			pCellData,							// Left cell data
+			dCellBedElev,						// Left bed elevation
+			pNeigDataE,							// Right cell data
+			dNeigBedElevE,						// Right bed elevation
+			&pLeft,								// Output for left
+			&pRight,							// Output for right
+			DOMAIN_DIR_E
+		);
+		pNeigDataE.x  = pRight.S0;
+		dNeigBedElevE = pRight.S6;
+		pFlux[DOMAIN_DIR_E] = riemannSolver( DOMAIN_DIR_E, pLeft, pRight, false );
+	}else{
+		pFlux[DOMAIN_DIR_E] = 0.0;
+	}
+	
+	if( lIdxX != 0 ) {
+		// -> West
+		ucStop += reconstructInterface(
+			pNeigDataW,							// Left cell data
+			dNeigBedElevW,						// Left bed elevation
+			pCellData,							// Right cell data
+			dCellBedElev,						// Right bed elevation
+			&pLeft,								// Output for left
+			&pRight,							// Output for right
+			DOMAIN_DIR_W
+		);
+		pNeigDataW.x  = pLeft.S0;
+		dNeigBedElevW = pLeft.S6;
+		pFlux[DOMAIN_DIR_W] = riemannSolver( DOMAIN_DIR_W, pLeft, pRight, false );
+	}else{
+		pFlux[DOMAIN_DIR_W] = 0.0;
+	}
 	// Source term vector
 	// TODO: Somehow get these sorted too...
 	pSourceTerms.x = 0.0;
