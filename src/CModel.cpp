@@ -564,10 +564,6 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 	// Identify the smallest batch size associated timestep
 	double dEarliestSyncProposal = this->dSimulationTime;
 
-#ifdef DEBUG_MPI
-	model::log->writeLine( "[DEBUG] Should now be updating the target time..." );
-#endif
-	
 	// Only bother with all this stuff if we actually need to synchronise,
 	// otherwise run free, for as long as possible (i.e. until outputs needed)
 	if (domains->getDomainCount() > 1 &&

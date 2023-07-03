@@ -25,29 +25,8 @@
 // This should be low to capture velocities properly, but isn't
 // always necessary
 // TODO: Make configurable...
-#define TIMESTEP_HYDROLOGICAL			1.0
+#define TIMESTEP_HYDROLOGICAL			1
 
-// Boundary types
-#define BOUNDARY_ATMOSPHERIC			0
-#define BOUNDARY_FLOWCONDITIONS			1
-
-// Boundary operating definitions
-#define BOUNDARY_DEPTH_IGNORE			0
-#define BOUNDARY_DEPTH_IS_FSL			1
-#define BOUNDARY_DEPTH_IS_DEPTH			2
-#define BOUNDARY_DEPTH_IS_CRITICAL		3
-
-#define BOUNDARY_DISCHARGE_IGNORE		0
-#define BOUNDARY_DISCHARGE_IS_DISCHARGE	1
-#define BOUNDARY_DISCHARGE_IS_VELOCITY	2
-#define BOUNDARY_DISCHARGE_IS_VOLUME	3
-
-#define BOUNDARY_UNIFORM_RAIN_INTENSITY	0
-#define BOUNDARY_UNIFORM_LOSS_RATE		1
-
-#define BOUNDARY_GRIDDED_RAIN_INTENSITY 0
-#define BOUNDARY_GRIDDED_RAIN_ACCUMUL	1
-#define BOUNDARY_GRIDDED_MASS_FLUX		2
 
 #ifdef USE_FUNCTION_STUBS
 
