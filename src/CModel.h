@@ -87,6 +87,7 @@ class CModel
 		// Public variables
 		void					setLogger(CLog*);								// Sets the logger class 
 		CLog*					log;											// Handle for the log singular class
+		void					setUIStatus(bool);								// Turns on/off the UI
 
 	private:
 
@@ -119,6 +120,7 @@ class CModel
 		bool					bSynchronised;									//
 		unsigned char			ucFloatSize;									// Size of single/double precision floats used
 		cursorCoords			pProgressCoords;								// Buffer coords of the progress output
+		bool					showProgess;									// Show Progess UI
 
 };
 

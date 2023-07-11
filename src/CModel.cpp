@@ -563,7 +563,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 {
 	// Identify the smallest batch size associated timestep
 	double dEarliestSyncProposal = this->dSimulationTime;
-
+	
 	// Only bother with all this stuff if we actually need to synchronise,
 	// otherwise run free, for as long as possible (i.e. until outputs needed)
 	if (domains->getDomainCount() > 1 &&
@@ -585,7 +585,8 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 
 	// Work scheduler within numerical schemes should identify whether this has changed
 	// and update the buffer if required only...
-	dTargetTime = dEarliestSyncProposal;
+	// Alaa: We  don't need this anymore. Promaides should do the proposal
+	//dTargetTime = dEarliestSyncProposal;
 
 }
 
@@ -947,10 +948,10 @@ void	CModel::runNext(const double next_time_point)
 	CBenchmark* pBenchmarkAll;
 
 	// Write out the simulation details
-	this->logDetails();
+	//this->logDetails();
 
 	// Track time for the whole simulation
-	model::log->writeLine("Collecting time and performance data...");
+	//model::log->writeLine("Collecting time and performance data...");
 	pBenchmarkAll = new CBenchmark(true);
 	sTotalMetrics = pBenchmarkAll->getMetrics();
 
@@ -958,7 +959,8 @@ void	CModel::runNext(const double next_time_point)
 	dProcessingTime = sTotalMetrics->dSeconds;
 	dVisualisationTime = dProcessingTime;
 
-	dSimulationTime = next_time_point;
+	//dSimulationTime = next_time_point;
+	dTargetTime = next_time_point;
 	// ---------
 	// Run the main management loop
 	// ---------
@@ -991,15 +993,24 @@ void	CModel::runNext(const double next_time_point)
 
 		// Update progress bar after each batch, not every time
 		sTotalMetrics = pBenchmarkAll->getMetrics();
-		this->runModelUI(sTotalMetrics);
+		if (showProgess) {
+			this->runModelUI(sTotalMetrics);
+		}
+		
+		if (this->dCurrentTime + 1E-5 > next_time_point ) {
+			break;
+		}
+
 	}
 
+	/*
 	// Update to 100% progress bar
 	pBenchmarkAll->finish();
 	sTotalMetrics = pBenchmarkAll->getMetrics();
 	this->runModelUI(
 		sTotalMetrics
 	);
+	*/
 
 	// Get the total number of cells calculated
 	unsigned long long	ulCurrentCellsCalculated = 0;
@@ -1014,10 +1025,10 @@ void	CModel::runNext(const double next_time_point)
 	}
 	unsigned long ulRate = static_cast<unsigned long>(static_cast<double>(ulCurrentCellsCalculated) / sTotalMetrics->dSeconds);
 
-	model::log->writeLine("Simulation time:     " + Util::secondsToTime(sTotalMetrics->dSeconds));
+	//model::log->writeLine("Simulation time:     " + Util::secondsToTime(sTotalMetrics->dSeconds));
 	//model::log->writeLine( "Calculation rate:    " + toStringExact( floor(dCellRate) ) + " cells/sec" );
 	//model::log->writeLine( "Final volume:        " + toStringExact( static_cast<int>( dVolume ) ) + "m3" );
-	model::log->writeDivide();
+	//model::log->writeDivide();
 
 	delete   pBenchmarkAll;
 	delete[] bSyncReady;
@@ -1029,4 +1040,11 @@ void	CModel::runNext(const double next_time_point)
  */
 void CModel::setLogger(CLog* cLog) {
 	this->log = cLog;
+}
+
+/*
+ * Attached the logger class to the CModel
+ */
+void CModel::setUIStatus(bool status) {
+	this->showProgess = status;
 }

@@ -213,36 +213,22 @@ void pro_cacheDisabled (
 						);
 					}
 	
-	if(lIdxX == DOMAIN_COLS - 1 ){
+	if( lIdxX == DOMAIN_COLS - 1 || dNeigBedElevE == -9999.0  ){
 		dDischarges[DOMAIN_DIR_E].x = 0.0;
 		dDischarges[DOMAIN_DIR_E].y = 0.0;
 	} 
-	if( lIdxY == DOMAIN_ROWS - 1 ) {
+	if( lIdxY == DOMAIN_ROWS - 1 || dNeigBedElevN == -9999.0  ) {
 		dDischarges[DOMAIN_DIR_N].x = 0.0;
 		dDischarges[DOMAIN_DIR_N].y = 0.0;
 	}
-	if( lIdxX == 0 ) {
+	if( lIdxX == 0               || dNeigBedElevW == -9999.0  ) {
 		dDischarges[DOMAIN_DIR_W].x = 0.0;
 		dDischarges[DOMAIN_DIR_W].y = 0.0;
 	}
-	if( lIdxY == 0 ) {
+	if( lIdxY == 0               || dNeigBedElevS == -9999.0  ) {
 		dDischarges[DOMAIN_DIR_S].x = 0.0;
 		dDischarges[DOMAIN_DIR_S].y = 0.0;
 	}
-
-	if(ulIdx==8887){
-		//for(int i=0; i<log10(pNeigDataW.x-dNeigBedElevW)-1;i++){printf(" ");}
-		//printf("         %f   \n",						pNeigDataN.x-dNeigBedElevN);
-		//printf("%f %f %f\n",pNeigDataW.x-dNeigBedElevW,pCellData.x-dCellBedElev,pNeigDataE.x-dNeigBedElevE);
-		//for(int i=0; i<log10(pNeigDataW.x-dNeigBedElevW)-1;i++){printf(" ");}
-		//printf("         %f   \n\n",						pNeigDataS.x-dNeigBedElevS);
-		//printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+3)].x-dBedElevation[getCellID(lIdxX,lIdxY+3)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+3)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+3)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+3)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+3)]);
-		//printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+2)].x-dBedElevation[getCellID(lIdxX,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+2)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+2)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+2)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+2)]);
-		//printf("%f %f %f %f\n", pCellStateSrc[getCellID(lIdxX,lIdxY+1)].x-dBedElevation[getCellID(lIdxX,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+1,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+1,lIdxY+1)] ,pCellStateSrc[getCellID(lIdxX+2,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+2,lIdxY+1)], pCellStateSrc[getCellID(lIdxX+3,lIdxY+1)].x-dBedElevation[getCellID(lIdxX+3,lIdxY+1)]);
-		//printf("%f %f %f %f\n\n", pCellStateSrc[getCellID(lIdxX,lIdxY)].x-dBedElevation[getCellID(lIdxX,lIdxY  )], pCellStateSrc[getCellID(lIdxX+1,lIdxY  )].x-dBedElevation[getCellID(lIdxX+1,lIdxY)]   ,pCellStateSrc[getCellID(lIdxX+2,lIdxY)].x-dBedElevation[getCellID(lIdxX+2,lIdxY)],   pCellStateSrc[getCellID(lIdxX+3,lIdxY)].x-dBedElevation[getCellID(lIdxX+3,lIdxY)]);
-		//printf("lIdxX: %f/%f lIdxY %f/%f dTimestep: %f N: %f E: %f S: %f W: %f t: %f dDeltaFSL: %f\n\n",lIdxX*1.0,DOMAIN_COLS*1.0,lIdxY*1.0,DOMAIN_ROWS*1.0,dTimestep,dDischarges[DOMAIN_DIR_N].x,dDischarges[DOMAIN_DIR_E].x, dDischarges[DOMAIN_DIR_S].x,dDischarges[DOMAIN_DIR_W].x,dLclTimestep, dDeltaFSL);
-	}
-
 
 	dDeltaFSL	= (dDischarges[DOMAIN_DIR_E].x + dDischarges[DOMAIN_DIR_W].x + dDischarges[DOMAIN_DIR_N].x + dDischarges[DOMAIN_DIR_S].x)/(DOMAIN_DELTAX*DOMAIN_DELTAY);
 	
@@ -258,8 +244,8 @@ void pro_cacheDisabled (
 		pCellData.y = pCellData.x;
 
 	// Crazy low depths?
-	if ( pCellData.x - dCellBedElev < VERY_SMALL )
-		pCellData.x = dCellBedElev;
+	//if ( pCellData.x - dCellBedElev < VERY_SMALL )
+	//	pCellData.x = dCellBedElev;
 	
 	// Commit to global memory
 	pCellStateDst[ ulIdx ] = pCellData;
@@ -274,7 +260,7 @@ cl_double2 manning_Solver(
 	cl_double opt_s_Neig,	// Water surface level of Neighbor cell
 	cl_double opt_z_Cell, 	// Bed Elevation of main Cell
 	cl_double opt_z_Neig,	// Bed Elevation of Neighbor Cell
-	cl_long	DeltaXY,
+	cl_double DeltaXY,
 	bool debug				// Debug Flag
 	)
 	{
@@ -295,6 +281,7 @@ cl_double2 manning_Solver(
 					if (abs_delta_h <= 0.005078){
 						//dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
 						dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth, (5.0/3.0)) * 0.10449968880528 * atan(159.877741951379 * delta_h); //0.0152
+						//dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
 					}else{
 						dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
 					}
@@ -302,8 +289,8 @@ cl_double2 manning_Solver(
 				}
 
 				//waveVelocity = sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
-				
-				#define FROUDE_LIMIT			0.1
+
+				#define FROUDE_LIMIT			0.8
 				//#define mainVelocity fabs(dDischarge) / (flow_depth * DOMAIN_DELTAY)
 				#define mainVelocity fabs(dDischarge)/flow_depth
 				//#define waveVelocity sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
@@ -342,9 +329,10 @@ cl_double2 manning_Solver(
 							//}
 		
 				// Alaa: Does this make better memory access here or should we put it directly after calculation?
-				//if ( flow_depth < flow_epsilon )
-				//	dDischarge = 0.0;
+				if ( flow_depth < flow_epsilon )
+					dDischarge = 0.0;
 
+				
 			}
 		}
 		
@@ -366,6 +354,8 @@ cl_double2 poleni_Solver(
 	bool debug				// Debug Flag
 	)
 	{
+		printf("polini Error");
+
 		cl_double2 output;
 		cl_double dDischarge = 0.0;
 		cl_double opt_zmax_Neig = fmax( opt_z_Neig, opt_z_Cell );

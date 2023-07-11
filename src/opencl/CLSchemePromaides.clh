@@ -52,7 +52,7 @@ cl_double2 manning_Solver(
 	cl_double opt_s_Neig,
 	cl_double opt_z_Cell,
 	cl_double opt_z_Neig,
-	cl_long DeltaXY,
+	cl_double DeltaXY,
 	bool debug
 	);
 
