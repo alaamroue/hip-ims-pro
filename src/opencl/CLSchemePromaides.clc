@@ -277,62 +277,37 @@ cl_double2 manning_Solver(
 				cl_double abs_delta_h	= fabs(delta_h);
 
 				if(abs_delta_h > flow_epsilon){
+					// P1 (Diffusive Scheme)
+					dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
 
-					if (abs_delta_h <= 0.005078){
-						//dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
-						dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth, (5.0/3.0)) * 0.10449968880528 * atan(159.877741951379 * delta_h); //0.0152
-						//dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
-					}else{
-						dDischarge = 1.0/(0.5*(manning+manning_Neig)) * pow(flow_depth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5) * DeltaXY;
+					// P2 (New Castle Limiter)
+					#define FROUDE_LIMIT			0.8
+					#define mainVelocity fabs(dDischarge/DeltaXY)/flow_depth
+					#define waveVelocity sqrt(GRAVITY*flow_depth)
+
+					if ( dDischarge > 0.0 &&
+											( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){
+						dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT * DeltaXY;
+					
+					}else if ( dDischarge < 0.0 &&
+													( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){		
+						dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT * DeltaXY;
+					}
+				
+					// P3 (Lis-Flood Limiter)
+					#define DOMAIN_AREA DOMAIN_DELTAX*DOMAIN_DELTAY
+
+					cl_double water_depth = opt_s_Cell - opt_z_Cell;
+					cl_double Nwater_depth = opt_s_Neig - opt_z_Neig;
+
+					if (dDischarge > 0.0 && dDischarge > DOMAIN_AREA * abs_delta_h / 4.0 / timestep){
+						dDischarge = DOMAIN_AREA * abs_delta_h / 4.0 / timestep;
+					}
+					else if(dDischarge < 0.0 && -1.0 * dDischarge > DOMAIN_AREA * abs_delta_h / 4.0 / timestep){
+						dDischarge = 0 - DOMAIN_AREA * abs_delta_h / 4.0 / timestep;
 					}
 
 				}
-
-				//waveVelocity = sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
-
-				#define FROUDE_LIMIT			0.8
-				//#define mainVelocity fabs(dDischarge) / (flow_depth * DOMAIN_DELTAY)
-				#define mainVelocity fabs(dDischarge)/flow_depth
-				//#define waveVelocity sqrt(GRAVITY*flow_depth*delta_h/DOMAIN_DELTAX)
-				#define waveVelocity sqrt(GRAVITY*flow_depth)
-				
-				//Froude number discharge limiter
-				if ( dDischarge > 0.0 &&
-										( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){
-					//dDischarge += 0.5;
-					dDischarge = flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
-				
-				}else if ( dDischarge < 0.0 &&
-												( mainVelocity / waveVelocity ) > FROUDE_LIMIT ){		
-					
-					//dDischarge += 0.5;
-					dDischarge = 0.0 - flow_depth * sqrt( GRAVITY * flow_depth ) * FROUDE_LIMIT;
-				}
-				
-				cl_double water_depth = opt_s_Neig-opt_s_Cell;
-				//TODO: Alaa this shouldn't be the negative of water depth, rather the ops_nieg_neig - opt_s_Neig, no?
-				cl_double Nwater_depth = opt_s_Cell - opt_s_Neig;
-				
-				//TODO: Alaa check Domain delta X equation
-				// For checkboarding
-                if (dDischarge > 0.0 &&  dDischarge * timestep > water_depth / 4.0 ){
-					dDischarge = water_depth / 5.0 / timestep;
-				}
-                if (dDischarge < 0.0 && fabs(dDischarge * timestep) > Nwater_depth / 4.0){
-					dDischarge = 0.0 - Nwater_depth / 5.0 / timestep;
-				}
-							//if (dDischarge > 0.0 &&  dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY > water_depth / 4.0 ){
-							//	dDischarge = water_depth * DOMAIN_DELTAX / 5.0 / timestep;
-							//}
-							//if (dDischarge < 0.0 && fabs(dDischarge * timestep / DOMAIN_DELTAX / DOMAIN_DELTAY) > Nwater_depth / 4.0){
-							//	dDischarge = 0.0 - Nwater_depth * DOMAIN_DELTAX / 5.0 / timestep;
-							//}
-		
-				// Alaa: Does this make better memory access here or should we put it directly after calculation?
-				if ( flow_depth < flow_epsilon )
-					dDischarge = 0.0;
-
-				
 			}
 		}
 		
