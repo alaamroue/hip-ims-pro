@@ -140,16 +140,16 @@ void ine_cacheDisabled (
 		dNeigBedElevW
 	);
 	
-	if(lIdxX == DOMAIN_COLS - 1 ){
+	if(lIdxX == DOMAIN_COLS - 1 || dNeigBedElevE == -9999.0){
 		dDischarge[DOMAIN_DIR_E] = 0.0;
 	} 
-	if( lIdxY == DOMAIN_ROWS - 1 ) {
+	if( lIdxY == DOMAIN_ROWS - 1 || dNeigBedElevN == -9999.0) {
 		dDischarge[DOMAIN_DIR_N] = 0.0;
 	}
-	if( lIdxX == 0 ) {
+	if( lIdxX == 0 || dNeigBedElevW == -9999.0) {
 		dDischarge[DOMAIN_DIR_W] = 0.0;
 	}
-	if( lIdxY == 0 ) {
+	if( lIdxY == 0 || dNeigBedElevS == -9999.0) {
 		dDischarge[DOMAIN_DIR_S] = 0.0;
 	}
 
