@@ -104,13 +104,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>call bin\win32\post-build-debug.bat "$(OutDir)"
-</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Post-build file operations</Message>
-    </PostBuildEvent>
     <CustomBuildStep>
       <Command>
       </Command>
@@ -130,11 +123,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\Win32;C:\Libraries\Boost\stage\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Message>Post-build file operations</Message>
-      <Command>call bin\win32\post-build-release.bat "$(OutDir)"
-</Command>
-    </PostBuildEvent>
     <BuildLog>
       <Path>build\$(MSBuildProjectName).log</Path>
     </BuildLog>
