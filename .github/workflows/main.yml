@@ -1,20 +1,31 @@
-name: Compile Hip
-
+name: UsingMsbuild
 on:
   workflow_dispatch:
 
 jobs:
-  windows:
-    name: run on windows
+  UsingMsbuild:
+    name: UsingMsbuildjob
     runs-on: windows-latest
-
     steps:
-    - name: Install MSVC
-      uses: ilammy/msvc-dev-cmd@v1.4.1
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+    
+      - name: Set up msbuild
+        uses: microsoft/setup-msbuild@v1.1
+  
+      - name: Build app for release
+        run: msbuild HiPIMS-OCL.vcxproj -t:rebuild -verbosity:diag -property:Configuration=Release
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Run exe
+        run: |
+          "Release\HiPIMS Simulator.exe"
+        shell: cmd
 
-    - name: compile
-      run: cl /I CL src/gpudemo.cpp /Fe:project /std:c++latest
-
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: windowsUpload
+          path: |
+            "Release\HiPIMS Simulator.exe"
+    
