@@ -15,7 +15,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
   
       - name: Build app for release
-        run: msbuild HiPIMS-OCL.vcxproj -t:rebuild -verbosity:diag -property:Configuration=Release -restore
+        run: msbuild HiPIMS-OCL.vcxproj -t:rebuild -verbosity:n -property:Configuration=Release -restore
 
       - name: Run exe
         run: |
