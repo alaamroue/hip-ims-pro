@@ -364,6 +364,13 @@ cl_double calculateInertialFlux(
 			     ( 1.0 + GRAVITY * dDepth * dTimestep * dManningCoef * dManningCoef * fabs( dPreviousDischarge ) /
 				   pow( dDepth, 10.0/3.0 ) );
 
+	//Promaides
+	//cl_double dDischarge2 = 0.0;
+	//cl_double delta_h    = dLevelUpstream - dLevelDownstream;
+	//cl_double abs_delta_h	= fabs(delta_h);
+	//dDischarge2 = 1.0/dManningCoef * pow(dDepth,5.0/3.0) * delta_h / pow(DOMAIN_DELTAX * abs_delta_h,0.5);
+	//printf("Inertail: %f Promaides: %f\n", dDischarge*1000000.0,dDischarge2*1000000.0);
+
 	// Froude number discharge limiter
 	if ( dDischarge > 0.0 &&
 		 ( ( fabs( dDischarge ) / dDepth ) / sqrt( GRAVITY * dDepth ) ) > FROUDE_LIMIT )
