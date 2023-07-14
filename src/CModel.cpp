@@ -610,7 +610,7 @@ void	CModel::runModelSync()
 		this->dCurrentTime = dEarliestTime;
 
 	// Write outputs if possible
-	this->runModelOutputs();
+	//this->runModelOutputs();
 		
 	// Calculate a new target time to aim for
 	this->runModelUpdateTarget( dCurrentTime );
