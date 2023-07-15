@@ -17,15 +17,21 @@ jobs:
       - name: Build app for release
         run: msbuild HiPIMS-OCL.vcxproj -t:rebuild -verbosity:n -property:Configuration=Release -restore
 
-      - name: Run exe
-        run: |
-          "bin/win32/release/hipims.exe"
-        shell: cmd
-
-      - name: Upload executable
-        uses: actions/upload-artifact@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: windowsUpload
-          path: |
-            "Release\HiPIMS Simulator.exe"
+          name: hipArtifact
+          path: "bin/win32/release/hipims.exe"
+  ReleaseArtifact:
+    name: Release Project
+    runs-on: windows-latest
+    needs: UsingMsbuild
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: hipArtifact
+    - name: Test Artifact Download
+      run: ls -R
+
     
