@@ -1,6 +1,6 @@
 name: UsingMsbuild
-on:
-  workflow_dispatch:
+
+on: push
 
 jobs:
   UsingMsbuild:
