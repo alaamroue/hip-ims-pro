@@ -19,7 +19,7 @@ jobs:
 
       - name: Run exe
         run: |
-          "Release\HiPIMS Simulator.exe"
+          "bin/win32/release/hipims.exe"
         shell: cmd
 
       - name: Upload executable
