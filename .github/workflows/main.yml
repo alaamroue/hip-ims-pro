@@ -33,5 +33,11 @@ jobs:
         name: hipArtifact
     - name: Test Artifact Download
       run: ls -R
+    - name: Create Release
+      uses: elgohr/Github-Release-Action@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        title: MyReleaseMessage
 
     
