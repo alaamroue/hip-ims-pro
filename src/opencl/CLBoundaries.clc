@@ -55,9 +55,6 @@ __kernel void bdy_Promaides (
 	if(dLclTimestep <= 0.0){
 		printf("dLclTimestep is <= 0.0 in CLBOUNDRIES.CLC");
 	}
-	// This would already be represented in the series
-	//if (pCellData.y <= -9999.0 || pCellData.x == -9999.0)
-	//	return;
 
 	// Apply the value...
 	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);
