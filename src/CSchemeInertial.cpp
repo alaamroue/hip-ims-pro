@@ -256,7 +256,7 @@ bool CSchemeInertial::prepareInertialKernels()
 		oclKernelFullTimestep = oclModel->getKernel( "ine_cacheDisabled" );
 		oclKernelFullTimestep->setGroupSize( this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY );
 		oclKernelFullTimestep->setGlobalSize( this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY );
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning };	
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferUsePoleni, oclBuffer_opt_zxmax, oclBuffer_opt_cx, oclBuffer_opt_zymax, oclBuffer_opt_cy };
 		oclKernelFullTimestep->assignArguments( aryArgsFullTimestep );
 	}
 	if ( this->ucConfiguration == model::schemeConfigurations::inertialFormula::kCacheEnabled )

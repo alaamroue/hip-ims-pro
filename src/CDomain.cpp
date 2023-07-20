@@ -76,6 +76,10 @@ void	CDomain::createStoreBuffers(
 			void**			vArrayManningCoefs,
 			void**			vArrayBoundaryValues,
 			void**			vArrayPoleniValues,
+			void**			vArrayOpt_zxmax,
+			void**			vArrayOpt_cx,
+			void**			vArrayOpt_zymax,
+			void**			vArrayOpt_cy,
 			unsigned char	ucFloatSize
 		)
 {
@@ -92,32 +96,58 @@ void	CDomain::createStoreBuffers(
 			this->fBedElevations	= new cl_float[ this->ulCellCount ];
 			this->fManningValues	= new cl_float[ this->ulCellCount ];
 			this->fBoundaryValues	= new cl_float[ this->ulCellCount ];
+			this->fOpt_zxmaxValues	= new cl_float[ this->ulCellCount ];
+			this->fOpt_cxValues		= new cl_float[ this->ulCellCount ];
+			this->fOpt_zymaxValues	= new cl_float[ this->ulCellCount ];
+			this->fOpt_cyValues		= new cl_float[ this->ulCellCount ];
+
 			this->dCellStates		= (cl_double4*)( this->fCellStates );
 			this->dBedElevations	= (cl_double*)( this->fBedElevations );
 			this->dManningValues	= (cl_double*)( this->fManningValues );
 			this->dBoundaryValues	= (cl_double*)( this->fBoundaryValues);
+			this->dOpt_zxmaxValues	= (cl_double*)( this->fOpt_zxmaxValues);
+			this->dOpt_cxValues		= (cl_double*)( this->fOpt_cxValues);
+			this->dOpt_zymaxValues	= (cl_double*)( this->fOpt_zymaxValues);
+			this->dOpt_cyValues		= (cl_double*)( this->fOpt_cyValues);
 
 			*vArrayCellStates	 = static_cast<void*>( this->fCellStates );
 			*vArrayBedElevations = static_cast<void*>( this->fBedElevations );
 			*vArrayManningCoefs	 = static_cast<void*>( this->fManningValues );
 			*vArrayBoundaryValues= static_cast<void*>( this->fBoundaryValues);
+			*vArrayOpt_zxmax	 = static_cast<void*>( this->fOpt_zxmaxValues);
+			*vArrayOpt_cx		 = static_cast<void*>( this->fOpt_cxValues);
+			*vArrayOpt_zymax	 = static_cast<void*>( this->fOpt_zymaxValues);
+			*vArrayOpt_cy		 = static_cast<void*>( this->fOpt_cyValues);
 		} else {
 			// Double precision
 			this->dCellStates		= new cl_double4[ this->ulCellCount ];
 			this->dBedElevations	= new cl_double[ this->ulCellCount ];
 			this->dManningValues	= new cl_double[ this->ulCellCount ];
 			this->dBoundaryValues	= new cl_double[ this->ulCellCount ];
+			this->dOpt_zxmaxValues  = new cl_double[ this->ulCellCount ];
+			this->dOpt_cxValues		= new cl_double[ this->ulCellCount ];
+			this->dOpt_zymaxValues  = new cl_double[ this->ulCellCount ];
+			this->dOpt_cyValues		= new cl_double[ this->ulCellCount ];
+
 			this->fCellStates		= (cl_float4*)( this->dCellStates );
 			this->fBedElevations	= (cl_float*)( this->dBedElevations );
 			this->fManningValues	= (cl_float*)( this->dManningValues );
 			this->fBoundaryValues	= (cl_float*)( this->dBoundaryValues);
+			this->fOpt_zxmaxValues  = (cl_float*)( this->dOpt_zxmaxValues);
+			this->fOpt_cxValues		= (cl_float*)( this->dOpt_cxValues);
+			this->fOpt_zymaxValues  = (cl_float*)( this->dOpt_zymaxValues);
+			this->fOpt_cyValues		= (cl_float*)( this->dOpt_cyValues);
 
 			*vArrayCellStates		= static_cast<void*>( this->dCellStates );
 			*vArrayBedElevations	= static_cast<void*>( this->dBedElevations );
 			*vArrayManningCoefs		= static_cast<void*>( this->dManningValues );
 			*vArrayBoundaryValues	= static_cast<void*>( this->dBoundaryValues);
+			*vArrayOpt_zxmax		= static_cast<void*>( this->dOpt_zxmaxValues);
+			*vArrayOpt_cx			= static_cast<void*>( this->dOpt_cxValues);
+			*vArrayOpt_zymax		= static_cast<void*>( this->dOpt_zymaxValues);
+			*vArrayOpt_cy			= static_cast<void*>( this->dOpt_cyValues);
 		}
-		this->bPoleniValues = new bool[this->ulCellCount];
+		this->bPoleniValues			= new sUsePoleni[this->ulCellCount];
 		*vArrayPoleniValues			= static_cast<void*>(this->bPoleniValues);
 	}
 	catch( std::bad_alloc )
@@ -156,6 +186,47 @@ void	CDomain::initialiseMemory()
 			this->dBedElevations[ i ]   = 1;	// Bed elevation
 			this->dManningValues[ i ]	= 0;	// Manning coefficient
 		}
+	}
+}
+
+/*
+ *  Populate all domain cells with default values
+ *  NOTE: Shouldn't be required anymore, C++11 used in COCLBuffer to initialise to zero on allocate
+ */
+void	CDomain::resetAllValues()
+{
+	model::log->writeLine( "Reseting heap domain data." );
+
+	for( unsigned long i = 0; i < this->ulCellCount; i++ )
+	{
+		if ( this->ucFloatSize == 4 )
+		{
+			this->fCellStates[ i ].s[0]	= 0.0;	// Free-surface level
+			this->fCellStates[ i ].s[1]	= 0.0;	// Maximum free-surface level
+			this->fCellStates[ i ].s[2]	= 0.0;	// Discharge X
+			this->fCellStates[ i ].s[3]	= 0.0;	// Discharge Y
+			this->fBedElevations[ i ]   = 0.0;	// Bed elevation
+			this->fManningValues[ i ]	= 0.0;	// Manning coefficient
+			this->fBoundaryValues[ i ]	= 0.0;	// Boundary Values
+			this->fOpt_zxmaxValues[i]	= 0.0;	// Maxium elevation for poleni in X
+			this->fOpt_cxValues[i]		= 0.0;	// Poleni factor in X
+			this->fOpt_zymaxValues[i]	= 0.0;	// Maxium elevation for poleni in Y
+			this->fOpt_cyValues[i]		= 0.0;	// Poleni factor in Y
+		} else {
+			this->dCellStates[ i ].s[0]	= 0.0;	// Free-surface level
+			this->dCellStates[ i ].s[1]	= 0.0;	// Maximum free-surface level
+			this->dCellStates[ i ].s[2]	= 0.0;	// Discharge X
+			this->dCellStates[ i ].s[3]	= 0.0;	// Discharge Y
+			this->dBedElevations[ i ]   = 0.0;	// Bed elevation
+			this->dManningValues[ i ]	= 0.0;	// Manning coefficient
+			this->dBoundaryValues[ i ]	= 0.0;	// Boundary Values
+			this->dOpt_zxmaxValues[i]	= 0.0;	// Maxium elevation for poleni in X
+			this->dOpt_cxValues[i]		= 0.0;	// Poleni factor in X
+			this->dOpt_zymaxValues[i]	= 0.0;	// Maxium elevation for poleni in Y
+			this->dOpt_cyValues[i]		= 0.0;	// Poleni factor in Y
+		}
+
+		this->bPoleniValues[i] = {false,false,false,false};					// Poleni flags
 	}
 }
 
@@ -360,13 +431,85 @@ void	CDomain::setBoundaryCondition(unsigned long ulCellID, double dCoefficient)
 		this->dBoundaryValues[ulCellID] = dCoefficient;
 	}
 }
+/*
+ *  Sets the Boundary values for a given cell
+ */
+void	CDomain::setZxmax(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fOpt_zxmaxValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dOpt_zxmaxValues[ulCellID] = dCoefficient;
+	}
+}
+/*
+ *  Sets the Boundary values for a given cell
+ */
+void	CDomain::setcx(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fOpt_cxValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dOpt_cxValues[ulCellID] = dCoefficient;
+	}
+}
+/*
+ *  Sets the Boundary values for a given cell
+ */
+void	CDomain::setZymax(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fOpt_zymaxValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dOpt_zymaxValues[ulCellID] = dCoefficient;
+	}
+}
+/*
+ *  Sets the Boundary values for a given cell
+ */
+void	CDomain::setcy(unsigned long ulCellID, double dCoefficient)
+{
+	if (this->ucFloatSize == 4)
+	{
+		this->fOpt_cyValues[ulCellID] = static_cast<float>(dCoefficient);
+	}
+	else {
+		this->dOpt_cyValues[ulCellID] = dCoefficient;
+	}
+}
 
 /*
- *  Sets the Poleni condition for a given cell
+ *  Sets the Poleni condition for a given cell in X
  */
-void	CDomain::setPoleniCondition(unsigned long ulCellID, bool condition)
+void	CDomain::setPoleniConditionX(unsigned long ulCellID, bool UsePoleniInX)
 {
-		this->bPoleniValues[ulCellID] = condition;
+	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the east to true also in the -x direction
+	if (UsePoleniInX) {
+		long ulCellID_Neigh_E = this->getNeighbourID(ulCellID, direction::east);
+		this->bPoleniValues[ulCellID].usePoliniE = true;
+		this->bPoleniValues[ulCellID_Neigh_E].usePoliniW = true;
+	}
+
+}
+
+/*
+ *  Sets the Poleni condition for a given cell in Y
+ */
+void	CDomain::setPoleniConditionY(unsigned long ulCellID, bool UsePoleniInY)
+{
+	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the west to true also in the -x direction
+	if (UsePoleniInY) {
+		long ulCellID_Neigh_N = this->getNeighbourID(ulCellID, direction::north);
+		this->bPoleniValues[ulCellID].usePoliniN = true;
+		this->bPoleniValues[ulCellID_Neigh_N].usePoliniS = true;
+	}
+
 }
 
 

@@ -32,6 +32,14 @@ typedef struct sFaceStructure {
 	cl_double4	pW;
 } sFaceStructure;
 
+// Structure definitions
+typedef struct sUsePolini {
+	bool	usePoliniN;
+	bool	usePoliniE;
+	bool	usePoliniS;
+	bool	usePoliniW;
+} sUsePolini;
+
 #ifdef USE_FUNCTION_STUBS
 
 // Function definitions
@@ -41,7 +49,12 @@ void ine_cacheDisabled (
 	__global	cl_double const * restrict,
 	__global	cl_double4 *,
 	__global	cl_double4 *,
-	__global    cl_double const * restrict
+	__global    cl_double const * restrict,
+	__global	__global	sUsePolini const * restrict,
+	__global	cl_double const * restrict,	
+	__global	cl_double const * restrict,	
+	__global	cl_double const * restrict,	
+	__global	cl_double const * restrict	
 );
 
 __kernel  REQD_WG_SIZE_FULL_TS
@@ -62,5 +75,20 @@ cl_double calculateInertialFlux(
 	cl_double,
 	cl_double
 );
+
+cl_double poleni_Solver(
+	cl_double Timestep,
+	cl_double manning,
+	cl_double manning_Neig,
+	cl_double opt_s_Cell,
+	cl_double opt_s_Neig,
+	cl_double opt_z_Cell,
+	cl_double opt_z_Neig,
+	
+	cl_double opt_zxymax,
+	cl_double opt_cxy,
+
+	bool debug
+	);
 
 #endif

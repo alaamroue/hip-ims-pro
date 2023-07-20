@@ -93,6 +93,8 @@ class CDomainBase
 		void						setRollbackLimit();												// Automatically identify a rollback limit
 		void						setRollbackLimit( unsigned int i ) { uiRollbackLimit = i; }		// Set the number of iterations before a rollback is required
 		virtual unsigned long		getCellID(unsigned long, unsigned long);						// Get the cell ID using an X and Y index
+		virtual void				getCellIndices(unsigned long ulID, unsigned long* lIdxX, unsigned long* lIdxY);
+		virtual unsigned long		CDomainBase::getNeighbourID(unsigned long ulCellID, unsigned char  ucDirection);
 		virtual mpiSignalDataProgress getDataProgress()		{ return pDataProgress; };				// Fetch some data on this domain's progress
 		virtual void 				setDataProgress( mpiSignalDataProgress a )	{ pDataProgress = a; };	// Set some data on this domain's progress
 
@@ -107,6 +109,13 @@ class CDomainBase
 		std::vector<CDomainLink*>	links;															// Vector of domain links
 		std::vector<CDomainLink*>	dependentLinks;													// Vector of dependent domain links
 
+	enum direction
+	{
+		north = 0,
+		east = 1,
+		south = 2,
+		west = 3
+	};
 };
 
 #endif

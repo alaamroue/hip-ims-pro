@@ -48,6 +48,13 @@
 #include <stdexcept>
 #include <thread>
 
+struct sUsePoleni {
+	bool	usePoliniN;
+	bool	usePoliniE;
+	bool	usePoliniS;
+	bool	usePoliniW;
+};
+
 // Basic functions and variables used throughout
 namespace model
 {

@@ -83,6 +83,10 @@ CSchemeGodunov::CSchemeGodunov()
 	oclBufferCellManning				= NULL;
 	oclBufferCellBoundary				= NULL;
 	oclBufferUsePoleni					= NULL;
+	oclBuffer_opt_zxmax					= NULL;
+	oclBuffer_opt_cx					= NULL;
+	oclBuffer_opt_zymax					= NULL;
+	oclBuffer_opt_cy					= NULL;
 	oclBufferCellBed					= NULL;
 	oclBufferTimestep					= NULL;
 	oclBufferTimestepReduction			= NULL;
@@ -587,35 +591,51 @@ bool CSchemeGodunov::prepare1OMemory()
 	// Domain and cell state data
 	// --
 
-	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL, * pPoleniValues = NULL;
+	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL, * pPoleniValues = NULL, * pOpt_zxmax = NULL, * pOpt_cx = NULL, * pOpt_zymax = NULL, * pOpt_cy = NULL;
 	pDomain->createStoreBuffers(
 		&pCellStates,
 		&pBedElevations,
 		&pManningValues,
 		&pBoundaryValues,
 		&pPoleniValues,
+		&pOpt_zxmax,
+		&pOpt_cx,
+		&pOpt_zymax,
+		&pOpt_cy,
 		ucFloatSize
 	);
 
 	oclBufferCellStates		= new COCLBuffer( "Cell states",			oclModel, false, true );
 	oclBufferCellStatesAlt	= new COCLBuffer( "Cell states (alternate)",oclModel, false, true );
-	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	true ); 
-	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",	oclModel, false,	true );
-	oclBufferUsePoleni		= new COCLBuffer( "Poleni Boolean",	oclModel, true,	true );
-	oclBufferCellBed		= new COCLBuffer( "Bed elevations",			oclModel, true, true );
+	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	 true ); 
+	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",		oclModel, false, true );
+	oclBufferUsePoleni		= new COCLBuffer( "Poleni Booleans",			oclModel, true,	 true );
+	oclBuffer_opt_zxmax		= new COCLBuffer( "opt_zxmax Values",		oclModel, true,	 true );
+	oclBuffer_opt_cx		= new COCLBuffer( "opt_cx Values",			oclModel, true,	 true );
+	oclBuffer_opt_zymax		= new COCLBuffer( "opt_zymax Values",		oclModel, true,	 true );
+	oclBuffer_opt_cy		= new COCLBuffer( "opt_cy Values",			oclModel, true,	 true );
+	oclBufferCellBed		= new COCLBuffer( "Bed elevations",			oclModel, true,  true );
 
-	oclBufferCellStates->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
-	oclBufferCellStatesAlt->setPointer( pCellStates, ucFloatSize * 4 * pDomain->getCellCount() );
-	oclBufferCellManning->setPointer( pManningValues, ucFloatSize * pDomain->getCellCount() );
-	oclBufferCellBoundary->setPointer(pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
-	oclBufferUsePoleni->setPointer(pPoleniValues, sizeof(bool) * pDomain->getCellCount() );
-	oclBufferCellBed->setPointer( pBedElevations, ucFloatSize * pDomain->getCellCount() );
+	oclBufferCellStates	  ->setPointer( pCellStates,	 ucFloatSize * 4 * pDomain->getCellCount() );
+	oclBufferCellStatesAlt->setPointer( pCellStates,	 ucFloatSize * 4 * pDomain->getCellCount() );
+	oclBufferCellManning  ->setPointer( pManningValues,  ucFloatSize * pDomain->getCellCount() );
+	oclBufferCellBoundary ->setPointer( pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
+	oclBufferUsePoleni    ->setPointer( pPoleniValues,	 4 * sizeof(bool) * pDomain->getCellCount() );
+	oclBuffer_opt_zxmax   ->setPointer( pOpt_zxmax,		 ucFloatSize * pDomain->getCellCount() );
+	oclBuffer_opt_cx      ->setPointer( pOpt_cx,		 ucFloatSize * pDomain->getCellCount() );
+	oclBuffer_opt_zymax   ->setPointer( pOpt_zymax,		 ucFloatSize * pDomain->getCellCount() );
+	oclBuffer_opt_cy      ->setPointer( pOpt_cy,		 ucFloatSize * pDomain->getCellCount() );
+	oclBufferCellBed      ->setPointer( pBedElevations,  ucFloatSize * pDomain->getCellCount() );
 
 	oclBufferCellStates->createBuffer();
 	oclBufferCellStatesAlt->createBuffer();
 	oclBufferCellManning->createBuffer();
 	oclBufferCellBoundary->createBuffer();
 	oclBufferUsePoleni->createBuffer();
+	oclBuffer_opt_zxmax->createBuffer();
+	oclBuffer_opt_cx->createBuffer();
+	oclBuffer_opt_zymax->createBuffer();
+	oclBuffer_opt_cy->createBuffer();
 	oclBufferCellBed->createBuffer();
 
 	// --
@@ -797,6 +817,10 @@ void CSchemeGodunov::release1OResources()
 	if ( this->oclBufferCellManning != NULL )				delete oclBufferCellManning;
 	if ( this->oclBufferCellBoundary != NULL )				delete oclBufferCellBoundary;
 	if ( this->oclBufferUsePoleni != NULL )					delete oclBufferUsePoleni;
+	if ( this->oclBuffer_opt_zxmax != NULL )				delete oclBuffer_opt_zxmax;
+	if ( this->oclBuffer_opt_cx != NULL )					delete oclBuffer_opt_cx;
+	if ( this->oclBuffer_opt_zymax != NULL )				delete oclBuffer_opt_zymax;
+	if ( this->oclBuffer_opt_cy != NULL )					delete oclBuffer_opt_cy;
 	if ( this->oclBufferCellBed != NULL )					delete oclBufferCellBed;
 	if ( this->oclBufferTimestep != NULL )					delete oclBufferTimestep;
 	if ( this->oclBufferTimestepReduction != NULL )			delete oclBufferTimestepReduction;
@@ -816,7 +840,11 @@ void CSchemeGodunov::release1OResources()
 	oclBufferCellStatesAlt			= NULL;
 	oclBufferCellManning			= NULL;
 	oclBufferCellBoundary			= NULL;
-	oclBufferUsePoleni = NULL;
+	oclBufferUsePoleni				= NULL;
+	oclBuffer_opt_zxmax				= NULL;
+	oclBuffer_opt_cx				= NULL;
+	oclBuffer_opt_zymax				= NULL;
+	oclBuffer_opt_cy				= NULL;
 	oclBufferCellBed				= NULL;
 	oclBufferTimestep				= NULL;
 	oclBufferTimestepReduction		= NULL;
@@ -858,6 +886,10 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBufferCellManning->queueWriteAll();
 	oclBufferCellBoundary->queueWriteAll();
 	oclBufferUsePoleni->queueWriteAll();
+	oclBuffer_opt_zxmax->queueWriteAll();
+	oclBuffer_opt_cx->queueWriteAll();
+	oclBuffer_opt_zymax->queueWriteAll();
+	oclBuffer_opt_cy->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
 	oclBufferTimeHydrological->queueWriteAll();

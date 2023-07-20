@@ -33,7 +33,7 @@ void pro_cacheDisabled (
 			__global	cl_double4 *  			pCellStateSrc,					// Current cell state data
 			__global	cl_double4 *  			pCellStateDst,					// Current cell state data
 			__global	cl_double const * restrict	dManning,						// Manning values
-			__global	bool const * restrict	pUsePoleni						// Manning values
+			__global	sUsePolini const * restrict	pUsePoleni						// Switch to use Poleni
 		)
 {
 
@@ -77,24 +77,29 @@ void pro_cacheDisabled (
 		return;
 	}
 
+	usePoleniW = false;
+	usePoleniS = false;
+	usePoleniN = false;
+	usePoleniE = false;
+
 	ucDirection = DOMAIN_DIR_W;
 	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, ucDirection);
 	dNeigBedElevW	= dBedElevation [ ulIdxNeig ];
 	pNeigDataW		= pCellStateSrc	[ ulIdxNeig ];
 	pNeigManW		= dManning [ ulIdxNeig ];
-	usePoleniW		= pUsePoleni [ ulIdxNeig ];
+
 	ucDirection = DOMAIN_DIR_S;
 	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, ucDirection);
 	dNeigBedElevS	= dBedElevation [ ulIdxNeig ];
 	pNeigDataS		= pCellStateSrc	[ ulIdxNeig ];
 	pNeigManS		= dManning [ ulIdxNeig ];
-	usePoleniS		= pUsePoleni [ ulIdxNeig ];
+
 	ucDirection = DOMAIN_DIR_N;
 	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, ucDirection);
 	dNeigBedElevN	= dBedElevation [ ulIdxNeig ];
 	pNeigDataN		= pCellStateSrc	[ ulIdxNeig ];
 	pNeigManN		= dManning [ ulIdxNeig ];
-	usePoleniN		= pUsePoleni [ ulIdxNeig ];
+
 	ucDirection = DOMAIN_DIR_E;
 	ulIdxNeig = getNeighbourByIndices(lIdxX, lIdxY, ucDirection);
 	dNeigBedElevE	= dBedElevation [ ulIdxNeig ];
@@ -164,7 +169,7 @@ void pro_cacheDisabled (
 						debug
 					);
 				}
-	if (!usePoleniN){
+	if (!usePoleniS){
 		dDischarges[ DOMAIN_DIR_S ] = manning_Solver(
 			dLclTimestep,
 			dManningCoef,
@@ -188,7 +193,7 @@ void pro_cacheDisabled (
 						debug
 					);
 				}
-	if (!usePoleniN){
+	if (!usePoleniW){
 		dDischarges[ DOMAIN_DIR_W ] = manning_Solver(
 			dLclTimestep,
 			dManningCoef,

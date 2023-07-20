@@ -31,6 +31,14 @@ typedef struct sFaceStructure {
 	cl_double4	pW;
 } sFaceStructure;
 
+// Structure definitions
+typedef struct sUsePolini {
+	bool	usePoliniN;
+	bool	usePoliniE;
+	bool	usePoliniS;
+	bool	usePoliniW;
+} sUsePolini;
+
 #ifdef USE_FUNCTION_STUBS
 
 // Function definitions
@@ -41,7 +49,7 @@ void pro_cacheDisabled (
 	__global	cl_double4 *,
 	__global	cl_double4 *,
 	__global    cl_double const * restrict,
-	__global    bool const * restrict
+	__global	sUsePolini const * restrict
 );
 
 cl_double2 manning_Solver(

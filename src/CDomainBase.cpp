@@ -147,6 +147,44 @@ unsigned long	CDomainBase::getCellID(unsigned long ulX, unsigned long ulY)
 	return (ulY * pSummary.ulColCount) + ulX;
 }
 
+
+/*
+ *  Fetch the X and Y indices for a cell using its ID
+ */
+void	CDomainBase::getCellIndices(unsigned long ulID, unsigned long* lIdxX, unsigned long* lIdxY)
+{
+	*lIdxX = ulID % this->getSummary().ulColCount;
+	*lIdxY = (ulID - *lIdxX) / this->getSummary().ulColCount;
+}
+
+/*
+ *  Fetch the ID for a neighboring cell in the domain
+ */
+unsigned long	CDomainBase::getNeighbourID(unsigned long ulCellID, unsigned char ucDirection)
+{
+	unsigned long lIdxX = 0;
+	unsigned long lIdxY = 0;
+	getCellIndices(ulCellID, &lIdxX, &lIdxY);
+
+	switch (ucDirection)
+	{
+	case direction::north:
+		++lIdxY;
+		break;
+	case direction::east:
+		++lIdxX;
+		break;
+	case direction::south:
+		--lIdxY;
+		break;
+	case direction::west:
+		--lIdxX;
+		break;
+	}
+
+	return getCellID(lIdxX, lIdxY);
+}
+
 /*
  * Identify a suitable rollback limit automatically
  */

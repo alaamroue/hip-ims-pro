@@ -153,7 +153,7 @@ int model::loadConfiguration()
 			//Boundary Condition
 			ourCartesianDomain->setBoundaryCondition(ulCellID, 0.0001);
 			//Poleni Condition
-			ourCartesianDomain->setPoleniCondition(ulCellID, 0.0001);
+			ourCartesianDomain->setPoleniConditionX(ulCellID, 0.0001);
 			//Coupling Condition
 			//ourCartesianDomain->setCouplingCondition(ulCellID, 0.0);
 
