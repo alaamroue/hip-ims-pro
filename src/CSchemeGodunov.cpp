@@ -620,7 +620,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferCellStatesAlt->setPointer( pCellStates,	 ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellManning  ->setPointer( pManningValues,  ucFloatSize * pDomain->getCellCount() );
 	oclBufferCellBoundary ->setPointer( pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
-	oclBufferUsePoleni    ->setPointer( pPoleniValues,	 4 * sizeof(bool) * pDomain->getCellCount() );
+	oclBufferUsePoleni    ->setPointer( pPoleniValues,	 sizeof(sUsePoleni) * pDomain->getCellCount() );
 	oclBuffer_opt_zxmax   ->setPointer( pOpt_zxmax,		 ucFloatSize * pDomain->getCellCount() );
 	oclBuffer_opt_cx      ->setPointer( pOpt_cx,		 ucFloatSize * pDomain->getCellCount() );
 	oclBuffer_opt_zymax   ->setPointer( pOpt_zymax,		 ucFloatSize * pDomain->getCellCount() );
