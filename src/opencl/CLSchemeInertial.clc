@@ -87,6 +87,7 @@ void ine_cacheDisabled (
 	dCellBedElev		= dBedElevation[ ulIdx ];
 	pCellData			= pCellStateSrc[ ulIdx ];
 	dManningCoef		= dManning[ ulIdx ];
+	dOpt_zxmax			= pOpt_zxmax[ ulIdx ];
 	dOpt_cx				= pOpt_cx	[ ulIdx ];
 	dOpt_zymax			= pOpt_zymax[ ulIdx ];
 	dOpt_cy				= pOpt_cy	[ ulIdx ];
