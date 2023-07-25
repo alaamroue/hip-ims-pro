@@ -15,7 +15,7 @@
  *  Application entry point. Instantiates the
  *  management class.
  * ------------------------------------------
- *
+ * #Sync Point wokring Poleni #524751
  */
 
 // Includes
