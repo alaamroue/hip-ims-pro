@@ -275,20 +275,16 @@ double*	CDomainCartesian::readBuffers_opt_h()
 	pScheme->readDomainAll();
 	pDevice->blockUntilFinished();
 
-	double width;
-	double height;
-	this->getCellResolution(&width, &height);
-
 	unsigned long	ulCellID;
-	double Volume = 0.0 ;
 	double* values = new double[this->getRows() * this->getCols()];
 
+	double Volume = 0;
 	for (unsigned long iRow = 0; iRow < this->getRows(); ++iRow) {
 		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
 			ulCellID = this->getCellID(iCol, iRow);
 			if (this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) != -9999.0) {
 				//std::cout << "value at [" << iRow << "][" << iCol << "]: " << this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) << " // Elv: " << this->getBedElevation(ulCellID) <<std::endl;
-				Volume += (this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID)) * width * height;
+				Volume += (this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID));
 			}
 
 			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
