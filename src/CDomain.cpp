@@ -491,9 +491,15 @@ void	CDomain::setPoleniConditionX(unsigned long ulCellID, bool UsePoleniInX)
 {
 	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the east to true also in the -x direction
 	if (UsePoleniInX) {
-		long ulCellID_Neigh_E = this->getNeighbourID(ulCellID, direction::east);
 		this->bPoleniValues[ulCellID].usePoliniE = true;
+
+		unsigned long lIdxX = 0;
+		unsigned long lIdxY = 0;
+		getCellIndices(ulCellID, &lIdxX, &lIdxY);
+		if (lIdxX < this->getSummary().ulColCount) {
+			long ulCellID_Neigh_E = this->getNeighbourID(ulCellID, direction::east);
 		this->bPoleniValues[ulCellID_Neigh_E].usePoliniW = true;
+	}
 	}
 
 }
@@ -505,9 +511,15 @@ void	CDomain::setPoleniConditionY(unsigned long ulCellID, bool UsePoleniInY)
 {
 	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the west to true also in the -x direction
 	if (UsePoleniInY) {
-		long ulCellID_Neigh_N = this->getNeighbourID(ulCellID, direction::north);
 		this->bPoleniValues[ulCellID].usePoliniN = true;
+
+		unsigned long lIdxX = 0;
+		unsigned long lIdxY = 0;
+		getCellIndices(ulCellID, &lIdxX, &lIdxY);
+		if (lIdxY < this->getSummary().ulRowCount) {
+		long ulCellID_Neigh_N = this->getNeighbourID(ulCellID, direction::north);
 		this->bPoleniValues[ulCellID_Neigh_N].usePoliniS = true;
+	}
 	}
 
 }
