@@ -49,12 +49,8 @@ __kernel void bdy_Promaides (
 	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
 
 	// Hydrological processes have their own timesteps
-	if (dLclTimestep < TIMESTEP_HYDROLOGICAL || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
+	if (dLclTimestep <= 0.0 || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
 		return;
-
-	if(dLclTimestep <= 0.0){
-		printf("dLclTimestep is <= 0.0 in CLBOUNDRIES.CLC");
-	}
 
 	// Apply the value...
 	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);

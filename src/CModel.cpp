@@ -978,6 +978,7 @@ void	CModel::runNext(const double next_time_point)
 		this->runModelRollback();
 
 		// Perform a sync if possible
+		// Alaa: Todo: We don't need to sync or propose a time, Promaides is responsible for giving a new time step
 		this->runModelSync();
 
 		// Don't proceed beyond this point if we need to rollback and we're just waiting for 

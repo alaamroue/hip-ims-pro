@@ -731,7 +731,8 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	//oclKernelBoundary->setGroupSize(8, 8);
 	//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(cd->getCols() / 8.0) * 8, (cl_ulong)ceil(cd->getRows() / 8.0) * 8);
 
-	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimeHydrological ,oclBufferCellStates, oclBufferCellBed };
+	// TODO: Alaa: remove the hydrological buffer and code
+	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimestep ,oclBufferCellStates, oclBufferCellBed };
 
 	oclKernelBoundary->assignArguments(aryArgsBdy);
 
