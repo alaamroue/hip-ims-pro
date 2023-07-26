@@ -92,7 +92,6 @@ CSchemeGodunov::CSchemeGodunov()
 	oclBufferTimestepReduction			= NULL;
 	oclBufferTime						= NULL;
 	oclBufferTimeTarget					= NULL;
-	oclBufferTimeHydrological			= NULL;
 
 	if ( this->bDebugOutput )
 		model::doError( "Debug mode is enabled!", model::errorCodes::kLevelWarning );
@@ -645,25 +644,21 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferTimestep			= new COCLBuffer( "Timestep", oclModel, false, true, ucFloatSize, true );
 	oclBufferTime				= new COCLBuffer( "Time",	  oclModel, false, true, ucFloatSize, true );
 	oclBufferTimeTarget			= new COCLBuffer( "Target time (sync)",	  oclModel, false, true, ucFloatSize, true );
-	oclBufferTimeHydrological	= new COCLBuffer( "Time (hydrological)", oclModel, false, true, ucFloatSize, true );
 
 	// We duplicate the time and timestep variables if we're using single-precision so we have copies in both formats
 	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		*( oclBufferTime->getHostBlock<float*>()     )			= static_cast<cl_float>( this->dCurrentTime );
 		*( oclBufferTimestep->getHostBlock<float*>() )			= static_cast<cl_float>( this->dCurrentTimestep );
-		*( oclBufferTimeHydrological->getHostBlock<float*>() )	= 0.0f;
 		*( oclBufferTimeTarget->getHostBlock<float*>() )		= 0.0f;
 	} else {
 		*( oclBufferTime->getHostBlock<double*>()     )			= this->dCurrentTime;
 		*( oclBufferTimestep->getHostBlock<double*>() )			= this->dCurrentTimestep;
-		*( oclBufferTimeHydrological->getHostBlock<double*>() ) = 0.0;
 		*( oclBufferTimeTarget->getHostBlock<double*>() )		= 0.0;
 	}
 
 	oclBufferTimestep->createBuffer();
 	oclBufferTime->createBuffer();
-	oclBufferTimeHydrological->createBuffer();
 	oclBufferTimeTarget->createBuffer();
 
 	// --
@@ -710,7 +705,7 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	oclKernelTimestepReduction->setGroupSize( this->ulReductionWorkgroupSize );
 	oclKernelTimestepReduction->setGlobalSize( this->ulReductionGlobalSize );
 
-	COCLBuffer* aryArgsTimeAdvance[]		= { oclBufferTime, oclBufferTimestep, oclBufferTimeHydrological, oclBufferTimestepReduction, oclBufferCellStates, oclBufferCellBed, oclBufferTimeTarget, oclBufferBatchTimesteps, oclBufferBatchSuccessful, oclBufferBatchSkipped };
+	COCLBuffer* aryArgsTimeAdvance[]		= { oclBufferTime, oclBufferTimestep, oclBufferTimestepReduction, oclBufferCellStates, oclBufferCellBed, oclBufferTimeTarget, oclBufferBatchTimesteps, oclBufferBatchSuccessful, oclBufferBatchSkipped };
 	COCLBuffer* aryArgsTimestepUpdate[]		= { oclBufferTime, oclBufferTimestep, oclBufferTimestepReduction, oclBufferTimeTarget, oclBufferBatchTimesteps };
 	COCLBuffer* aryArgsTimeReduction[]		= { oclBufferCellStates, oclBufferCellBed, oclBufferTimestepReduction };
 	COCLBuffer* aryArgsResetCounters[]      = { oclBufferBatchTimesteps, oclBufferBatchSuccessful, oclBufferBatchSkipped };
@@ -827,7 +822,6 @@ void CSchemeGodunov::release1OResources()
 	if ( this->oclBufferTimestepReduction != NULL )			delete oclBufferTimestepReduction;
 	if ( this->oclBufferTime != NULL )						delete oclBufferTime;
 	if ( this->oclBufferTimeTarget != NULL )				delete oclBufferTimeTarget;
-	if ( this->oclBufferTimeHydrological != NULL )			delete oclBufferTimeHydrological;
 
 	oclModel						= NULL;
 	oclKernelFullTimestep			= NULL;
@@ -851,7 +845,6 @@ void CSchemeGodunov::release1OResources()
 	oclBufferTimestepReduction		= NULL;
 	oclBufferTime					= NULL;
 	oclBufferTimeTarget				= NULL;
-	oclBufferTimeHydrological		= NULL;
 
 	if ( this->bIncludeBoundaries )
 	{
@@ -893,7 +886,6 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBuffer_opt_cy->queueWriteAll();
 	oclBufferTime->queueWriteAll();
 	oclBufferTimestep->queueWriteAll();
-	oclBufferTimeHydrological->queueWriteAll();
 	this->pDomain->getDevice()->blockUntilFinished();
 
 	// Sort out memory alternation
