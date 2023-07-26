@@ -80,8 +80,19 @@ void ine_cacheDisabled (
 	
 
 	// Also don't bother if we've gone beyond the total simulation time
-	if ( dLclTimestep <= 0.0 )
+	// Alaa: Because of we need to alternate between them then we should set the dst to src
+	// The host sends a sequence of (time ->  scheme...time -> scheme...time -> scheme ) (schme is scheme and bound)
+	// When time is done the sequence will still run and thus it is possible we use an old value
+	// Example:
+	// Step 1: Time suggests 0.1     Scheme: Src: k dst: k*0.1
+	// Step 1.5: Flip src and dst.   Now:    src: k*0.1  dst:k
+	// Step 2: Time suggests 0.0     scheme: if scheme ignores then src: k*0.1 dst: k
+	// Simulation finished but results is incorrect because dst is k but should be k*0.1 (Scheme should set dst = src)
+	// Todo: Alaa: There should be a way to avoid this no? Maybe not flip on host when time is <= 0.0?
+	if ( dLclTimestep <= 0.0 ){
+		pCellStateDst[ ulIdx ] = pCellStateSrc[ ulIdx ];
 		return;
+	}
 
 	// Load cell data
 	dCellBedElev		= dBedElevation[ ulIdx ];

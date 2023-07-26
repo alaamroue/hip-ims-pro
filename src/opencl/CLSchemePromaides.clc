@@ -66,6 +66,7 @@ void pro_cacheDisabled (
 
 	// Also don't bother if we've gone beyond the total simulation time
 	if ( dLclTimestep <= 0.0 )
+		pCellStateDst[ ulIdx ] = pCellStateSrc[ ulIdx ];
 		return;
 
 	// Load cell data
