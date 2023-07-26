@@ -40,7 +40,7 @@ void tst_Advance_Normal(
 {
 	__private cl_double	dLclTime			 = *dTime;
 	__private cl_double	dLclTimestep		 = fmax( 0.0, *dTimestep );
-	__private cl_double	dLclTimeHydrological = *dTimeHydrological;
+	//__private cl_double	dLclTimeHydrological = *dTimeHydrological;
 	__private cl_double	dLclSyncTime		 = *dTimeSync;
 	__private cl_double dLclBatchTimesteps	 = *dBatchTimesteps;
 	__private cl_uint uiLclBatchSuccessful	 = *uiBatchSuccessful;
@@ -58,12 +58,12 @@ void tst_Advance_Normal(
 	}
 
 	// Hydrological processes run with their own timestep which is larger
-	if (dLclTimeHydrological > TIMESTEP_HYDROLOGICAL)
-	{
-		dLclTimeHydrological = dLclTimestep;
-	} else {
-		dLclTimeHydrological += dLclTimestep;
-	}
+	//if (dLclTimeHydrological > TIMESTEP_HYDROLOGICAL)
+	//{
+	//	dLclTimeHydrological = dLclTimestep;
+	//} else {
+	//	dLclTimeHydrological += dLclTimestep;
+	//}
 
 	#ifdef TIMESTEP_DYNAMIC
 
@@ -139,7 +139,7 @@ void tst_Advance_Normal(
 	// Commit to global memory
 	*dTime			   = dLclTime;
 	*dTimestep		   = dLclTimestep;
-	*dTimeHydrological = dLclTimeHydrological;
+	//*dTimeHydrological = dLclTimeHydrological;
 	*dBatchTimesteps   = dLclBatchTimesteps;
 	*uiBatchSuccessful = uiLclBatchSuccessful;
 	*uiBatchSkipped    = uiLclBatchSkipped;
