@@ -516,7 +516,7 @@ void	CModel::runModelSync()
 	//this->runModelOutputs();
 		
 	// Calculate a new target time to aim for
-	this->runModelUpdateTarget( dCurrentTime );
+	//this->runModelUpdateTarget( dCurrentTime );
 
 	// ---
 	// TODO: In MPI implementation, we need to invoke a reduce operation here to identify the lowest
@@ -832,22 +832,20 @@ void	CModel::runNext(const double next_time_point)
 	// Run the main management loop
 	// ---------
 	// Even if user has forced abort, still wait until all idle state is reached
-	while ((this->dCurrentTime < dSimulationTime - 1E-5) || !bAllIdle)
+	while ((this->dCurrentTime < dTargetTime ) || !bAllIdle)
 	{
 		// Assess the overall state of the simulation at present
 		this->runModelDomainAssess(&bIdle);
 
-		// Perform a rollback if required
-		this->runModelRollback();
-
 		// Perform a sync if possible
 		// Alaa: Todo: We don't need to sync or propose a time, Promaides is responsible for giving a new time step
-		this->runModelSync();
+		//this->runModelSync();
 
-		// Don't proceed beyond this point if we need to rollback and we're just waiting for 
-		// devices to finish first...
-		if (bRollbackRequired)
+		// Don't proceed beyond this point if we need to rollback
+		if (bRollbackRequired) {
+			std::cout << "Rollback Required...Simulation failed! Try a different sync step.";
 			continue;
+		}
 
 		// Schedule new work
 		if (bIdle){
@@ -860,7 +858,8 @@ void	CModel::runNext(const double next_time_point)
 			this->runModelUI(sTotalMetrics);
 		}
 		
-		if (this->dCurrentTime + 1E-5 > next_time_point ) {
+		if (this->dCurrentTime  > next_time_point ) {
+			std::cout << "We are off, next point should " << next_time_point << " but we are at " << this->dCurrentTime << std::endl;
 			break;
 		}
 
@@ -894,8 +893,6 @@ void	CModel::runNext(const double next_time_point)
 	//model::log->writeDivide();
 
 	delete   pBenchmarkAll;
-	delete[] bSyncReady;
-	delete[] bIdle;
 }
 
 /*
