@@ -832,14 +832,11 @@ void	CModel::runNext(const double next_time_point)
 	// Run the main management loop
 	// ---------
 	// Even if user has forced abort, still wait until all idle state is reached
-	while ((this->dCurrentTime < dTargetTime ) || !bAllIdle)
+	while (this->dCurrentTime < dTargetTime )
 	{
 		// Assess the overall state of the simulation at present
 		this->runModelDomainAssess(&bIdle);
 
-		// Perform a sync if possible
-		// Alaa: Todo: We don't need to sync or propose a time, Promaides is responsible for giving a new time step
-		//this->runModelSync();
 
 		// Don't proceed beyond this point if we need to rollback
 		if (bRollbackRequired) {
