@@ -94,6 +94,7 @@ class CScheme
 		virtual bool		isSimulationSyncReady( double ) = 0;									// Are we ready to synchronise? i.e. have we reached the set sync time?
 		virtual COCLBuffer*	getLastCellSourceBuffer() = 0;											// Get the last source cell state buffer
 		virtual COCLBuffer*	getNextCellSourceBuffer() = 0;											// Get the next source cell state buffer
+		void				setOutputFreq(double);
 
 	protected:
 
@@ -125,6 +126,7 @@ class CScheme
 		cl_uint				uiBatchSuccessful;														// Number of successful batch iterations
 		cl_uint				uiBatchRate;															// Number of successful iterations per second
 		CDomain*			pDomain;																// Domain which this scheme is attached to
+		double				outputFrequency;
 		
 };
 

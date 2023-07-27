@@ -213,3 +213,11 @@ bool	CScheme::isRunning()
 {
 	return bRunning;
 }
+
+/*
+ *	Sets the Output Frequency
+ */
+void	CScheme::setOutputFreq(double freq)
+{
+	outputFrequency = freq;
+}
