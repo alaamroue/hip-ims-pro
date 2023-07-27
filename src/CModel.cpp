@@ -614,24 +614,10 @@ void	CModel::runModelOutputs()
  */
 double* CModel::getBufferOpt()
 {
-	if (bRollbackRequired ||
-		!bSynchronised ||
-		!bAllIdle ||
-		!(fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime))
-		return nullptr;
 
 	double* opt_h = this->getDomainSet()->getDomain(0)->readBuffers_opt_h();
 	return opt_h;
 
-	dLastOutputTime = this->dCurrentTime;
-
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-	{
-		if (domains->isDomainLocal(i))
-			domains->getDomain(i)->getScheme()->forceTimeAdvance();
-	}
-
-	this->runModelBlockGlobal();
 }
 
 /*
