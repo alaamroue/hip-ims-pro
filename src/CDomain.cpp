@@ -493,7 +493,6 @@ void	CDomain::setPoleniConditionX(unsigned long ulCellID, bool UsePoleniInX)
 	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the east to true also in the -x direction
 	// Todo: Alaa. Review why poleni is enabled on the borders anyways?
 	if (UsePoleniInX) {
-		this->bPoleniValues[ulCellID].usePoliniE = true;
 
 		unsigned long lIdxX = 0;
 		unsigned long lIdxY = 0;
@@ -515,7 +514,6 @@ void	CDomain::setPoleniConditionY(unsigned long ulCellID, bool UsePoleniInY)
 	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the west to true also in the -y direction
 	// Todo: Alaa. Review why poleni is enabled on the borders anyways?
 	if (UsePoleniInY) {
-		this->bPoleniValues[ulCellID].usePoliniN = true;
 
 		unsigned long lIdxX = 0;
 		unsigned long lIdxY = 0;
