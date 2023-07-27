@@ -1163,19 +1163,8 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 		return;
 	}
 
-	// If we've hit our target time, download the data we need for any dependent
-	// domain links (or in timestep sync, hit the iteration limit)
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
-		 dTargetTime - this->dCurrentTime <= 1E-5 )
-		 bDownloadLinks = true;
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-		 ( this->uiIterationsSinceSync >= pDomain->getRollbackLimit() ||
-		   dTargetTime - this->dCurrentTime <= 1E-5 ) )
-		 bDownloadLinks = true;
-
 	// Calculate a new batch size
 	if (  this->bAutomaticQueue		&&
-		 !this->bDebugOutput		&&
 		  dRealTime > 1E-5          &&
 		  model::pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
 	{
@@ -1183,26 +1172,20 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 			double dBatchDuration = dRealTime - dBatchStartedTime;
 			unsigned int uiOldQueueAdditionSize = this->uiQueueAdditionSize;
 
-			if (model::pManager->getDomainSet()->getDomainCount() > 1) {
-				this->uiQueueAdditionSize = static_cast<unsigned int>((dTargetTime - dCurrentTime) / (dBatchTimesteps / static_cast<double>(uiBatchSuccessful)) + 1.0);
-			} else {
 				this->uiQueueAdditionSize = static_cast<unsigned int>(max(static_cast<unsigned int>(1), min(this->uiBatchRate * 3, static_cast<unsigned int>(ceil(1.0 / (dBatchDuration / static_cast<double>(this->uiQueueAdditionSize)))))));
-			}
 
 			// Stop silly jumps in the queue addition size
 			if (this->uiQueueAdditionSize > uiOldQueueAdditionSize * 2 &&
 				this->uiQueueAdditionSize > 40)
 				this->uiQueueAdditionSize = min(static_cast<unsigned int>(this->uiBatchRate * 3), uiOldQueueAdditionSize * 2);
 
-			// Don't allow the batch size to exceed the work we can schedule without requiring a
-			// rollback of the domain state.
-			if (this->uiQueueAdditionSize > pDomain->getRollbackLimit() - this->uiIterationsSinceSync)
-				this->uiQueueAdditionSize = pDomain->getRollbackLimit() - this->uiIterationsSinceSync;
+
 
 			// Can't have zero queue addition size
 			if (this->uiQueueAdditionSize < 1)
 				this->uiQueueAdditionSize = 1;
 	}
+
 
 	dBatchStartedTime = dRealTime;
 	this->bRunning = true;
