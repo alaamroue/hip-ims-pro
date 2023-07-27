@@ -1143,7 +1143,7 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 		return;
 
 	// If we've already hit our sync time but the other domains haven't, don't bother scheduling any work
-	if ( this->dCurrentTime > dTargetTime + 1E-5 )
+	if ( this->dCurrentTime > dTargetTime )
 	{
 		// TODO: Consider downloading the data at this point?
 		// but need to accommodate for rollbacks... difficult...
