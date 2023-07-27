@@ -167,7 +167,7 @@ bool CModel::runModel( void )
 	this->log->writeLine( "Starting a new simulation..." );
 
 	this->runModelPrepare();
-	this->runModelMain();
+	//this->runModelMain();
 
 	return true;
 }
@@ -848,7 +848,7 @@ void	CModel::runModelCleanup()
 
 /*
  *  Run the actual simulation, asking each domain and schemes therein in turn etc.
- */
+
 void	CModel::runModelMain()
 {
 	bool*							bSyncReady				= new bool[ domains->getDomainCount() ];
@@ -935,7 +935,7 @@ void	CModel::runModelMain()
 	delete[] bSyncReady;
 	delete[] bIdle;
 }
-
+ */
 /*
  *  Run the actual simulation, asking each domain and schemes therein in turn etc.
  */

@@ -966,9 +966,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		if (this->bUpdateTargetTime)
 		{
 			this->bUpdateTargetTime = false;
-#ifdef DEBUG_MPI
-			model::log->writeLine("[DEBUG] Setting new target time of " + Util::secondsToTime(this->dTargetTime) + "...");
-#endif
 		
 			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
@@ -1006,9 +1003,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			pDomain->getDevice()->queueBarrier();
 			//pDomain->getDevice()->blockUntilFinished();		// Shouldn't be needed
 			
-#ifdef DEBUG_MPI
-			model::log->writeLine("[DEBUG] Done updating new target time to " + Util::secondsToTime(this->dTargetTime) + "...");
-#endif
 		}
 
 		// Have we been asked to override the timestep at the start of this batch?
@@ -1073,11 +1067,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep)
 			uiQueueAmount = 1;
 
-#ifdef DEBUG_MPI
-		if ( uiQueueAmount > 0 )
-			model::log->writeLine("[DEBUG] Starting batch of " + toStringExact(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
-#endif
-			
 		// Schedule a batch-load of work for the device
 		// Do we need to run any work?
 		if ( uiIterationsSinceSync < this->pDomain->getRollbackLimit() &&
@@ -1085,9 +1074,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		{
 			for (unsigned int i = 0; i < uiQueueAmount; i++)
 			{
-#ifdef DEBUG_MPI
-				model::log->writeLine( "Scheduling a new iteration..." );
-#endif
+
 				this->scheduleIteration(
 					bUseAlternateKernel,
 					pDomain->getDevice(),
@@ -1103,8 +1090,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			this->bCellStatesSynced = false;
 		}
 
-		// Schedule reading data back. We always need the timestep
-		// but we might not need the other details always...
+		// Schedule reading data back. We always need the timestep but we might not need the other details always...
 		oclBufferTimestep->queueReadAll();
 		oclBufferTime->queueReadAll();
 		oclBufferBatchSkipped->queueReadAll();
@@ -1120,9 +1106,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			this->pDomain->getDevice()->blockUntilFinished();
 			this->readKeyStatistics();
 		
-#ifdef DEBUG_MPI
-			model::log->writeLine( "[DEBUG] Downloading link data at " + Util::secondsToTime(this->dCurrentTime) );
-#endif
 			for (unsigned int i = 0; i < this->pDomain->getDependentLinkCount(); i++)
 			{
 				this->pDomain->getDependentLink(i)->pullFromBuffer(this->dCurrentTime, this->getNextCellSourceBuffer());
@@ -1145,17 +1128,6 @@ void CSchemeGodunov::Threaded_runBatch()
 
 		// Read from buffers back to scheme memory space
 		this->readKeyStatistics();
-		
-#ifdef DEBUG_MPI
-		if ( uiQueueAmount > 0 )
-		{
-			model::log->writeLine("[DEBUG] Finished batch of " + toStringExact(uiQueueAmount) + " with timestep " + Util::secondsToTime(this->dCurrentTimestep) + " at " + Util::secondsToTime(this->dCurrentTime) );
-			if ( this->dCurrentTimestep < 0.0 )
-			{
-				model::log->writeLine( "[DEBUG] We have a negative timestep..." );
-			}
-		}
-#endif
 		
 		// Wait until further work is scheduled
 		this->bRunning = false;
