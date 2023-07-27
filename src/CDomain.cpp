@@ -228,6 +228,7 @@ void	CDomain::resetAllValues()
 
 		this->bPoleniValues[i] = {false,false,false,false};					// Poleni flags
 	}
+	model::log->writeLine("Reseting heap domain data Finished.");
 }
 
 /*
@@ -490,13 +491,15 @@ void	CDomain::setcy(unsigned long ulCellID, double dCoefficient)
 void	CDomain::setPoleniConditionX(unsigned long ulCellID, bool UsePoleniInX)
 {
 	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the east to true also in the -x direction
+	// Todo: Alaa. Review why poleni is enabled on the borders anyways?
 	if (UsePoleniInX) {
 		this->bPoleniValues[ulCellID].usePoliniE = true;
 
 		unsigned long lIdxX = 0;
 		unsigned long lIdxY = 0;
 		getCellIndices(ulCellID, &lIdxX, &lIdxY);
-		if (lIdxX < this->getSummary().ulColCount) {
+		if (lIdxX < this->getSummary().ulColCount - 1) {
+			this->bPoleniValues[ulCellID].usePoliniE = true;
 			long ulCellID_Neigh_E = this->getNeighbourID(ulCellID, direction::east);
 		this->bPoleniValues[ulCellID_Neigh_E].usePoliniW = true;
 	}
@@ -509,14 +512,16 @@ void	CDomain::setPoleniConditionX(unsigned long ulCellID, bool UsePoleniInX)
  */
 void	CDomain::setPoleniConditionY(unsigned long ulCellID, bool UsePoleniInY)
 {
-	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the west to true also in the -x direction
+	//All values are already false by default, so we need to check which are true in the x direction, then change their neighbor to the west to true also in the -y direction
+	// Todo: Alaa. Review why poleni is enabled on the borders anyways?
 	if (UsePoleniInY) {
 		this->bPoleniValues[ulCellID].usePoliniN = true;
 
 		unsigned long lIdxX = 0;
 		unsigned long lIdxY = 0;
 		getCellIndices(ulCellID, &lIdxX, &lIdxY);
-		if (lIdxY < this->getSummary().ulRowCount) {
+		if (lIdxY < this->getSummary().ulRowCount - 1) {
+			this->bPoleniValues[ulCellID].usePoliniN = true;
 		long ulCellID_Neigh_N = this->getNeighbourID(ulCellID, direction::north);
 		this->bPoleniValues[ulCellID_Neigh_N].usePoliniS = true;
 	}
