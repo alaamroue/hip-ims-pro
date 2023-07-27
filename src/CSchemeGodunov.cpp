@@ -1086,9 +1086,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 		// Schedule a batch-load of work for the device
 		// Do we need to run any work?
-		if ( uiIterationsSinceSync < this->pDomain->getRollbackLimit() &&
-			 this->dCurrentTime < dTargetTime )
-		{
+		if ( this->dCurrentTime < dTargetTime ) {
 			for (unsigned int i = 0; i < uiQueueAmount; i++)
 			{
 
@@ -1103,8 +1101,6 @@ void CSchemeGodunov::Threaded_runBatch()
 				bUseAlternateKernel = !bUseAlternateKernel;
 			}
 
-			// A further download will be required...
-			this->bCellStatesSynced = false;
 		}
 
 		// Schedule reading data back. We always need the timestep but we might not need the other details always...
