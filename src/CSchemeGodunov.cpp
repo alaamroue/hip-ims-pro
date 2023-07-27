@@ -993,7 +993,7 @@ void CSchemeGodunov::Threaded_runBatch()
 				oclKernelTimestepUpdate->scheduleExecution();
 			}
 			
-			if ( dCurrentTime + dCurrentTimestep > dTargetTime + 1E-5 )
+			if ( dCurrentTime + dCurrentTimestep > dTargetTime )
 			{
 				this->dCurrentTimestep  = dTargetTime - dCurrentTime;
 				this->bOverrideTimestep = true;
@@ -1081,8 +1081,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		// Can only schedule one iteration before we need to sync timesteps
 		// if timestep sync method is active.
 		unsigned int uiQueueAmount = this->uiQueueAdditionSize;
-		if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep)
-			uiQueueAmount = 1;
 
 		// Schedule a batch-load of work for the device
 		// Do we need to run any work?
