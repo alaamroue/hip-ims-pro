@@ -420,119 +420,23 @@ void	CModel::runModelPrepareDomains()
 /*
 *  Assess the current state of each domain.
 */
-void	CModel::runModelDomainAssess(
-			bool *			bSyncReady,
-			bool *			bIdle
-		)
+void	CModel::runModelDomainAssess(bool *			bIdle)
 {
 	bRollbackRequired = false;
 	dEarliestTime = 0.0;
 	bWaitOnLinks = false;
 
-	// Fetch all the data we need for each domain/scheme
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-	{
-		if (!domains->isDomainLocal(i))
-		{
-			// Is this domain sync ready etc?
-			// TODO...
-			bSyncReady[i] = true;
-			bIdle[i] = true;
-			continue;
-		}
-
 		// Minimum time
-		if (dEarliestTime == 0.0 || dEarliestTime > domains->getDomain(i)->getScheme()->getCurrentTime())
-			dEarliestTime = domains->getDomain(i)->getScheme()->getCurrentTime();
-
-		// Check if all of the domain links have been received... especially for MPI
-		// TODO: Finish this bit.
+	dCurrentTime = domains->getDomain(0)->getScheme()->getCurrentTime();
 
 		// Either we're not ready to sync, or we were still synced from the last run
-		if (!domains->getDomain(i)->getScheme()->isSimulationSyncReady(dTargetTime) || bSynchronised || dLastSyncTime == dEarliestTime )
-		{
-			bSyncReady[i] = false;
-			// Handle rollbacks?
-			if (domains->getDomain(i)->getScheme()->isSimulationFailure(dTargetTime))
-			{
-				bRollbackRequired = true;
-			}
-		}
-		else {
-			bSyncReady[i] = true;
-		}
-
-		// Either we're not ready to sync, or we were still synced from the last run
-		if (domains->getDomain(i)->getScheme()->isRunning() || domains->getDomain(i)->getDevice()->isBusy())
-		{
-			bIdle[i] = false;
-		}
-		else {
-			bIdle[i] = true;
-		}
-	}
-
-	// Are all the domains synced?
-	bSynchronised = true;
-	bAllIdle = true;
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-	{
-		if (!bSyncReady[i]) bSynchronised = false;
-		if (!bIdle[i])		bAllIdle = false;
-	}
-	
-	// Only allow sync if the domain links are at the right time and send data to other nodes
-	// if we need to
-	if ( bSynchronised && bAllIdle )
-	{
-		for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-		{
-			if (domains->isDomainLocal(i))
-			{
-				if ( !domains->getDomainBase(i)->isLinkSetAtTime( dEarliestTime ) && dEarliestTime > 0.0 )
-				{
-#ifdef DEBUG_MPI
-					model::log->writeLine( "[DEBUG] Earliest time: " + Util::secondsToTime( dEarliestTime ) + " - cannot sync." );
-#endif
-					bSynchronised = false;
-					bWaitOnLinks = true;
-				}
+	if (domains->getDomain(0)->getScheme()->isRunning() || domains->getDomain(0)->getDevice()->isBusy()){
+		*bIdle = false;
 			} else {
-				if ( !domains->getDomainBase(i)->sendLinkData() )
-				{
-					bWaitOnLinks = true;
-					bAllIdle = false;
+		*bIdle = true;
 				}
 			}
-		}
-	}
 	
-	// If we're synchronising the timesteps we need all idle
-	if ( bAllIdle && !bWaitOnLinks )
-	{
-		double dMinTimestep = 0.0;
-		bool bIsSuspended = false;
-		for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-		{
-			// TODO: This needs to be changed for MPI...
-			if (!domains->isDomainLocal(i))
-				continue;
-
-			if ( ( dMinTimestep == 0.0 || dMinTimestep > domains->getDomain(i)->getScheme()->getCurrentTimestep() ) &&
-				   domains->getDomain(i)->getScheme()->getCurrentTimestep() > 0.0 )
-				dMinTimestep = domains->getDomain(i)->getScheme()->getCurrentTimestep();
-				
-			if ( domains->getDomain(i)->getScheme()->getCurrentSuspendedState() == true )
-				bIsSuspended = true;
-		}
-
-		// Reduce across all MPI nodes if required
-		dGlobalTimestep = dMinTimestep;
-		dCurrentTime = dEarliestTime;
-
-	}
-}
-
 /*
  *  Exchange data across domains where necessary.
  */
@@ -596,8 +500,7 @@ void	CModel::runModelUpdateTarget( double dTimeBase )
 void	CModel::runModelSync()
 {
 	if ( bRollbackRequired ||
-		 !bSynchronised    ||
-		 !bAllIdle )
+		 !bSynchronised )
 		return;
 		
 	// No rollback required, thus we know the simulation time can now be increased
@@ -689,7 +592,6 @@ void	CModel::runModelOutputs()
 {
 	if ( bRollbackRequired ||
 		 !bSynchronised ||
-		 !bAllIdle ||
 		 !( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
 		return;
 
@@ -737,38 +639,18 @@ double* CModel::getBufferOpt()
 */
 void	CModel::runModelSchedule(CBenchmark::sPerformanceMetrics * sTotalMetrics, bool * bIdle)
 {
-	// Normally we don't wait for all idle to schedule new work (only one device needs to be idle)
-	// but if we're waiting on MPI activity then we can't do anything
 
-	// If we're synchronising the timestep we only progress from here
 	// if ALL our domains are idle
-	if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-		!bAllIdle)
-		return;
-
-	// Keep running each domain until we're ready for synchronisation
-	for (unsigned int i = 0; i < domains->getDomainCount(); ++i)
-	{
-		if (!domains->isDomainLocal(i))
-			continue;
-
-		// Progress until the target time is reached...
-		// Either we're not ready to sync, or we were still synced from the last run
-		if (!bSynchronised && bIdle[i])
-		{
-				
-			// Set the timestep if we're synchronising them
-			if (this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
-				dGlobalTimestep > 0.0)
-				domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
-			//model::log->writeLine( "Global timestep: " + toStringExact( dGlobalTimestep ) + " Current time: " + toStringExact( domains->getDomain(i)->getScheme()->getCurrentTime() ) );
-
-			// Run a batch
-			//model::log->writeLine("[DEBUG] Running scheme to " + toStringExact(dTargetTime));
-			domains->getDomain(i)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
-		}
+	if (bIdle[0]) {
+		domains->getDomain(0)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
 	}
+
+
+	//domains->getDomain(i)->getScheme()->forceTimestep(dGlobalTimestep);
+				
+			// Run a batch
 	
+
 	// Wait if we're syncing timesteps?
 	//if ( this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
 	//	this->runModelBlockGlobal();
@@ -941,8 +823,7 @@ void	CModel::runModelMain()
  */
 void	CModel::runNext(const double next_time_point)
 {
-	bool* bSyncReady = new bool[domains->getDomainCount()];
-	bool* bIdle = new bool[domains->getDomainCount()];
+	bool bIdle;
 	double							dCellRate = 0.0;
 	CBenchmark::sPerformanceMetrics* sTotalMetrics;
 	CBenchmark* pBenchmarkAll;
@@ -968,11 +849,7 @@ void	CModel::runNext(const double next_time_point)
 	while ((this->dCurrentTime < dSimulationTime - 1E-5) || !bAllIdle)
 	{
 		// Assess the overall state of the simulation at present
-		this->runModelDomainAssess(
-			bSyncReady,
-			bIdle
-		);
-
+		this->runModelDomainAssess(&bIdle);
 
 		// Perform a rollback if required
 		this->runModelRollback();
@@ -987,10 +864,9 @@ void	CModel::runNext(const double next_time_point)
 			continue;
 
 		// Schedule new work
-		this->runModelSchedule(
-			sTotalMetrics,
-			bIdle
-		);
+		if (bIdle){
+			domains->getDomain(0)->getScheme()->runSimulation(dTargetTime, sTotalMetrics->dSeconds);
+		}
 
 		// Update progress bar after each batch, not every time
 		sTotalMetrics = pBenchmarkAll->getMetrics();

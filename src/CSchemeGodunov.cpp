@@ -977,7 +977,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			oclBufferTimeTarget->queueWriteAll();
 			pDomain->getDevice()->queueBarrier();
 
-			this->bCellStatesSynced = false;
 			this->uiIterationsSinceSync = 0;
 
 			bUseForcedTimeAdvance = true;
@@ -1006,10 +1005,9 @@ void CSchemeGodunov::Threaded_runBatch()
 		}
 
 		// Have we been asked to override the timestep at the start of this batch?
-		if ( //uiIterationsSinceSync < this->pDomain->getRollbackLimit() &&
-			 this->dCurrentTime < dTargetTime &&
-			 this->bOverrideTimestep )
-		{		
+		if ( this->dCurrentTime < dTargetTime && this->bOverrideTimestep ){
+			this->bOverrideTimestep = false;
+
 			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
 				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(this->dCurrentTimestep);
@@ -1024,7 +1022,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			pDomain->getDevice()->queueBarrier();
 			//pDomain->getDevice()->blockUntilFinished();
 
-			this->bOverrideTimestep = false;
 		}
 
 		// Have we been asked to import data for our domain links?

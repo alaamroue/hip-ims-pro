@@ -56,8 +56,8 @@ class CModel
 		bool					runModel(void);									// Execute the model
 		void					runModelPrepare(void);							// Prepare for model run
 		void					runModelPrepareDomains(void);					// Prepare domains and domain links
-		void					runModelMain(void);								// Main model run loop
-		void					runModelDomainAssess( bool*, bool* );			// Assess domain states
+		//void					runModelMain(void);								// Main model run loop
+		void					runModelDomainAssess( bool* );			// Assess domain states
 		void					runModelDomainExchange(void);					// Exchange domain data
 		void					runModelUpdateTarget(double);					// Calculate a new target time
 		void					runModelSync(void);								// Synchronise domain and timestep data
