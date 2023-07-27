@@ -1024,9 +1024,10 @@ void CSchemeGodunov::Threaded_runBatch()
 
 		}
 
-		// Have we been asked to import data for our domain links?
-		if (this->bImportLinks)
-		{
+		// Have we been asked to import new data?
+		if (this->bImportLinks){
+
+			this->bImportLinks = false;
 
 			this->oclBufferCellBoundary->queueWriteAll();
 
@@ -1034,10 +1035,28 @@ void CSchemeGodunov::Threaded_runBatch()
 			this->dLastSyncTime = this->dCurrentTime;
 			this->uiIterationsSinceSync = 0;
 
+			// Set Small Timestep
+			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle){
+				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(0.001);
+			}
+			else {
+				*(oclBufferTimestep->getHostBlock<double*>()) = 0.001;
+			}
+			oclBufferTimestep->queueWriteAll();
+			pDomain->getDevice()->queueBarrier();
+			// Apply Boundary Condition
+			
+			// Apply scheme
+			// Reduction and Update to new bigger timestep
+			// Advance time which would advance by the small time step
+
+
+			//Alaa
 			// Update the data
 			oclKernelResetCounters->scheduleExecution();
 			pDomain->getDevice()->queueBarrier();
 
+			/*
 			// Force timestep recalculation if necessary
 			if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
 			{
@@ -1046,6 +1065,7 @@ void CSchemeGodunov::Threaded_runBatch()
 				oclKernelTimestepUpdate->scheduleExecution();
 				pDomain->getDevice()->queueBarrier();
 			}
+			*/
 
 			this->bImportLinks = false;
 		}
