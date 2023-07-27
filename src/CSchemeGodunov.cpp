@@ -1111,20 +1111,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		oclBufferBatchTimesteps->queueReadAll();
 		uiIterationsSinceProgressCheck = 0;
 
-
-		// Download data for each of the dependent domains
-		if (bDownloadLinks)
-		{
-			// We need to know the time...
-			this->pDomain->getDevice()->blockUntilFinished();
-			this->readKeyStatistics();
-		
-			for (unsigned int i = 0; i < this->pDomain->getDependentLinkCount(); i++)
-			{
-				this->pDomain->getDependentLink(i)->pullFromBuffer(this->dCurrentTime, this->getNextCellSourceBuffer());
-			}
-		}
-
 		// Flush the command queue so we can wait for it to finish
 		this->pDomain->getDevice()->flushAndSetMarker();
 
@@ -1132,13 +1118,6 @@ void CSchemeGodunov::Threaded_runBatch()
 		// this thread... probably don't need the marker
 		this->pDomain->getDevice()->blockUntilFinished();
 		
-		// Are cell states now synced?
-		if (bDownloadLinks)
-		{
-			bDownloadLinks = false;
-			bCellStatesSynced = true;
-		}
-
 		// Read from buffers back to scheme memory space
 		this->readKeyStatistics();
 		
