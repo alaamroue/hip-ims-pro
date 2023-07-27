@@ -1067,7 +1067,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			}
 			*/
 
-			this->bImportLinks = false;
 		}
 
 		// Don't schedule any work if we're already at the sync point
