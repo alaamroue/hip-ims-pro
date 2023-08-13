@@ -35,6 +35,7 @@ void tst_Advance_Normal (
 	__global	cl_double *,
 	__global	cl_double *,
 	__global	cl_double *,
+	__global	cl_double *,
 	__global	cl_double4 *,
 	__global	cl_double *,
 	__global	cl_double *,

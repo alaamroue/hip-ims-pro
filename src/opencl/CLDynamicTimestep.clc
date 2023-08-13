@@ -28,6 +28,7 @@ __kernel  __attribute__((reqd_work_group_size(1, 1, 1)))
 void tst_Advance_Normal( 
 		__global cl_double *  	dTime,
 		__global cl_double *  	dTimestep,
+		__global cl_double *  	dTimeHydrological,
 		__global cl_double *  	pReductionData,
 		__global cl_double4 *  	pCellData,
 		__global cl_double *  	dBedData,
@@ -39,14 +40,21 @@ void tst_Advance_Normal(
 {
 	__private cl_double	dLclTime			 = *dTime;
 	__private cl_double	dLclTimestep		 = fmax( 0.0, *dTimestep );
+	__private cl_double	dLclTimeHydrological = *dTimeHydrological;
 	__private cl_double	dLclSyncTime		 = *dTimeSync;
 	__private cl_double dLclBatchTimesteps	 = *dBatchTimesteps;
 	__private cl_uint uiLclBatchSuccessful	 = *uiBatchSuccessful;
 	__private cl_uint uiLclBatchSkipped		 = *uiBatchSkipped;
 
 	// Increment total time (only ever referenced in this kernel)
+	//printf("3. Advance Time: from %f to %f by %f \n", dLclTime, dLclTime+dLclTimestep, dLclTimestep);
 	dLclTime += dLclTimestep;
 	dLclBatchTimesteps += dLclTimestep;
+
+	if (dLclTimeHydrological >= TIMESTEP_HYDROLOGICAL)
+	{
+		dLclTimeHydrological = 0.0;
+	}
 
 	if ( dLclTimestep > 0.0 )
 	{
@@ -97,9 +105,13 @@ void tst_Advance_Normal(
 		if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM){
 			//printf("5. We are in early start so, min time is: %f\n", dMinTime );
 		dMinTime = TIMESTEP_START_MINIMUM;
+		}else{
+			//printf("5. We are in not in early start...\n");
+		}
 
 	// Multiply by the Courant number
 	dLclTimestep = COURANT_NUMBER * dMinTime;
+		//printf("6. dLclTimestep is thus: %f \n", dLclTimestep);
 
 	#endif
 	#ifdef TIMESTEP_FIXED
@@ -121,6 +133,7 @@ void tst_Advance_Normal(
 	}
 	*/
 
+	/*
 	// Impose a minimum timestep
 	if (dLclTimestep > 0.0 && dLclTimestep < TIMESTEP_MINIMUM)
 		dLclTimestep = TIMESTEP_MINIMUM;
@@ -135,23 +148,46 @@ void tst_Advance_Normal(
 		if ( dLclSyncTime - dLclTime <= VERY_SMALL )
 			dLclTimestep = -dLclTimestep;
 	}
+	*/
+
+
+	//if (dLclTimestep < 0)
+	//	dLclTimestep = -1.0*dLclTimestep;
+
+	if (dLclTimestep < TIMESTEP_MINIMUM)
+		dLclTimestep = TIMESTEP_MINIMUM;
+
 
 	// Control the timestep initially to ensure it's not silly, because
 	// boundary conditions may only just be kicking in (i.e. dry domain)
 	if (dLclTime < TIMESTEP_EARLY_LIMIT_DURATION && dLclTimestep > TIMESTEP_EARLY_LIMIT)
 		dLclTimestep = TIMESTEP_EARLY_LIMIT;
 
-	// Don't exceed the total simulation time
+	// Don't exceed the target (DECREASE)
+	if ( ( dLclTime + dLclTimestep ) > dLclSyncTime ){
+		dLclTimestep = dLclSyncTime - dLclTime;
+	}
+
+	// Don't exceed the total simulation time (DECREASE)
 	if ( ( dLclTime + dLclTimestep ) > SCHEME_ENDTIME )
 		dLclTimestep = SCHEME_ENDTIME - dLclTime;
 
-	// A sensible maximum timestep
+	// A sensible maximum timestep (DECREASE)
 	if (dLclTimestep > TIMESTEP_MAXIMUM)
 		dLclTimestep = TIMESTEP_MAXIMUM;
+
+	// Hydrological processes run with their own timestep which is larger
+	if (dLclTimestep > 0.0)
+	{
+		dLclTimeHydrological += dLclTimestep;
+	}
+
+	//printf("7. Because of limitions, dLclTimestep is now: %f\n", dLclTimestep );
 
 	// Commit to global memory
 	*dTime			   = dLclTime;
 	*dTimestep		   = dLclTimestep;
+	*dTimeHydrological = dLclTimeHydrological;
 	*dBatchTimesteps   = dLclBatchTimesteps;
 	*uiBatchSuccessful = uiLclBatchSuccessful;
 	*uiBatchSkipped    = uiLclBatchSkipped;
