@@ -90,7 +90,7 @@ void pro_cacheDisabled (
 	dOpt_cy				= pOpt_cy	[ ulIdx ];
 
 	// Cell disabled?
-	if ( pCellData.y <= -9999.0 || pCellData.x == -9999.0 )
+	if ( pCellData.y <= -9999.0 || pCellData.x <= -9999.0 )
 	{
 		pCellStateDst[ ulIdx ] = pCellData;
 		return;
@@ -288,6 +288,37 @@ void pro_cacheDisabled (
 	if ( pCellData.x > pCellData.y )
 		pCellData.y = pCellData.x;
 
+	/*
+	if (ulIdx == 303 ){
+		//printf("Postion: X: %f Y:%f \n",lIdxX*1.0 , lIdxY*1.0 );
+		printf("ulIdx %f ",ulIdx*1.0 );
+		printf("opt_z %f opt_h %f opt_s %f ",dCellBedElev, (pCellData.x-dCellBedElev), pCellData.x);
+		//printf("opt_h %f", (pCellData.x-dCellBedElev));
+		//printf("pN %f pE %f pS %f pW %f ",usePoleniN ? 1.0 : 0.0, usePoleniE ? 1.0 : 0.0, usePoleniS ? 1.0 : 0.0, usePoleniW ? 1.0 : 0.0);
+		//printf("dOpt_zxmax %f dOpt_cx %f dOpt_zymax %f dOpt_cy %f ",dOpt_zxmax, dOpt_cx, dOpt_zymax, dOpt_cy);
+		//printf("N %f E %f S %f W %f ", pNeigDataN.x-dNeigBedElevN,pNeigDataE.x-dNeigBedElevE,pNeigDataS.x-dNeigBedElevS,pNeigDataW.x-dNeigBedElevW);
+		//printf("dN %f dE %f dS %f dW %f ", dDischarges[ DOMAIN_DIR_N ].x,dDischarges[ DOMAIN_DIR_E ].x,dDischarges[ DOMAIN_DIR_S ].x,dDischarges[ DOMAIN_DIR_W ].x);
+		printf("v_x %f v_y %f", pCellData.z, pCellData.w);
+
+		printf("\n");
+	}
+	
+	*/
+	/*
+	if (ulIdx == 303 ){
+		printf("%f ",pCellStateSrc[0].x);
+		printf("%f ",pCellStateSrc[1].x);
+		printf("%f ",pCellStateSrc[2].x);
+		printf("%f ",pCellStateSrc[100].x);
+		printf("%f ",pCellStateSrc[101].x);
+		printf("%f ",pCellStateSrc[102].x);
+		printf("%f ",pCellStateSrc[200].x);
+		printf("%f ",pCellStateSrc[201].x);
+		printf("%f ",pCellStateSrc[202].x);
+
+		printf("\n");
+	}
+	*/
 	// Crazy low depths?
 	//if ( pCellData.x - dCellBedElev < VERY_SMALL )
 	//	pCellData.x = dCellBedElev;
