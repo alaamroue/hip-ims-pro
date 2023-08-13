@@ -62,16 +62,41 @@ __kernel void bdy_Promaides (
 	
 	// Apply the value...
 	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);
-	
+
 	pCellState[ulIdx] = pCellData;
 }
-	//	lIdxX == 98 && lIdxY == 98
-	ulIdx==8878
-	){
-		//printf("Before: %f After: %f step: %f \n", pCellState[ulIdx].x, pCellData.x, dLclTimestep);
-		//printf("ulIdx: %i x: %f y: %f z: %f w: %f Rate: %f step: %f \n", ulIdx, pCellData.x, pCellData.y, pCellData.z, pCellData.w, dRate*1000000, dLclTimestep);
+
+
+__kernel void bdy_Promaides_by_id (
+	__global		cl_ulong const * restrict	pCouplingID,
+	__global		cl_double const * restrict	pCouplingBound,
+	__global		cl_double const * restrict pTimeStep,
+	__global		cl_double4 *				pCellState,
+	__global		cl_double const * restrict pCellBed
+	)
+{
+	// Which array entry are we processing
+	__private cl_long		lId = get_global_id(0);
+
+	// Don't bother if we've gone beyond the domain bounds
+	if ( lId < 0 || lId > COUPLING_ARRAY_SIZE - 1)
+		return;
+		
+	// What Cell are we working with;
+	__private cl_ulong		ulIdx = pCouplingID[lId];
+	__private cl_double		dRate = pCouplingBound[lId];
+
+	// Get variables
+	__private cl_double					dLclTimestep		= *pTimeStep;
+	__private cl_double4				pCellData			= pCellState[ulIdx];
+	__private cl_double					dCellBedElev		= pCellBed[ulIdx];
+
+	// Check timestep
+	if (dLclTimestep <= 0.0){
+		return;
 	}
-	//#endif
-	// Return to global memory
+	// Apply the value...
+	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);
+
 	pCellState[ulIdx] = pCellData;
 }

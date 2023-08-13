@@ -109,6 +109,7 @@ class CScheme
 		bool				bBatchComplete;															// Is the batch done?
 		bool				bBatchError;															// Have we run out of room?
 		bool				bFrictionEffects;														// Activate friction effects?
+		bool				bUseOptimizedBoundary;												// Boundaries that are always zero are ignored
 		unsigned long long	ulCurrentCellsCalculated;												// Total number of cells calculated
 		double				dCurrentTime;															// Current simulation time
 		double				dCurrentTimestep;														// Current simulation timestep

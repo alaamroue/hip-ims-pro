@@ -120,6 +120,7 @@
     <ResourceCompile Include="src\CLCode.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\CMultiGpuManager.h" />
     <ClInclude Include="src\CBenchmark.h" />
     <ClInclude Include="src\CDomain.h" />
     <ClInclude Include="src\CDomainBase.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CMultiGpuManager.cpp" />
     <ClCompile Include="src\CBenchmark.cpp" />
     <ClCompile Include="src\CDomain.cpp" />
     <ClCompile Include="src\CDomainBase.cpp" />

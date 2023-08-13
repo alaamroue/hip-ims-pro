@@ -41,4 +41,11 @@ __kernel void bdy_Promaides (
 	__global		cl_double *
 );
 
+__kernel void bdy_Promaides_by_id (
+	__global		cl_ulong const * restrict	pCouplingID,
+	__global		cl_double const * restrict	pCouplingBound,
+	__global		cl_double const * restrict pTimeStep,
+	__global		cl_double4 *				pCellState,
+	__global		cl_double const * restrict pCellBed
+	);
 #endif

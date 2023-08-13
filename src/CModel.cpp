@@ -426,16 +426,16 @@ void	CModel::runModelDomainAssess(bool *			bIdle)
 	dEarliestTime = 0.0;
 	bWaitOnLinks = false;
 
-		// Minimum time
+	// Minimum time
 	dCurrentTime = domains->getDomain(0)->getScheme()->getCurrentTime();
 
-		// Either we're not ready to sync, or we were still synced from the last run
+	// Either we're not ready to sync, or we were still synced from the last run
 	if (domains->getDomain(0)->getScheme()->isRunning() || domains->getDomain(0)->getDevice()->isBusy()){
 		*bIdle = false;
-			} else {
+	} else {
 		*bIdle = true;
-				}
-			}
+	}
+}
 	
 /*
  *  Exchange data across domains where necessary.

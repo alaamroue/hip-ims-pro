@@ -58,6 +58,14 @@ class CDomainCartesian : public CDomain
 		unsigned long	getCols();												// Get the number of columns in the domain
 		void			setRows(unsigned long);									// Fetch cell resolution
 		void			setCols(unsigned long);									// Fetch cell resolution
+
+		void			setUseOptimizedCoupling(bool);
+		void			setOptimizedCouplingSize(unsigned long);
+		bool			getUseOptimizedCoupling();
+		unsigned long	getOptimizedCouplingSize();
+		
+
+
 		virtual unsigned long	getCellID( unsigned long, unsigned long );		// Get the cell ID using an X and Y index
 		double			getVolume();											// Calculate the amount of volume in all the cells
 		double*			readBuffers_opt_h();									// Read GPU Buffers
@@ -102,6 +110,8 @@ class CDomainCartesian : public CDomain
 		// Private variables
 		double			dCellResolutionX;
 		double			dCellResolutionY;
+		unsigned long	ulCouplingArraySize;
+		bool			bUseOptimizedBoundary;
 		unsigned long	ulRows;
 		unsigned long	ulCols;
 

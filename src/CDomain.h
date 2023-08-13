@@ -54,18 +54,21 @@ class CDomain : public CDomainBase
 		virtual		void			logDetails() = 0;												// Log details about the domain
 		virtual		void			updateCellStatistics() = 0;										// Update the total number of cells calculation
 		virtual		double*			readBuffers_opt_h() = 0;										// Read the gpu buffers to a double*
-		void						createStoreBuffers( void**, void**, void**, void**, void**, void**, void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
+		void						createStoreBuffers( void**, void**, void**, void**, void**, void**, void**, void**, void**, void**, void**, unsigned char );	// Allocates memory and returns pointers to the three arrays
 		void						initialiseMemory();												// Populate cells with default values
 		void						resetAllValues();												// Reset cell values to default values
 		void						handleInputData( unsigned long, double, unsigned char, unsigned char );	// Handle input data for varying state/static cell variables 
 		void						setBedElevation( unsigned long, double );						// Sets the bed elevation for a cell
 		void						setManningCoefficient( unsigned long, double );					// Sets the manning coefficient for a cell
 		void						setBoundaryCondition( unsigned long, double );					// Sets the boundary coefficient for a cell
+		void						setOptimizedCouplingCondition( unsigned long, double );					// Sets the optimized coupling boundary coefficient for a cell
 
 		void						setZxmax( unsigned long, double );					// Sets the boundary coefficient for a cell
 		void						setcx( unsigned long, double );					// Sets the boundary coefficient for a cell
 		void						setZymax( unsigned long, double );					// Sets the boundary coefficient for a cell
 		void						setcy( unsigned long, double );					// Sets the boundary coefficient for a cell
+
+		void						setOptimizedCouplingID(unsigned long, unsigned long);					// Sets the boundary coefficient for a cell
 
 		void						setPoleniConditionX( unsigned long, bool );						// Sets the poleni conditon in x for a cell
 		void						setPoleniConditionY( unsigned long, bool );						// Sets the poleni conditon in y for a cell
@@ -103,6 +106,7 @@ class CDomain : public CDomainBase
 		cl_double*			dOpt_cxValues;															// Heap for opt_cx values
 		cl_double*			dOpt_zymaxValues;														// Heap for opt_zymax values
 		cl_double*			dOpt_cyValues;															// Heap for opt_cy values
+		cl_double*			dCouplingValues;														// Heap for optimized coupling values
 
 		cl_float4*			fCellStates;															// Heap for cell state date (single)
 		cl_float*			fBedElevations;															// Heap for bed elevations (single)
@@ -112,8 +116,10 @@ class CDomain : public CDomainBase
 		cl_float*			fOpt_cxValues;															// Heap for opt_cx values (single)
 		cl_float*			fOpt_zymaxValues;														// Heap for opt_zymax values (single)
 		cl_float*			fOpt_cyValues;															// Heap for opt_cy values (single)
+		cl_float*			fCouplingValues;														// Heap for optimized coupling values (single)
 
 		sUsePoleni*			bPoleniValues;															// Heap for Struct of Poleni values
+		cl_ulong*			ulCouplingIDs;															// Heap for optimized coupling IDs
 
 		cl_double			dMinFSL;																// Min and max FSLs in the domain used for rendering
 		cl_double			dMaxFSL;

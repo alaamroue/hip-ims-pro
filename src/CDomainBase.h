@@ -51,6 +51,8 @@ class CDomainBase
 			unsigned long	ulRowCount;
 			unsigned long	ulColCount;
 			unsigned char	ucFloatPrecision;
+			unsigned long	ulCouplingArraySize;
+			bool			bUseOptimizedBoundary;
 		};
 
 		struct mpiSignalDataProgress

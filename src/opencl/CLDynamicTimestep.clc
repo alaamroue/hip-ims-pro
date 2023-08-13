@@ -65,25 +65,25 @@ void tst_Advance_Normal(
 
 	#ifdef TIMESTEP_DYNAMIC
 
-	__private cl_double dCellSpeed, dMaxSpeed;
-	__private cl_double dMinTime;
+		__private cl_double dCellSpeed, dMaxSpeed;
+		__private cl_double dMinTime;
 
-	dCellSpeed = 0.0;
-	dMaxSpeed  = 0.0;
-	for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
-	{
-		dCellSpeed = pReductionData[i];
-		if ( dCellSpeed > dMaxSpeed ) 
-			dMaxSpeed = dCellSpeed;
-	}
+		dCellSpeed = 0.0;
+		dMaxSpeed  = 0.0;
+		for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
+		{
+			dCellSpeed = pReductionData[i];
+			if ( dCellSpeed > dMaxSpeed ) 
+				dMaxSpeed = dCellSpeed;
+		}
 
-	// Convert velocity to a time (assumes domain deltaX=deltaY here)
-	// Force progression at the start of a simulation.
+		// Convert velocity to a time (assumes domain deltaX=deltaY here)
+		// Force progression at the start of a simulation.
 		#ifdef TIMESTEP_PROMAIDES
 			dMinTime = 1.0/dMaxSpeed;
 		#else
 			if (DOMAIN_DELTAX < DOMAIN_DELTAY){
-	dMinTime = DOMAIN_DELTAX/dMaxSpeed;
+				dMinTime = DOMAIN_DELTAX/dMaxSpeed;
 			}else{
 				dMinTime = DOMAIN_DELTAY/dMaxSpeed;
 			}
@@ -104,19 +104,19 @@ void tst_Advance_Normal(
 
 		if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM){
 			//printf("5. We are in early start so, min time is: %f\n", dMinTime );
-		dMinTime = TIMESTEP_START_MINIMUM;
+			dMinTime = TIMESTEP_START_MINIMUM;
 		}else{
 			//printf("5. We are in not in early start...\n");
 		}
 
-	// Multiply by the Courant number
-	dLclTimestep = COURANT_NUMBER * dMinTime;
+		// Multiply by the Courant number
+		dLclTimestep = COURANT_NUMBER * dMinTime;
 		//printf("6. dLclTimestep is thus: %f \n", dLclTimestep);
 
 	#endif
 	#ifdef TIMESTEP_FIXED
 
-	dLclTimestep = TIMESTEP_FIXED;
+		dLclTimestep = TIMESTEP_FIXED;
 
 	#endif
 
@@ -137,7 +137,7 @@ void tst_Advance_Normal(
 	// Impose a minimum timestep
 	if (dLclTimestep > 0.0 && dLclTimestep < TIMESTEP_MINIMUM)
 		dLclTimestep = TIMESTEP_MINIMUM;
-
+	
 	// Don't exceed the sync time
 	// A negative timestep suspends simulation but allows the value to be used
 	// back on the host.
@@ -149,7 +149,7 @@ void tst_Advance_Normal(
 			dLclTimestep = -dLclTimestep;
 	}
 	*/
-
+	
 
 	//if (dLclTimestep < 0)
 	//	dLclTimestep = -1.0*dLclTimestep;
@@ -162,7 +162,7 @@ void tst_Advance_Normal(
 	// boundary conditions may only just be kicking in (i.e. dry domain)
 	if (dLclTime < TIMESTEP_EARLY_LIMIT_DURATION && dLclTimestep > TIMESTEP_EARLY_LIMIT)
 		dLclTimestep = TIMESTEP_EARLY_LIMIT;
-
+		
 	// Don't exceed the target (DECREASE)
 	if ( ( dLclTime + dLclTimestep ) > dLclSyncTime ){
 		dLclTimestep = dLclSyncTime - dLclTime;
@@ -245,23 +245,23 @@ void tst_Reduce(
 				dCellSpeed = fabs(pCellState.z)/DOMAIN_DELTAX + fabs(pCellState.w)/DOMAIN_DELTAY; 
 
 			#else
-			#ifndef TIMESTEP_SIMPLIFIED
+				#ifndef TIMESTEP_SIMPLIFIED
 
-			dVelX = pCellState.z / dDepth;
-			dVelY = pCellState.w / dDepth;
-			if ( dVelX < 0.0 ) dVelX = -dVelX;
-			if ( dVelY < 0.0 ) dVelY = -dVelY;
+				dVelX = pCellState.z / dDepth;
+				dVelY = pCellState.w / dDepth;
+				if ( dVelX < 0.0 ) dVelX = -dVelX;
+				if ( dVelY < 0.0 ) dVelY = -dVelY;
 
-			dVelX += sqrt( GRAVITY * dDepth );
-			dVelY += sqrt( GRAVITY * dDepth );
+				dVelX += sqrt( GRAVITY * dDepth );
+				dVelY += sqrt( GRAVITY * dDepth );
 
-			#else
+				#else
 
-			dVelX = sqrt( GRAVITY * dDepth );
-			dVelY = sqrt( GRAVITY * dDepth );
+				dVelX = sqrt( GRAVITY * dDepth );
+				dVelY = sqrt( GRAVITY * dDepth );
 
-			#endif
-			dCellSpeed = ( dVelX  < dVelY ) ? dVelY : dVelX;
+				#endif
+				dCellSpeed = ( dVelX  < dVelY ) ? dVelY : dVelX;
 			#endif
 
 		} else {
@@ -278,7 +278,7 @@ void tst_Reduce(
 
 	// Commit to local memory
 	pScratchData[ uiLocalID ] = dMaxSpeed;
-
+	
 	// No progression until scratch memory is fully populated
 	barrier(CLK_LOCAL_MEM_FENCE);
 

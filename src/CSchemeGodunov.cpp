@@ -93,6 +93,8 @@ CSchemeGodunov::CSchemeGodunov()
 	oclBufferTime						= NULL;
 	oclBufferTimeTarget					= NULL;
 	oclBufferTimeHydrological			= NULL;
+	oclBufferCouplingIDs				= NULL;
+	oclBufferCouplingValues				= NULL;
 
 	if ( this->bDebugOutput )
 		model::doError( "Debug mode is enabled!", model::errorCodes::kLevelWarning );
@@ -420,6 +422,13 @@ bool CSchemeGodunov::prepare1OExecDimensions()
 						  ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled ? static_cast<double>( ulCachedWorkgroupSizeY ) / static_cast<double>( ulCachedWorkgroupSizeY - 2 ) : 1.0 ) ) );
 
 	// --
+	// Optimized Coupling
+	// --
+	this->bUseOptimizedBoundary	= pDomain->getSummary().bUseOptimizedBoundary;
+	this->ulCouplingArraySize	= pDomain->getSummary().ulCouplingArraySize;
+
+
+	// --
 	// Timestep reduction (2D)
 	// --
 
@@ -545,11 +554,14 @@ bool CSchemeGodunov::prepare1OConstants()
 	double	dResolutionX, dResolutionY;
 	pDomain->getCellResolution( &dResolutionX, &dResolutionY);
 
+	unsigned long ulOptimizedCouplingArraySize = pDomain->getSummary().ulCouplingArraySize;
+
 	oclModel->registerConstant( "DOMAIN_CELLCOUNT",		std::to_string( pDomain->getCellCount() ) );
 	oclModel->registerConstant( "DOMAIN_COLS",			std::to_string( pDomain->getCols() ) );
 	oclModel->registerConstant( "DOMAIN_ROWS",			std::to_string( pDomain->getRows() ) );
 	oclModel->registerConstant( "DOMAIN_DELTAX",		std::to_string( dResolutionX ));
 	oclModel->registerConstant( "DOMAIN_DELTAY",		std::to_string( dResolutionY ));
+	oclModel->registerConstant( "COUPLING_ARRAY_SIZE",  std::to_string( ulOptimizedCouplingArraySize ));
 
 	return true;
 }
@@ -591,7 +603,18 @@ bool CSchemeGodunov::prepare1OMemory()
 	// Domain and cell state data
 	// --
 
-	void	*pCellStates = NULL, *pBedElevations = NULL, *pManningValues = NULL, * pBoundaryValues = NULL, * pPoleniValues = NULL, * pOpt_zxmax = NULL, * pOpt_cx = NULL, * pOpt_zymax = NULL, * pOpt_cy = NULL;
+	void* pCellStates		= NULL;
+	void* pBedElevations	= NULL;
+	void* pManningValues	= NULL;
+	void* pBoundaryValues	= NULL;
+	void* pPoleniValues		= NULL;
+	void* pOpt_zxmax		= NULL;
+	void* pOpt_cx			= NULL;
+	void* pOpt_zymax		= NULL;
+	void* pOpt_cy			= NULL;
+	void* pCouplingIDs		= NULL;
+	void* pCouplingValues	= NULL;
+
 	pDomain->createStoreBuffers(
 		&pCellStates,
 		&pBedElevations,
@@ -602,13 +625,20 @@ bool CSchemeGodunov::prepare1OMemory()
 		&pOpt_cx,
 		&pOpt_zymax,
 		&pOpt_cy,
+		&pCouplingIDs,
+		&pCouplingValues,
 		ucFloatSize
 	);
 
 	oclBufferCellStates		= new COCLBuffer( "Cell states",			oclModel, false, true );
 	oclBufferCellStatesAlt	= new COCLBuffer( "Cell states (alternate)",oclModel, false, true );
-	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	 true ); 
-	oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",		oclModel, false, true );
+	oclBufferCellManning	= new COCLBuffer( "Manning coefficients",	oclModel, true,	 true );
+	if (this->bUseOptimizedBoundary == false) {
+		oclBufferCellBoundary	= new COCLBuffer( "Boundary Values",		oclModel, false, true );
+	}else {
+		oclBufferCouplingIDs	= new COCLBuffer( "Coupling IDs",		oclModel, true, true );
+		oclBufferCouplingValues = new COCLBuffer( "Coupling Values",		oclModel, false, true );
+	}
 	oclBufferUsePoleni		= new COCLBuffer( "Poleni Booleans",			oclModel, true,	 true );
 	oclBuffer_opt_zxmax		= new COCLBuffer( "opt_zxmax Values",		oclModel, true,	 true );
 	oclBuffer_opt_cx		= new COCLBuffer( "opt_cx Values",			oclModel, true,	 true );
@@ -619,7 +649,13 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferCellStates	  ->setPointer( pCellStates,	 ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellStatesAlt->setPointer( pCellStates,	 ucFloatSize * 4 * pDomain->getCellCount() );
 	oclBufferCellManning  ->setPointer( pManningValues,  ucFloatSize * pDomain->getCellCount() );
-	oclBufferCellBoundary ->setPointer( pBoundaryValues, ucFloatSize * pDomain->getCellCount() );
+	if (this->bUseOptimizedBoundary == false) {
+		oclBufferCellBoundary->setPointer(pBoundaryValues, ucFloatSize * pDomain->getCellCount());
+	}
+	else {
+		oclBufferCouplingIDs->setPointer( pCouplingIDs, sizeof(cl_ulong) * this->ulCouplingArraySize);
+		oclBufferCouplingValues->setPointer( pCouplingValues, ucFloatSize * this->ulCouplingArraySize);
+	}
 	oclBufferUsePoleni    ->setPointer( pPoleniValues,	 sizeof(sUsePoleni) * pDomain->getCellCount() );
 	oclBuffer_opt_zxmax   ->setPointer( pOpt_zxmax,		 ucFloatSize * pDomain->getCellCount() );
 	oclBuffer_opt_cx      ->setPointer( pOpt_cx,		 ucFloatSize * pDomain->getCellCount() );
@@ -630,7 +666,13 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferCellStates->createBuffer();
 	oclBufferCellStatesAlt->createBuffer();
 	oclBufferCellManning->createBuffer();
-	oclBufferCellBoundary->createBuffer();
+	if (this->bUseOptimizedBoundary == false) {
+		oclBufferCellBoundary->createBuffer();
+	}
+	else {
+		oclBufferCouplingIDs->createBuffer();
+		oclBufferCouplingValues->createBuffer();
+	}
 	oclBufferUsePoleni->createBuffer();
 	oclBuffer_opt_zxmax->createBuffer();
 	oclBuffer_opt_cx->createBuffer();
@@ -723,18 +765,34 @@ bool CSchemeGodunov::prepareGeneralKernels()
 	// --
 	// Boundary Kernel
 	// --
-	CDomainCartesian* cd = (CDomainCartesian*) pDomain;
-	//TODO: Alaa fix group size
-	oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
-	oclKernelBoundary->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
-	oclKernelBoundary->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
-	//oclKernelBoundary->setGroupSize(8, 8);
-	//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(cd->getCols() / 8.0) * 8, (cl_ulong)ceil(cd->getRows() / 8.0) * 8);
+	if(this->bUseOptimizedBoundary == false){
+		// Normal Boundary for rain
+		CDomainCartesian* cd = (CDomainCartesian*)pDomain;
+		//TODO: Alaa fix group size
+		oclKernelBoundary = oclModel->getKernel("bdy_Promaides");
+		oclKernelBoundary->setGroupSize(this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY);
+		oclKernelBoundary->setGlobalSize(this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY);
+		//oclKernelBoundary->setGroupSize(8, 8);
+		//oclKernelBoundary->setGlobalSize((cl_ulong)ceil(cd->getCols() / 8.0) * 8, (cl_ulong)ceil(cd->getRows() / 8.0) * 8);
 
-	// TODO: Alaa: remove the hydrological buffer and code
-	COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary,oclBufferTimestep ,oclBufferCellStates, oclBufferCellBed };
+		// TODO: Alaa: remove the hydrological buffer and code
+		COCLBuffer* aryArgsBdy[] = { oclBufferCellBoundary, oclBufferTimestep, oclBufferTimeHydrological ,oclBufferCellStates, oclBufferCellBed };
 
-	oclKernelBoundary->assignArguments(aryArgsBdy);
+		oclKernelBoundary->assignArguments(aryArgsBdy);
+
+	}
+	else {
+		// Coupling only Bound
+		CDomainCartesian* cd = (CDomainCartesian*) pDomain;
+		oclKernelBoundary = oclModel->getKernel("bdy_Promaides_by_id");
+		oclKernelBoundary->setGroupSize(8);
+		oclKernelBoundary->setGlobalSize(8*ceil(this->ulCouplingArraySize/8.0));
+
+		COCLBuffer* aryArgsBdy[] = { oclBufferCouplingIDs, oclBufferCouplingValues, oclBufferTimestep ,oclBufferCellStates, oclBufferCellBed };
+
+		oclKernelBoundary->assignArguments(aryArgsBdy);
+	}
+
 
 	// --
 	// Friction Kernel
@@ -817,6 +875,8 @@ void CSchemeGodunov::release1OResources()
 	if ( this->oclBufferCellStatesAlt != NULL )				delete oclBufferCellStatesAlt;
 	if ( this->oclBufferCellManning != NULL )				delete oclBufferCellManning;
 	if ( this->oclBufferCellBoundary != NULL )				delete oclBufferCellBoundary;
+	if ( this->oclBufferCouplingIDs != NULL )				delete oclBufferCouplingIDs;
+	if ( this->oclBufferCouplingValues != NULL )			delete oclBufferCouplingValues;
 	if ( this->oclBufferUsePoleni != NULL )					delete oclBufferUsePoleni;
 	if ( this->oclBuffer_opt_zxmax != NULL )				delete oclBuffer_opt_zxmax;
 	if ( this->oclBuffer_opt_cx != NULL )					delete oclBuffer_opt_cx;
@@ -841,6 +901,8 @@ void CSchemeGodunov::release1OResources()
 	oclBufferCellStatesAlt			= NULL;
 	oclBufferCellManning			= NULL;
 	oclBufferCellBoundary			= NULL;
+	oclBufferCouplingIDs			= NULL;
+	oclBufferCouplingValues			= NULL;
 	oclBufferUsePoleni				= NULL;
 	oclBuffer_opt_zxmax				= NULL;
 	oclBuffer_opt_cx				= NULL;
@@ -851,6 +913,7 @@ void CSchemeGodunov::release1OResources()
 	oclBufferTimestepReduction		= NULL;
 	oclBufferTime					= NULL;
 	oclBufferTimeTarget				= NULL;
+	oclBufferTimeHydrological = NULL;
 
 	if ( this->bIncludeBoundaries )
 	{
@@ -884,7 +947,13 @@ void	CSchemeGodunov::prepareSimulation()
 	oclBufferCellStatesAlt->queueWriteAll();
 	oclBufferCellBed->queueWriteAll();
 	oclBufferCellManning->queueWriteAll();
-	oclBufferCellBoundary->queueWriteAll();
+	if (this->bUseOptimizedBoundary == false) {
+		oclBufferCellBoundary->queueWriteAll();
+	}
+	else {
+		oclBufferCouplingIDs->queueWriteAll();
+		oclBufferCouplingValues->queueWriteAll();
+	}
 	oclBufferUsePoleni->queueWriteAll();
 	oclBuffer_opt_zxmax->queueWriteAll();
 	oclBuffer_opt_cx->queueWriteAll();
@@ -1040,7 +1109,13 @@ void CSchemeGodunov::Threaded_runBatch()
 
 			this->bImportLinks = false;
 
-			this->oclBufferCellBoundary->queueWriteAll();
+			if (this->bUseOptimizedBoundary == false) {
+				this->oclBufferCellBoundary->queueWriteAll();
+			}
+			else {
+				this->oclBufferCouplingValues->queueWriteAll();
+			}
+			pDomain->getDevice()->queueBarrier();
 
 			// Last sync time
 			this->dLastSyncTime = this->dCurrentTime;
@@ -1058,9 +1133,6 @@ void CSchemeGodunov::Threaded_runBatch()
 			pDomain->getDevice()->queueBarrier();
 			*/
 			
-			// Apply scheme
-			// Reduction and Update to new bigger timestep
-			// Advance time which would advance by the small time step
 
 
 			// Reset Counters
@@ -1128,7 +1200,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		
 		// Read from buffers back to scheme memory space
 		this->readKeyStatistics();
-		
+
 		//Alaa: Shouldn't we block until the read is finished?
 		this->pDomain->getDevice()->blockUntilFinished();
 		
@@ -1191,7 +1263,6 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 			if (this->uiQueueAdditionSize < 1)
 				this->uiQueueAdditionSize = 1;
 	}
-
 
 	dBatchStartedTime = dRealTime;
 	this->bRunning = true;
@@ -1370,17 +1441,25 @@ void	CSchemeGodunov::scheduleIteration(
 	// Very carefully watch the index of arguments assignment, there are no safety checks for them
 	if ( bUseAlternateKernel )
 	{
-		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStatesAlt );
-		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStates );
-		oclKernelBoundary->assignArgument(2, oclBufferCellStatesAlt);
-		oclKernelFriction->assignArgument( 1, oclBufferCellStates );
-		oclKernelTimestepReduction->assignArgument( 3, oclBufferCellStates );
+		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStatesAlt );			// Src
+		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStates );			// Dst
+		if (this->bUseOptimizedBoundary == false) {
+			oclKernelBoundary->assignArgument(3, oclBufferCellStates);					// Dst
+		}else {
+			oclKernelBoundary->assignArgument(3, oclBufferCellStates);					// Dst
+		}
+		oclKernelFriction->assignArgument( 1, oclBufferCellStates );				// Dst
+		oclKernelTimestepReduction->assignArgument( 0, oclBufferCellStates );		// Dst
 	} else {
-		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStates );
-		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStatesAlt );
-		oclKernelBoundary->assignArgument(2, oclBufferCellStates);
-		oclKernelFriction->assignArgument( 1, oclBufferCellStatesAlt );
-		oclKernelTimestepReduction->assignArgument( 3, oclBufferCellStatesAlt );
+		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStates );			// Src
+		oclKernelFullTimestep->assignArgument( 3, oclBufferCellStatesAlt );			// Dst
+		if (this->bUseOptimizedBoundary == false) {
+			oclKernelBoundary->assignArgument(3, oclBufferCellStatesAlt);				// Dst
+		}else {
+			oclKernelBoundary->assignArgument(3, oclBufferCellStatesAlt);				// Dst
+		}
+		oclKernelFriction->assignArgument( 1, oclBufferCellStatesAlt );				// Dst
+		oclKernelTimestepReduction->assignArgument( 0, oclBufferCellStatesAlt );	// Dst
 	}
 
 	// Run the boundary kernels (each bndy has its own kernel now)

@@ -39,6 +39,8 @@ CDomainCartesian::CDomainCartesian(void)
 	this->dCellResolutionY			= std::numeric_limits<double>::quiet_NaN();
 	this->ulRows					= std::numeric_limits<unsigned long>::quiet_NaN();
 	this->ulCols					= std::numeric_limits<unsigned long>::quiet_NaN();
+	this->bUseOptimizedBoundary		= false;
+	this->ulCouplingArraySize		= 0;
 }
 
 /*
@@ -204,6 +206,37 @@ unsigned long	CDomainCartesian::getCols()
 }
 
 /*
+ *
+ */
+void	CDomainCartesian::setUseOptimizedCoupling(bool state)
+{
+	this->bUseOptimizedBoundary = state;
+}
+
+/*
+ *  
+ */
+bool	CDomainCartesian::getUseOptimizedCoupling()
+{
+	return this->bUseOptimizedBoundary;
+}
+
+/*
+ *
+ */
+void	CDomainCartesian::setOptimizedCouplingSize(unsigned long value)
+{
+	this->ulCouplingArraySize = value;
+}
+
+/*
+ *  
+ */
+unsigned long	CDomainCartesian::getOptimizedCouplingSize()
+{
+	return this->ulCouplingArraySize;
+}
+/*
  *  Get a cell ID from an X and Y index
  */
 unsigned long	CDomainCartesian::getCellID( unsigned long ulX, unsigned long ulY )
@@ -283,10 +316,11 @@ double*	CDomainCartesian::readBuffers_opt_h()
 		for (unsigned long iCol = 0; iCol < this->getCols(); ++iCol) {
 			ulCellID = this->getCellID(iCol, iRow);
 			values[ulCellID] = this->getStateValue(ulCellID, model::domainValueIndices::kValueFreeSurfaceLevel) - this->getBedElevation(ulCellID);
+			//Volume += values[ulCellID];
 		}
 	}
 
-	//std::cout << "Volume in m is: " << Volume << std::endl;
+	//std::cout << "" << Volume << std::endl;
 	return values;
 }
 
@@ -307,6 +341,8 @@ CDomainBase::DomainSummary CDomainCartesian::getSummary()
 	pSummary.ucFloatPrecision = ( this->isDoublePrecision() ? model::floatPrecision::kDouble : model::floatPrecision::kSingle );
 	pSummary.dResolutionX	= this->dCellResolutionX;
 	pSummary.dResolutionY = this->dCellResolutionY;
+	pSummary.bUseOptimizedBoundary = this->bUseOptimizedBoundary;
+	pSummary.ulCouplingArraySize = this->ulCouplingArraySize;
 
 	return pSummary;
 }

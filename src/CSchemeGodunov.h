@@ -91,6 +91,7 @@ class CSchemeGodunov : public CScheme
 		cl_ulong			ulNonCachedWorkgroupSizeX, ulNonCachedWorkgroupSizeY;
 		cl_ulong			ulCachedGlobalSizeX, ulCachedGlobalSizeY;
 		cl_ulong			ulNonCachedGlobalSizeX, ulNonCachedGlobalSizeY;
+		cl_ulong			ulCouplingArraySize;
 		cl_ulong			ulBoundaryCellWorkgroupSize;
 		cl_ulong			ulBoundaryCellGlobalSize;
 		cl_ulong			ulReductionWorkgroupSize;
@@ -145,6 +146,8 @@ class CSchemeGodunov : public CScheme
 		COCLBuffer*			oclBufferCellStatesAlt;
 		COCLBuffer*			oclBufferCellManning;
 		COCLBuffer*			oclBufferCellBoundary;
+		COCLBuffer*			oclBufferCouplingIDs;
+		COCLBuffer*			oclBufferCouplingValues;
 		COCLBuffer*			oclBufferUsePoleni;
 		COCLBuffer*			oclBuffer_opt_zxmax;
 		COCLBuffer*			oclBuffer_opt_cx;
