@@ -71,8 +71,31 @@ void tst_Advance_Normal(
 
 	// Convert velocity to a time (assumes domain deltaX=deltaY here)
 	// Force progression at the start of a simulation.
+		#ifdef TIMESTEP_PROMAIDES
+			dMinTime = 1.0/dMaxSpeed;
+		#else
+			if (DOMAIN_DELTAX < DOMAIN_DELTAY){
 	dMinTime = DOMAIN_DELTAX/dMaxSpeed;
-	if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM)
+			}else{
+				dMinTime = DOMAIN_DELTAY/dMaxSpeed;
+			}
+		#endif
+		//printf(" MinTime: %f ", dMinTime );
+		//printf(" dMaxSpeed %f ", dMaxSpeed );
+	
+		//if( dMinTime < 34.687913 && dMinTime > 34.687911){
+		//	dCellSpeed = 0.0;
+		//	for( unsigned int i = 0; i < TIMESTEP_WORKERS; i++ )
+		//	{
+		//		dCellSpeed = pReductionData[i];
+		//		//printf("    At i: %f Speed: %f minTime: %f\n", i*1.0, dCellSpeed, DOMAIN_DELTAX/dCellSpeed);
+		//
+		//	}
+		//}
+
+
+		if (dLclTime < TIMESTEP_START_MINIMUM_DURATION && dMinTime < TIMESTEP_START_MINIMUM){
+			//printf("5. We are in early start so, min time is: %f\n", dMinTime );
 		dMinTime = TIMESTEP_START_MINIMUM;
 
 	// Multiply by the Courant number
@@ -181,6 +204,11 @@ void tst_Reduce(
 		
 		if ( dDepth > QUITE_SMALL && pCellState.y > -9999.0 )
 		{
+			#ifdef TIMESTEP_PROMAIDES
+			
+				dCellSpeed = fabs(pCellState.z)/DOMAIN_DELTAX + fabs(pCellState.w)/DOMAIN_DELTAY; 
+
+			#else
 			#ifndef TIMESTEP_SIMPLIFIED
 
 			dVelX = pCellState.z / dDepth;
@@ -198,6 +226,7 @@ void tst_Reduce(
 
 			#endif
 			dCellSpeed = ( dVelX  < dVelY ) ? dVelY : dVelX;
+			#endif
 
 		} else {
 			dCellSpeed = 0.0;
