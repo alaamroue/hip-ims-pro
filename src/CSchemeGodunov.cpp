@@ -992,18 +992,19 @@ void CSchemeGodunov::Threaded_runBatch()
 			 *	output files are written otherwise the timestep wont be reduced across MPI and the domains will go out
 			 *  of sync!
 			 */
-			if ( dCurrentTimestep <= 0.0 && model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
-			{
-				pDomain->getDevice()->queueBarrier();
-				oclKernelTimestepReduction->scheduleExecution();
-				pDomain->getDevice()->queueBarrier();
-				oclKernelTimestepUpdate->scheduleExecution();
-			}
+			//if ( dCurrentTimestep <= 0.0 && model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
+			//{
+			//	pDomain->getDevice()->queueBarrier();
+			//	oclKernelTimestepReduction->scheduleExecution();
+			//	pDomain->getDevice()->queueBarrier();
+			//	oclKernelTimestepUpdate->scheduleExecution();
+			//}
 			
 			if ( dCurrentTime + dCurrentTimestep > dTargetTime )
 			{
 				this->dCurrentTimestep  = dTargetTime - dCurrentTime;
 				this->bOverrideTimestep = true;
+				std::cout << "Override Timestep Requested" << std::endl;
 			}
 
 			pDomain->getDevice()->queueBarrier();
@@ -1013,6 +1014,9 @@ void CSchemeGodunov::Threaded_runBatch()
 
 		// Have we been asked to override the timestep at the start of this batch?
 		if ( this->dCurrentTime < dTargetTime && this->bOverrideTimestep ){
+
+			std::cout << "Override Timestep Requested...This shouldn't happen" << std::endl;
+
 			this->bOverrideTimestep = false;
 
 			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
@@ -1042,24 +1046,24 @@ void CSchemeGodunov::Threaded_runBatch()
 			this->dLastSyncTime = this->dCurrentTime;
 			this->uiIterationsSinceSync = 0;
 
+			/* Removed temporary to check if it has good or bad effect on simulation
 			// Set Small Timestep
 			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle){
-				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(0.001);
+				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(0.1);
 			}
 			else {
-				*(oclBufferTimestep->getHostBlock<double*>()) = 0.001;
+				*(oclBufferTimestep->getHostBlock<double*>()) = 0.1;
 			}
 			oclBufferTimestep->queueWriteAll();
 			pDomain->getDevice()->queueBarrier();
-			// Apply Boundary Condition
+			*/
 			
 			// Apply scheme
 			// Reduction and Update to new bigger timestep
 			// Advance time which would advance by the small time step
 
 
-			//Alaa
-			// Update the data
+			// Reset Counters
 			oclKernelResetCounters->scheduleExecution();
 			pDomain->getDevice()->queueBarrier();
 
@@ -1125,6 +1129,9 @@ void CSchemeGodunov::Threaded_runBatch()
 		// Read from buffers back to scheme memory space
 		this->readKeyStatistics();
 		
+		//Alaa: Shouldn't we block until the read is finished?
+		this->pDomain->getDevice()->blockUntilFinished();
+		
 		// Wait until further work is scheduled
 		this->bRunning = false;
 	}
@@ -1156,17 +1163,9 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 		// but need to accommodate for rollbacks... difficult...
 
 		// This is bad. But it might happen...
-		model::doError(
-			"Simulation has exceeded target time",
-			model::errorCodes::kLevelWarning
-		);
-		model::log->writeLine(
-			"Current time:   "  + toStringExact( dCurrentTime ) + 
-			", Target time:  " + toStringExact( dTargetTime )
-		);
-		model::log->writeLine(
-			"Last sync point: "  + toStringExact( dLastSyncTime )
-		);
+		model::doError("Simulation has exceeded target time",model::errorCodes::kLevelWarning);
+		model::log->writeLine("Current time:   "  + toStringExact( dCurrentTime ) + ", Target time:  " + toStringExact( dTargetTime ));
+		model::log->writeLine("Last sync point: "  + toStringExact( dLastSyncTime ));
 		return;
 	}
 
@@ -1368,6 +1367,7 @@ void	CSchemeGodunov::scheduleIteration(
 	)
 {
 	// Re-set the kernel arguments to use the correct cell state buffer
+	// Very carefully watch the index of arguments assignment, there are no safety checks for them
 	if ( bUseAlternateKernel )
 	{
 		oclKernelFullTimestep->assignArgument( 2, oclBufferCellStatesAlt );
@@ -1387,9 +1387,6 @@ void	CSchemeGodunov::scheduleIteration(
 	//pDomain->getBoundaries()->applyBoundaries(bUseAlternateKernel ? oclBufferCellStatesAlt : oclBufferCellStates);
 	//pDevice->queueBarrier();
 
-	// Boundary Kernel
-	oclKernelBoundary->scheduleExecution();
-	pDevice->queueBarrier();
 
 	// Main scheme kernel
 	oclKernelFullTimestep->scheduleExecution();
@@ -1401,6 +1398,10 @@ void	CSchemeGodunov::scheduleIteration(
 		oclKernelFriction->scheduleExecution();
 		pDevice->queueBarrier();
 	}
+
+	// Boundary Kernel
+	oclKernelBoundary->scheduleExecution();
+	pDevice->queueBarrier();
 
 	// Timestep reduction
 	if ( this->bDynamicTimestep )
