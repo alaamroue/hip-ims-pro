@@ -40,45 +40,24 @@ cl_uchar reconstructInterface(
 	cl_double		dDepthR = pStateRight.x - dBedRight;
 
 	// Initial values before reconstruction
-#ifdef USE_ALTERNATE_CONSTRUCTS
 	pReconstructionLeft = (cl_double8)
-		{pStateLeft.S0,																		// Z	S0
-		dDepthL,																			// H	S1
-		pStateLeft.S2,																		// Qx	S2
-		pStateLeft.S3,																		// Qy	S3
-		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S2 / dDepthL),							// U	S4
-		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S3 / dDepthL),							// V	S5
-		dBedLeft,																			// Zb	S6
+		{pStateLeft.S0,																		// Z	S0   opt_s
+		dDepthL,																			// H	S1   opt_h
+		pStateLeft.S2,																		// Qx	S2   Q_x
+		pStateLeft.S3,																		// Qy	S3   Q_y
+		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S2 / dDepthL),								// U	S4   v_x
+		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S3 / dDepthL),								// V	S5	 v_y
+		dBedLeft,																			// Zb	S6	 opt_z
 		0.0};																				//		S7
 	pReconstructionRight = (cl_double8)
 		{pStateRight.S0,																	// Z	S0
 		dDepthR,																			// H	S1
-		pStateRight.S2,																	// Qx	S2
-		pStateRight.S3,																	// Qy	S3
+		pStateRight.S2,																		// Qx	S2
+		pStateRight.S3,																		// Qy	S3
 		(dDepthR < VERY_SMALL ? 0.0 : pStateRight.S2 / dDepthR),							// U	S4
 		(dDepthR < VERY_SMALL ? 0.0 : pStateRight.S3 / dDepthR),							// V	S5
 		dBedRight,																			// Zb	S6
 		0.0};																				//		S7
-#else
-	pReconstructionLeft = (cl_double8)
-		(pStateLeft.S0,																		// Z	S0
-		dDepthL,																			// H	S1
-		pStateLeft.S2,																		// Qx	S2
-		pStateLeft.S3,																		// Qy	S3
-		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S2 / dDepthL),							// U	S4
-		(dDepthL < VERY_SMALL ? 0.0 : pStateLeft.S3 / dDepthL),							// V	S5
-		dBedLeft,																			// Zb	S6
-		0.0);																				//		S7
-	pReconstructionRight = (cl_double8)
-		(pStateRight.S0,																	// Z	S0
-		dDepthR,																			// H	S1
-		pStateRight.S2,																	// Qx	S2
-		pStateRight.S3,																	// Qy	S3
-		(dDepthR < VERY_SMALL ? 0.0 : pStateRight.S2 / dDepthR),							// U	S4
-		(dDepthR < VERY_SMALL ? 0.0 : pStateRight.S3 / dDepthR),							// V	S5
-		dBedRight,																			// Zb	S6
-		0.0);																				//		S7
-#endif
 
 	// Maximum bed elevation and vertical shift factor
 	cl_double	dBedMaximum = (pReconstructionLeft.S6 > pReconstructionRight.S6 ? pReconstructionLeft.S6 : pReconstructionRight.S6);
