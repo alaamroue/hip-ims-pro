@@ -114,8 +114,9 @@ CSchemeGodunov::~CSchemeGodunov(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeGodunov::setupScheme(model::SchemeSettings schemeSettings)
+void	CSchemeGodunov::setupScheme(model::SchemeSettings schemeSettings, CModel* cModel)
 {
+	this->cModel = cModel;
 
 	this->setCourantNumber(schemeSettings.CourantNumber);
 	this->setDryThreshold(schemeSettings.DryThreshold);
@@ -183,7 +184,7 @@ void CSchemeGodunov::prepareAll()
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		model::pManager->getExecutor(),
+		cModel->getExecutor(),
 		this->pDomain->getDevice()
 	);
 
@@ -193,7 +194,7 @@ void CSchemeGodunov::prepareAll()
 	this->dCurrentTime					= 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle );
+	this->oclModel->setForcedSinglePrecision(cModel->getFloatPrecision() == model::floatPrecision::kSingle );
 
 	// OpenCL elements
 	if ( !this->prepare1OExecDimensions() ) 
@@ -386,7 +387,7 @@ unsigned char	CSchemeGodunov::getCacheConstraints()
 bool CSchemeGodunov::prepare1OExecDimensions()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL*		pExecutor	 = model::pManager->getExecutor();
+	CExecutorControlOpenCL*		pExecutor	 = cModel->getExecutor();
 	COCLDevice*		pDevice		 = pExecutor->getDevice();
 	CDomainCartesian*			pDomain		 = static_cast<CDomainCartesian*>( this->pDomain );
 
@@ -572,11 +573,11 @@ bool CSchemeGodunov::prepare1OConstants()
 bool CSchemeGodunov::prepare1OMemory()
 {
 	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 
-	unsigned char ucFloatSize =  ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof( cl_float ) : sizeof( cl_double ) );
+	unsigned char ucFloatSize = (cModel->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof(cl_float) : sizeof(cl_double));
 
 	// --
 	// Batch tracking data
@@ -586,7 +587,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferBatchSuccessful = new COCLBuffer( "Batch successful iterations", oclModel, false, true, sizeof(cl_uint), true );
 	oclBufferBatchSkipped	 = new COCLBuffer( "Batch skipped iterations", oclModel, false, true, sizeof(cl_uint), true );
 
-	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if (cModel->getFloatPrecision() == model::floatPrecision::kSingle)
 	{
 		*( oclBufferBatchTimesteps->getHostBlock<float*>() )	= 0.0f;
 	} else {
@@ -690,7 +691,7 @@ bool CSchemeGodunov::prepare1OMemory()
 	oclBufferTimeHydrological	= new COCLBuffer("Time (hydrological)", oclModel, false, true, ucFloatSize, true);
 
 	// We duplicate the time and timestep variables if we're using single-precision so we have copies in both formats
-	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if (cModel->getFloatPrecision() == model::floatPrecision::kSingle)
 	{
 		*( oclBufferTime->getHostBlock<float*>()     )			= static_cast<cl_float>( this->dCurrentTime );
 		*( oclBufferTimestep->getHostBlock<float*>() )			= static_cast<cl_float>( this->dCurrentTimestep );
@@ -730,7 +731,7 @@ bool CSchemeGodunov::prepare1OMemory()
 bool CSchemeGodunov::prepareGeneralKernels()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	CDomain* pDomain = this->pDomain;
 	COCLDevice* pDevice = pExecutor->getDevice();
 
@@ -814,7 +815,7 @@ bool CSchemeGodunov::prepareGeneralKernels()
 bool CSchemeGodunov::prepare1OKernels()
 {
 	bool						bReturnState		= true;
-	CExecutorControlOpenCL*		pExecutor			= model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*		pDevice				= pExecutor->getDevice();
 
@@ -1043,7 +1044,7 @@ void CSchemeGodunov::Threaded_runBatch()
 		{
 			this->bUpdateTargetTime = false;
 		
-			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
+			if (cModel->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
 				*(oclBufferTimeTarget->getHostBlock<float*>()) = static_cast<cl_float>(this->dTargetTime);
 			}
@@ -1061,7 +1062,7 @@ void CSchemeGodunov::Threaded_runBatch()
 			 *	output files are written otherwise the timestep wont be reduced across MPI and the domains will go out
 			 *  of sync!
 			 */
-			//if ( dCurrentTimestep <= 0.0 && model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
+			 //if ( dCurrentTimestep <= 0.0 && cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast )
 			//{
 			//	pDomain->getDevice()->queueBarrier();
 			//	oclKernelTimestepReduction->scheduleExecution();
@@ -1088,7 +1089,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 			this->bOverrideTimestep = false;
 
-			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle)
+			if (cModel->getFloatPrecision() == model::floatPrecision::kSingle)
 			{
 				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(this->dCurrentTimestep);
 			}
@@ -1123,7 +1124,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 			/* Removed temporary to check if it has good or bad effect on simulation
 			// Set Small Timestep
-			if (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle){
+			if (cModel->getFloatPrecision() == model::floatPrecision::kSingle){
 				*(oclBufferTimestep->getHostBlock<float*>()) = static_cast<cl_float>(0.1);
 			}
 			else {
@@ -1141,7 +1142,7 @@ void CSchemeGodunov::Threaded_runBatch()
 
 			/*
 			// Force timestep recalculation if necessary
-			if (model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
+			if (cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast)
 			{
 				oclKernelTimestepReduction->scheduleExecution();
 				pDomain->getDevice()->queueBarrier();
@@ -1244,7 +1245,7 @@ void	CSchemeGodunov::runSimulation( double dTargetTime, double dRealTime )
 	// Calculate a new batch size
 	if (  this->bAutomaticQueue		&&
 		  dRealTime > 1E-5          &&
-		  model::pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
+		cModel->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
 	{
 			// We're aiming for a seconds worth of work to be carried out
 			double dBatchDuration = dRealTime - dBatchStartedTime;
@@ -1299,7 +1300,7 @@ void	CSchemeGodunov::rollbackSimulation( double dCurrentTime, double dTargetTime
 	this->dTargetTime = dTargetTime;
 
 	// Update the time
-	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if (cModel->getFloatPrecision() == model::floatPrecision::kSingle)
 	{
 		*( oclBufferTime->getHostBlock<float*>() )	= static_cast<cl_float>( dCurrentTime );
 		*( oclBufferTimeTarget->getHostBlock<float*>() ) = static_cast<cl_float> (dTargetTime );
@@ -1323,7 +1324,7 @@ void	CSchemeGodunov::rollbackSimulation( double dCurrentTime, double dTargetTime
 	}
 
 	// Timestep update without simulation time update
-	if (model::pManager->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
+	if (cModel->getDomainSet()->getSyncMethod() != model::syncMethod::kSyncTimestep)
 		oclKernelTimestepUpdate->scheduleExecution();
 	bUseForcedTimeAdvance = true;
 
@@ -1343,13 +1344,13 @@ bool	CSchemeGodunov::isSimulationFailure( double dExpectedTargetTime )
 		return false;
 
 	// Can't exceed number of buffer cells in forecast mode
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
+	if (cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast &&
 		 uiBatchSuccessful >= pDomain->getRollbackLimit() &&
 		 dExpectedTargetTime - dCurrentTime > 1E-5)
 		return true;
 
 	// This shouldn't happen
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
+	if (cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		 uiBatchSuccessful > pDomain->getRollbackLimit() )
 		return true;
 
@@ -1393,7 +1394,7 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 
 	// Have we hit our target time?
 	// TODO: Review whether this is appropriate (need fabs?) (1E-5?)
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep )
+	if (cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep)
 	{
 		// Any criteria required for timestep-based sync?
 	} else {
@@ -1407,11 +1408,11 @@ bool	CSchemeGodunov::isSimulationSyncReady( double dExpectedTargetTime )
 	}
 
 	// Have we downloaded the data we need for each domain link?
-	if ( !bCellStatesSynced && model::pManager->getDomainSet()->getDomainCount() > 1 )
+	if (!bCellStatesSynced && cModel->getDomainSet()->getDomainCount() > 1)
 		return false;
 
 	// Are we synchronising the timesteps?
-	if ( model::pManager->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
+	if (cModel->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncTimestep &&
 		 uiIterationsSinceSync < this->pDomain->getRollbackLimit() - 1 &&
 		 dExpectedTargetTime - dCurrentTime > 1E-5 &&
 		 dCurrentTime > 0.0 )
@@ -1599,7 +1600,7 @@ double CSchemeGodunov::proposeSyncPoint( double dCurrentTime )
 	{
 		// Try to accommodate approximately three spare iterations
 		dProposal = dCurrentTime + 
-			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - model::pManager->getDomainSet()->getSyncBatchSpares()) / pDomain->getRollbackLimit()));
+			max(fabs(this->dTimestep), pDomain->getRollbackLimit() * (dBatchTimesteps / uiBatchSuccessful) * (((double)pDomain->getRollbackLimit() - cModel->getDomainSet()->getSyncBatchSpares()) / pDomain->getRollbackLimit()));
 		// Don't allow massive jumps
 		//if ((dProposal - dCurrentTime) > dBatchTimesteps * 3.0)
 		//	dProposal = dCurrentTime + dBatchTimesteps * 3.0;
@@ -1646,7 +1647,7 @@ void	CSchemeGodunov::readKeyStatistics()
 	cl_uint uiLastBatchSuccessful = uiBatchSuccessful;
 
 	// Pull key data back from our buffers to the scheme class
-	if ( model::pManager->getFloatPrecision() == model::floatPrecision::kSingle )
+	if (cModel->getFloatPrecision() == model::floatPrecision::kSingle )
 	{
 		dCurrentTimestep = static_cast<cl_double>( *( oclBufferTimestep->getHostBlock<float*>() ) );
 		dCurrentTime = static_cast<cl_double>(*(oclBufferTime->getHostBlock<float*>()));

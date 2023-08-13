@@ -29,7 +29,6 @@
 #include "CScheme.h"
 
 // Globals
-CModel*					model::pManager;
 CLog*					model::log;
 
 /*
@@ -61,14 +60,14 @@ int main()
 int model::loadConfiguration()
 {
 	CModel* pManager = new CModel();
+	if (model::log == nullptr) {
 	CLog* cLog = new CLog();
-	model::pManager = pManager;
 	model::log = cLog;
+	}
 
+	pManager->setLogger(model::log);
 
-	pManager->setLogger(cLog);
-
-	CExecutorControl* pExecutor = CExecutorControl::createExecutor(model::executorTypes::executorTypeOpenCL);
+	CExecutorControl* pExecutor = CExecutorControl::createExecutor(model::executorTypes::executorTypeOpenCL, pManager);
 	//pExecutor->setDeviceFilter(model::filters::devices::devicesCPU);
 	pExecutor->setDeviceFilter(model::filters::devices::devicesGPU);
 	//pExecutor->setDeviceFilter(model::filters::devices::devicesAPU);
@@ -136,7 +135,7 @@ int model::loadConfiguration()
 	}
 	schemeSettings.ExtrapolatedContiguity = true;
 
-	pScheme->setupScheme(schemeSettings);
+	pScheme->setupScheme(schemeSettings, pManager);
 	pScheme->setDomain(ourCartesianDomain);			// Scheme allocates the memory and thus needs to know the dimensions
 	pScheme->prepareAll();							//Needs Dimension data to alocate memory
 	ourCartesianDomain->setScheme(pScheme);
@@ -172,45 +171,7 @@ int model::loadConfiguration()
 	return model::appReturnCodes::kAppSuccess;
 }
 
-/*
- *  Read in configuration file and launch a new simulation
- */
-int model::commenceSimulation()
-{
-	if ( !pManager ) 
-		return model::doClose(
-			model::appReturnCodes::kAppInitFailure	
-		);
 
-	// ---
-	//  MODEL RUN
-	// ---
-	if ( !pManager->runModel() )
-	{
-		model::doError(
-			"Simulation start failed.",
-			model::errorCodes::kLevelModelStop
-		);
-		return model::doClose( 
-			model::appReturnCodes::kAppFatal 
-		);
-	}
-
-	// Allow safe deletion 
-	pManager->runModelCleanup();
-
-	return model::appReturnCodes::kAppSuccess;
-}
-
-/*
- *  Close down the simulation
- */
-int model::closeConfiguration()
-{
-	return model::doClose( 
-		model::appReturnCodes::kAppSuccess 
-	);
-}
 
 
 
@@ -219,10 +180,7 @@ int model::closeConfiguration()
  */
 int model::doClose( int iCode )
 {
-	delete pManager;
 	model::doPause();
-
-	pManager			= NULL;
 
 	return iCode;
 }
@@ -233,7 +191,6 @@ int model::doClose( int iCode )
  */
 void model::doPause()
 {
-	std::cout << std::endl << "Press any key to close." << std::endl;
 	std::cout << std::endl << "Press any key to close." << std::endl;
 	std::getchar();
 }

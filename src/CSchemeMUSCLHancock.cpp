@@ -73,10 +73,11 @@ CSchemeMUSCLHancock::~CSchemeMUSCLHancock(void)
 /*
  *  Read in settings from the XML configuration file for this scheme
  */
-void	CSchemeMUSCLHancock::setupScheme(model::SchemeSettings schemeSettings)
+void	CSchemeMUSCLHancock::setupScheme(model::SchemeSettings schemeSettings, CModel* cModel)
 {
+	this->cModel = cModel;
 	// Call the base class function which handles most of the settings
-	CSchemeGodunov::setupScheme(schemeSettings );
+	CSchemeGodunov::setupScheme(schemeSettings, cModel);
 
 	this->setCacheMode(schemeSettings.CacheMode);
 	this->setCacheConstraints(schemeSettings.CacheConstraints);
@@ -93,7 +94,7 @@ void CSchemeMUSCLHancock::prepareAll()
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		model::pManager->getExecutor(),
+		cModel->getExecutor(),
 		this->pDomain->getDevice()
 	);
 
@@ -102,8 +103,8 @@ void CSchemeMUSCLHancock::prepareAll()
 	this->dCurrentTime = 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision(model::pManager->getFloatPrecision() == model::floatPrecision::kSingle);
-	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
+	this->oclModel->setForcedSinglePrecision(cModel->getFloatPrecision() == model::floatPrecision::kSingle);
+	unsigned char ucFloatSize = (cModel->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
 
 	// OpenCL elements
 	if (!this->prepare1OExecDimensions())
@@ -275,7 +276,7 @@ bool CSchemeMUSCLHancock::prepareCode()
 bool CSchemeMUSCLHancock::prepare2OExecDimensions()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	COCLDevice* pDevice = pExecutor->getDevice();
 	CDomainCartesian* pDomain = static_cast<CDomainCartesian*>(this->pDomain);
 
@@ -397,7 +398,7 @@ bool CSchemeMUSCLHancock::prepare2OMemory()
 	bool						bReturnState = true;
 	CDomain* pDomain = this->pDomain;
 
-	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
+	unsigned char ucFloatSize = (cModel->getFloatPrecision() == model::floatPrecision::kDouble ? sizeof(cl_double) : sizeof(cl_float));
 
 	// --
 	// Face extrapolated half-timestep data
@@ -428,7 +429,7 @@ bool CSchemeMUSCLHancock::prepare2OMemory()
 bool CSchemeMUSCLHancock::prepare2OKernels()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*					pDevice				= pExecutor->getDevice();
 

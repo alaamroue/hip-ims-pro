@@ -53,6 +53,7 @@ COCLBuffer::COCLBuffer(
 	this->fCallbackWrite	= COCLDevice::defaultCallback;
 	this->clFlags			= 0;
 	this->clFlags		   |= ( this->bReadOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE ); 
+	this->callBackData		= pProgram->getDevice()->callBackData;
 
 	// In theory it should be possible to use USE_HOST_PTR and reduce memory consumption
 	// but in a DLL environment it's a bit of a nightmare.
@@ -232,7 +233,7 @@ void COCLBuffer::queueReadPartial(cl_ulong ulOffset, size_t ulSize, void* pMemBl
 			clEvent,
 			CL_COMPLETE,
 			fCallbackRead,
-			&this->uiDeviceID
+			&this->callBackData
 		);
 
 		if ( iReturn != CL_SUCCESS )
@@ -305,7 +306,7 @@ void COCLBuffer::queueWritePartial(cl_ulong ulOffset, size_t ulSize, void* pMemB
 			clEvent,
 			CL_COMPLETE,
 			fCallbackWrite,
-			&this->uiDeviceID
+			&this->callBackData
 		);
 
 		if ( iReturn != CL_SUCCESS )

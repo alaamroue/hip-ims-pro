@@ -42,7 +42,7 @@ class CExecutorControlOpenCL: public CExecutorControl
 
 	public:
 
-		CExecutorControlOpenCL( void );								// Constructor
+		CExecutorControlOpenCL(CModel* cModel);
 		~CExecutorControlOpenCL( void );							// Destructor
 
 		// Public variables
@@ -82,6 +82,8 @@ class CExecutorControlOpenCL: public CExecutorControl
 		std::vector<COCLDevice*>							// Dynamic array of device controller classes
 								pDevices;				
 		unsigned int			uiSelectedDeviceID;				// The selected device for use in execution
+
+		CModel* cModel;
 
 		// Private functions
 		char*					getPlatformInfo( unsigned int, cl_platform_info );	// Fetches information about the platform

@@ -190,7 +190,6 @@ namespace model
 		};
 	}
 
-	extern	CModel*			pManager;
 	extern  char*			configFile;
 	extern  char*			codeDir;
 	void					doError( std::string, unsigned char );
@@ -329,7 +328,6 @@ namespace model
 	};
 
 	//Todo: Alaa Remove model:: dependency and allow for safe error logging
-	extern	CModel* pManager;		// Global Model Class
 	extern	CLog* log;				// Global logger class
 
 
@@ -346,6 +344,13 @@ namespace model
 		const WORD		colourMain = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
 		const WORD		colourInfoBlock = FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
 	}
+
+	struct CallBackData
+	{
+		unsigned int* DeviceNumber;
+		CExecutorControlOpenCL* Executor;
+		CModel* cModel;
+	};
 }
 
 #endif

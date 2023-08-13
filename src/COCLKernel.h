@@ -67,6 +67,7 @@ protected:
 	std::string		sName;
 	bool			bReady;
 	bool			bGroupSizeForced;
+	model::CallBackData			callBackData;
 	void (__stdcall *fCallback)( cl_event, cl_int, void* );
 };
 

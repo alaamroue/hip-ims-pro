@@ -48,12 +48,12 @@ CExecutorControl::~CExecutorControl(void)
 /*
  *  Create a new executor of the specified type (static func)
  */
-CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType )
+CExecutorControl*	CExecutorControl::createExecutor( unsigned char cType, CModel* cModel)
 {
 	switch ( cType )
 	{
 		case model::executorTypes::executorTypeOpenCL:
-			return new CExecutorControlOpenCL();
+			return new CExecutorControlOpenCL(cModel);
 		break;
 	}
 

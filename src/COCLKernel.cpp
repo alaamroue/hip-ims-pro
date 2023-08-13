@@ -49,6 +49,7 @@ COCLKernel::COCLKernel(
 	this->szGlobalSize[0] = 1;	 this->szGlobalSize[1] = 1;	  this->szGlobalSize[2] = 1;
 	this->szGroupSize[0] = 1;	 this->szGroupSize[1] = 1;	  this->szGroupSize[2] = 1;
 	this->szGlobalOffset[0] = 0; this->szGlobalOffset[1] = 0; this->szGlobalOffset[2] = 0;
+	this->callBackData		= program->getDevice()->callBackData;
 
 	this->prepareKernel();
 }
@@ -106,7 +107,7 @@ void COCLKernel::scheduleExecution()
 			clEvent,
 			CL_COMPLETE,
 			fCallback,
-			&this->uiDeviceID
+			&this->callBackData
 		);
 
 		if ( iErrorID != CL_SUCCESS )

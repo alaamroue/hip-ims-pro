@@ -225,7 +225,7 @@ double	CModel::getOutputFrequency()
  */
 void	CModel::setFloatPrecision( unsigned char ucPrecision )
 {
-	if ( !model::pManager->getExecutor()->getDevice()->isDoubleCompatible() )
+	if ( !this->getExecutor()->getDevice()->isDoubleCompatible() )
 		ucPrecision = model::floatPrecision::kSingle;
 
 	this->bDoublePrecision = ( ucPrecision == model::floatPrecision::kDouble );
@@ -357,9 +357,6 @@ void	CModel::logProgress( CBenchmark::sPerformanceMetrics* sTotalMetrics )
  */
 void CModel::visualiserUpdate()
 {
-	CDomain*	pDomain = model::pManager->domains->getDomain(0);
-	COCLDevice*	pDevice	= model::pManager->domains->getDomain(0)->getDevice();
-
 	if ( this->dCurrentTime >= this->dSimulationTime - 1E-5 )
 		return;
 
@@ -370,7 +367,9 @@ void CModel::visualiserUpdate()
  */
 void CL_CALLBACK CModel::visualiserCallback( cl_event clEvent, cl_int iStatus, void * vData )
 {
-	model::pManager->visualiserUpdate();
+	model::CallBackData* callBackData = (model::CallBackData*) vData;
+	//TODO: The visualizer won't work becuase this is commented out
+	callBackData->cModel->visualiserUpdate();
 	clReleaseEvent( clEvent );
 }
 
@@ -542,7 +541,7 @@ void	CModel::runModelSync()
 			// for either domain sync/rollbacks or to write outputs
 			if ( 
 					( domains->getDomainCount() > 1 && this->getDomainSet()->getSyncMethod() == model::syncMethod::kSyncForecast ) ||
-					( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
+					( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime ) 
 			   )
 			{
 #ifdef DEBUG_MPI
@@ -592,7 +591,7 @@ void	CModel::runModelOutputs()
 {
 	if ( bRollbackRequired ||
 		 !bSynchronised ||
-		 !( fabs(this->dCurrentTime - dLastOutputTime - model::pManager->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
+		 !( fabs(this->dCurrentTime - dLastOutputTime - this->getOutputFrequency()) < 1E-5 && this->dCurrentTime > dLastOutputTime) )
 		return;
 
 	double* opt_h = this->getDomainSet()->getDomain(0)->readBuffers_opt_h();

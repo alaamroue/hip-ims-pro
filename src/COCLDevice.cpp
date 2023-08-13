@@ -28,17 +28,21 @@
 /*
  *  Constructor
  */
-COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigned int iDeviceNo )
+COCLDevice::COCLDevice( cl_device_id clDevice, unsigned int iPlatformID, unsigned int iDeviceNo, CExecutorControlOpenCL* executor, CModel* cModel)
 {
 	// Store the device and platform ID
 	this->uiPlatformID			= iPlatformID;
 	this->uiDeviceNo			= iDeviceNo + 1;
+	this->callBackData.DeviceNumber = &this->uiDeviceNo;
 	this->clDevice				= clDevice;
-	this->execController		= model::pManager->getExecutor();
+	this->execController		= executor;
+	this->callBackData.Executor = this->execController;
 	this->bForceSinglePrecision	= false;
 	this->bErrored				= false;
 	this->bBusy					= false;
 	this->clMarkerEvent			= NULL;
+	this->cModel				= cModel;
+	this->callBackData.cModel	= this->cModel;
 
 	model::log->writeLine( "Querying the suitability of a discovered device." );
 
@@ -354,14 +358,14 @@ bool COCLDevice::isReady()
  */
 bool COCLDevice::isFiltered()
 {
-	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesGPU ) &&
-			this->clDeviceType == CL_DEVICE_TYPE_GPU )
+	if ( !(execController->getDeviceFilter() & model::filters::devices::devicesGPU) &&
+		this->clDeviceType == CL_DEVICE_TYPE_GPU)
 			return true;
-	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesCPU ) &&
-			this->clDeviceType == CL_DEVICE_TYPE_CPU )
+	if (!(execController->getDeviceFilter() & model::filters::devices::devicesCPU) &&
+		this->clDeviceType == CL_DEVICE_TYPE_CPU)
 			return true;
-	if ( !( model::pManager->getExecutor()->getDeviceFilter() & model::filters::devices::devicesAPU ) &&
-			this->clDeviceType == CL_DEVICE_TYPE_ACCELERATOR )
+	if (!(execController->getDeviceFilter() & model::filters::devices::devicesAPU) &&
+		this->clDeviceType == CL_DEVICE_TYPE_ACCELERATOR)
 			return true;
 
 	return false;
@@ -445,7 +449,7 @@ void COCLDevice::flushAndSetMarker()
 		clMarkerEvent,
 		CL_COMPLETE,
 		COCLDevice::markerCallback,
-		static_cast<void*>( &this->uiDeviceNo )
+		static_cast<void*>(&this->callBackData)
 	);
 
 	clFlush(clQueue);
@@ -464,10 +468,12 @@ void	COCLDevice::flush()
  */
 void CL_CALLBACK COCLDevice::markerCallback( cl_event clEvent, cl_int iStatus, void * vData )
 {
-	unsigned int uiDeviceNo = *(unsigned int*)vData;
-	clReleaseEvent( clEvent );
+	//unsigned int uiDeviceNo = *(unsigned int*) vData;
+	model::CallBackData* callBackData = (model::CallBackData*) vData;
+	unsigned int uiDeviceNo = *callBackData->DeviceNumber;
+	clReleaseEvent(clEvent);
 
-	COCLDevice* pDevice = model::pManager->getExecutor()->getDevice( uiDeviceNo );
+	COCLDevice* pDevice = callBackData->Executor->getDevice( uiDeviceNo );
 	pDevice->markerCompletion();
 }
 

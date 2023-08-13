@@ -62,8 +62,8 @@ void CSchemeInertial::prepareAll()
 	this->releaseResources();
 
 	oclModel = new COCLProgram(
-		model::pManager->getExecutor(),
-		model::pManager->getExecutor()->getDevice()
+		cModel->getExecutor(),
+		cModel->getExecutor()->getDevice()
 	);
 
 	// Run-time tracking values
@@ -72,8 +72,8 @@ void CSchemeInertial::prepareAll()
 	this->dCurrentTime = 0;
 
 	// Forcing single precision?
-	this->oclModel->setForcedSinglePrecision(model::pManager->getFloatPrecision() == model::floatPrecision::kSingle);
-	unsigned char ucFloatSize = (model::pManager->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof(cl_double) : sizeof(cl_float));
+	this->oclModel->setForcedSinglePrecision(cModel->getFloatPrecision() == model::floatPrecision::kSingle);
+	unsigned char ucFloatSize = (cModel->getFloatPrecision() == model::floatPrecision::kSingle ? sizeof(cl_double) : sizeof(cl_float));
 
 	// OpenCL elements
 	if (!this->prepare1OExecDimensions())
@@ -243,7 +243,7 @@ bool CSchemeInertial::prepareInertialConstants()
 bool CSchemeInertial::prepareInertialKernels()
 {
 	bool						bReturnState = true;
-	CExecutorControlOpenCL* pExecutor = model::pManager->getExecutor();
+	CExecutorControlOpenCL* pExecutor = cModel->getExecutor();
 	CDomain*					pDomain				= this->pDomain;
 	COCLDevice*		pDevice				= pExecutor->getDevice();
 

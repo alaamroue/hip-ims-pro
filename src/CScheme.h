@@ -48,7 +48,7 @@ class CScheme
 		// Public functions
 		static CScheme*		createScheme( unsigned char );											// Instantiate a scheme
 
-		virtual void		setupScheme(model::SchemeSettings) = 0 ;										// Set up the scheme
+		virtual void		setupScheme(model::SchemeSettings, CModel* cModel) = 0 ;										// Set up the scheme
 		virtual void		setDebugger(unsigned int, unsigned int) = 0;
 		bool				isReady();																// Is the scheme ready to run?
 		bool				isRunning();															// Is this scheme currently running a batch?
@@ -128,6 +128,7 @@ class CScheme
 		cl_uint				uiBatchRate;															// Number of successful iterations per second
 		CDomain*			pDomain;																// Domain which this scheme is attached to
 		double				outputFrequency;
+		CModel*				cModel;
 		
 };
 

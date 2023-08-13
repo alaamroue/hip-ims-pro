@@ -28,12 +28,13 @@
 /*
  *  Constructor
  */
-CExecutorControlOpenCL::CExecutorControlOpenCL(void)
+CExecutorControlOpenCL::CExecutorControlOpenCL(CModel* cModel)
 {
 	this->clDeviceTotal = 0;
 	this->uiSelectedDeviceID = NULL;
+	this->cModel = cModel;
 
-	if ( !this->getPlatforms() ) return;
+	if (!this->getPlatforms()) return;
 
 	this->logPlatforms();
 }
@@ -200,7 +201,9 @@ bool CExecutorControlOpenCL::createDevices(void)
 			pDevice = new COCLDevice(
 				clDevice[ iDeviceID ],
 				iPlatformID,
-				uiDeviceCount
+				uiDeviceCount,
+				this,
+				cModel
 			);
 
 			if ( pDevice->isReady() )		

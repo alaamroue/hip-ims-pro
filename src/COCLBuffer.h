@@ -62,6 +62,7 @@ protected:
 	bool			bInternalBlock;
 	bool			bReadOnly;
 	bool			bExistsOnHost;
+	model::CallBackData			callBackData;
 	void (__stdcall *fCallbackRead)( cl_event, cl_int, void* );
 	void (__stdcall *fCallbackWrite)( cl_event, cl_int, void* );
 };

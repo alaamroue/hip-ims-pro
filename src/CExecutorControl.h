@@ -44,7 +44,7 @@ class CExecutorControl
 		virtual bool				createDevices(void) = 0;			// Creates new classes for each device
 
 		// Static functions
-		static CExecutorControl*	createExecutor( unsigned char );	// Create a new executor of the specified type
+		static CExecutorControl*	createExecutor( unsigned char, CModel*);	// Create a new executor of the specified type
 		
 	protected:
 

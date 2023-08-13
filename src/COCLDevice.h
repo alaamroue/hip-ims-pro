@@ -34,7 +34,7 @@ class COCLDevice
 
 	public:
 
-		COCLDevice( cl_device_id, unsigned int, unsigned int );				// Constructor
+		COCLDevice( cl_device_id, unsigned int, unsigned int, CExecutorControlOpenCL*, CModel*);				// Constructor
 		~COCLDevice( void );												// Destructor
 
 		// Public structures
@@ -128,6 +128,9 @@ class COCLDevice
 		void						getAllInfo();															// Fetches all the info we'll need on the device
 		void*						getDeviceInfo( cl_device_info );										// Fetch a device info field
 		void						createQueue( void );													// Create the device context and queue
+
+		model::CallBackData			callBackData;
+		CModel* cModel;
 
 		// Friendships (for access to data structure pointers mainly)
 		friend class				CDomain;
