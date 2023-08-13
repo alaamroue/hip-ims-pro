@@ -154,6 +154,7 @@ class CSchemeGodunov : public CScheme
 		COCLBuffer*			oclBufferTimestep;
 		COCLBuffer*			oclBufferTime;
 		COCLBuffer*			oclBufferTimeTarget;
+		COCLBuffer*			oclBufferTimeHydrological;
 		COCLBuffer*			oclBufferTimestepReduction;
 		COCLBuffer*			oclBufferBatchTimesteps;
 		COCLBuffer*			oclBufferBatchSuccessful;
