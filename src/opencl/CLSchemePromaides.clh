@@ -49,7 +49,11 @@ void pro_cacheDisabled (
 	__global	cl_double4 *,
 	__global	cl_double4 *,
 	__global    cl_double const * restrict,
-	__global	sUsePolini const * restrict
+	__global	sUsePolini const * restrict,
+	__global	cl_double  const * restrict,
+	__global	cl_double  const * restrict,
+	__global	cl_double  const * restrict,
+	__global	cl_double  const * restrict
 );
 
 cl_double2 manning_Solver(
@@ -72,6 +76,9 @@ cl_double2 poleni_Solver(
 	cl_double opt_s_Neig,
 	cl_double opt_z_Cell,
 	cl_double opt_z_Neig,
+	cl_double opt_zxymax,
+	cl_double opt_cxy,
+	cl_double DeltaXY,
 	bool debug
 	);
 
