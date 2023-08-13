@@ -378,7 +378,6 @@ cl_double2 manning_Solver(
 						dDischarge = dDischarge * (-1.0);
 					}
 
-					// P2 (New Castle Limiter)
 
 
 					/*
@@ -446,7 +445,6 @@ cl_double2 poleni_Solver(
 	bool debug				// Debug Flag
 	)
 	{
-		printf("polini Error");
 
 		cl_double2 output;
 		cl_double dDischarge = 0.0;
