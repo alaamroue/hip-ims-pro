@@ -24,6 +24,7 @@
 #include "COCLDevice.h"
 #include "CDomainManager.h"
 #include "CDomain.h"
+#include "CMultiGpuManager.h"
 #include "CDomainCartesian.h"
 #include "CScheme.h"
 
@@ -36,16 +37,21 @@ CLog*					model::log;
  */
 int main()
 {
+	CMultiGpuManager cMultiGpuManager;
+	cMultiGpuManager.initManager();
+
+
+	model::doPause();
 	// Default configurations
 
-	int iReturnCode = model::loadConfiguration();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
-	iReturnCode = model::commenceSimulation();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
-	iReturnCode = model::closeConfiguration();
-	if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
+	//int iReturnCode = model::loadConfiguration();
+	//if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
+	//iReturnCode = model::commenceSimulation();
+	//if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
+	//iReturnCode = model::closeConfiguration();
+	//if ( iReturnCode != model::appReturnCodes::kAppSuccess ) return iReturnCode;
 
-	return iReturnCode;
+	//return iReturnCode;
 }
 
 
