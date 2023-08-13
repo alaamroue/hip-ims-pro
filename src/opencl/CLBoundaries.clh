@@ -28,13 +28,14 @@
 // Alaa: Why make them seperate, this caused so much problems. Shouldn't the boundary condition work at the same time as the scheme
 // Aren't we seperating them just to avoid read errors? If so, why would they run at a different timestep.
 // TODO: Alaa: check why this was needed?
-//#define TIMESTEP_HYDROLOGICAL			1.0
+#define TIMESTEP_HYDROLOGICAL			0.5
 
 
 #ifdef USE_FUNCTION_STUBS
 
 __kernel void bdy_Promaides ( 
 	__global		cl_double const * restrict,
+	__global		cl_double *,
 	__global		cl_double *,
 	__global		cl_double4 *,
 	__global		cl_double *
