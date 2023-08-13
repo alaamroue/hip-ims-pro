@@ -22,6 +22,7 @@
 
 __kernel void bdy_Promaides (
 	__global		cl_double const * restrict	pBoundaryArray,
+	__global		cl_double *					pTimeStep,
 	__global		cl_double *					pTimeHydrological,
 	__global		cl_double4 *				pCellState,
 	__global		cl_double *					pCellBed
@@ -43,20 +44,27 @@ __kernel void bdy_Promaides (
 
 	ulIdx = getCellID(lIdxX, lIdxY);
 
-	__private cl_double					dRate			= pBoundaryArray[ulIdx];
-	__private cl_double					dLclTimestep	= *pTimeHydrological;
-	__private cl_double4				pCellData		= pCellState[ulIdx];
-	__private cl_double					dCellBedElev	= pCellBed[ulIdx];
+	__private cl_double					dRate				= pBoundaryArray[ulIdx];
+	__private cl_double					dLclTimestep		= *pTimeStep;
+	__private cl_double					dLclTimestepHydro	= *pTimeHydrological;
+	__private cl_double4				pCellData			= pCellState[ulIdx];
+	__private cl_double					dCellBedElev		= pCellBed[ulIdx];
 
 	// Hydrological processes have their own timesteps
-	if (dLclTimestep <= 0.0 || pCellData.y <= -9999.0 || pCellData.x == -9999.0)
+	if (dLclTimestep <= 0.0 || pCellData.y <= -9999.0 || pCellData.x == -9999.0){
 		return;
+	}
 
+	// Hydrological processes have their own timesteps
+	//if (dLclTimestepHydro < TIMESTEP_HYDROLOGICAL){
+	//	return;
+	//}
+	
 	// Apply the value...
 	pCellData.x = fmax(dCellBedElev, pCellData.x + dRate * dLclTimestep);
 	
-	//#ifdef DEBUG_OUTPUT
-	if (
+	pCellState[ulIdx] = pCellData;
+}
 	//	lIdxX == 98 && lIdxY == 98
 	ulIdx==8878
 	){
