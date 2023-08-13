@@ -50,7 +50,7 @@ void ine_cacheDisabled (
 	__global	cl_double4 *,
 	__global	cl_double4 *,
 	__global    cl_double const * restrict,
-	__global	__global	sUsePolini const * restrict,
+	__global	sUsePolini const * restrict,
 	__global	cl_double const * restrict,	
 	__global	cl_double const * restrict,	
 	__global	cl_double const * restrict,	
