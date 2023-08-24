@@ -27,6 +27,7 @@
 #include "CMultiGpuManager.h"
 #include "CDomainCartesian.h"
 #include "CScheme.h"
+#include "CProfiler.h"
 
 // Globals
 CLog*					model::log;

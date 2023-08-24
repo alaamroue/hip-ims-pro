@@ -27,6 +27,7 @@
 #include "COCLDevice.h"
 #include "COCLKernel.h"
 #include "COCLBuffer.h"
+#include "CProfiler.h"
 
 
 

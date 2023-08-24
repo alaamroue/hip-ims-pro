@@ -29,6 +29,7 @@ class CExecutorControlOpenCL;
 class CDomainManager;
 class CScheme;
 class CLog;
+class CProfiler;
 class CMPIManager;
 
 
@@ -89,6 +90,8 @@ class CModel
 		CLog*					log;											// Handle for the log singular class
 		void					setUIStatus(bool);								// Turns on/off the UI
 
+		void					setProfiler(CProfiler*);						// 
+		CProfiler* profiler;													// 
 	private:
 
 		// Private functions

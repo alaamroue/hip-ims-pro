@@ -899,6 +899,14 @@ void CModel::setLogger(CLog* cLog) {
 }
 
 /*
+ * Attached the proifler class to the CModel
+ */
+void CModel::setProfiler(CProfiler* profiler) {
+	this->profiler = profiler;
+}
+
+
+/*
  * Attached the logger class to the CModel
  */
 void CModel::setUIStatus(bool status) {
