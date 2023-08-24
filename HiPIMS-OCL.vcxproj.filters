@@ -101,6 +101,12 @@
     <ClInclude Include="src\CSchemePromaides.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\CMultiGpuManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CProfiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CModel.cpp">
@@ -170,6 +176,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CSchemePromaides.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CMultiGpuManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CProfiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

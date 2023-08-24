@@ -39,7 +39,7 @@ int main()
 {
 	CMultiGpuManager cMultiGpuManager;
 	cMultiGpuManager.initManager();
-
+	
 
 	model::doPause();
 	// Default configurations
@@ -62,8 +62,8 @@ int model::loadConfiguration()
 {
 	CModel* pManager = new CModel();
 	if (model::log == nullptr) {
-	CLog* cLog = new CLog();
-	model::log = cLog;
+		CLog* cLog = new CLog();
+		model::log = cLog;
 	}
 
 	pManager->setLogger(model::log);

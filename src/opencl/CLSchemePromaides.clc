@@ -371,15 +371,15 @@ cl_double2 manning_Solver(
 
 					// Bates(2010):
 					cl_double Q = dDischarge;
-
+					
 					dDischarge = fmin(fabs(Q), DOMAIN_DELTAX* DOMAIN_DELTAY* abs_delta_h/(4.0*timestep) / (DOMAIN_DELTAY+DOMAIN_DELTAX-DeltaXY));
-							
-					if (Q<0.0){
-						dDischarge = dDischarge * (-1.0);
-					}
-					
-					
 
+							if (Q<0.0){
+								dDischarge = dDischarge * (-1.0);
+							}
+					
+					
+					
 					/*
 					// P2 (New Castle Limiter)
 					#ifdef useP2	

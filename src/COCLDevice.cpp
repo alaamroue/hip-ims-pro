@@ -360,13 +360,13 @@ bool COCLDevice::isFiltered()
 {
 	if ( !(execController->getDeviceFilter() & model::filters::devices::devicesGPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_GPU)
-			return true;
+		return true;
 	if (!(execController->getDeviceFilter() & model::filters::devices::devicesCPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_CPU)
-			return true;
+		return true;
 	if (!(execController->getDeviceFilter() & model::filters::devices::devicesAPU) &&
 		this->clDeviceType == CL_DEVICE_TYPE_ACCELERATOR)
-			return true;
+		return true;
 
 	return false;
 }
@@ -376,10 +376,10 @@ bool COCLDevice::isFiltered()
  */
 void	COCLDevice::queueBarrier()
 {
-#ifdef USE_SIMPLE_ARCH_OPENCL
+	#ifdef USE_SIMPLE_ARCH_OPENCL
 	// Causes crashes... for some reason... Review later.
 	return;
-#endif
+	#endif
 	clEnqueueBarrier( this->clQueue );
 }
 
@@ -429,11 +429,11 @@ void COCLDevice::flushAndSetMarker()
 	clFlush(clQueue);
 	return;
 
-#ifdef USE_SIMPLE_ARCH_OPENCL
+	#ifdef USE_SIMPLE_ARCH_OPENCL
 	this->blockUntilFinished();
 	return;
-#endif
-	
+	#endif
+
 	if ( clMarkerEvent != NULL )
 	{
 		clReleaseEvent( clMarkerEvent );
@@ -441,8 +441,8 @@ void COCLDevice::flushAndSetMarker()
 
 	// NOTE: OpenCL 1.2 uses clEnqueueMarkerWithWaitList() instead
 	clEnqueueMarker(
-		 clQueue,
-		 &clMarkerEvent 
+		clQueue,
+		&clMarkerEvent
 	);
 
 	clSetEventCallback(

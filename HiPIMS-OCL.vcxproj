@@ -82,6 +82,7 @@
     <Link>
       <AdditionalDependencies>opencl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\Win32</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call bin\win32\post-build-debug.bat "$(OutDir)"
@@ -120,6 +121,7 @@
     <ResourceCompile Include="src\CLCode.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\CProfiler.h" />
     <ClInclude Include="src\CMultiGpuManager.h" />
     <ClInclude Include="src\CBenchmark.h" />
     <ClInclude Include="src\CDomain.h" />
@@ -148,6 +150,7 @@
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CProfiler.cpp" />
     <ClCompile Include="src\CMultiGpuManager.cpp" />
     <ClCompile Include="src\CBenchmark.cpp" />
     <ClCompile Include="src\CDomain.cpp" />

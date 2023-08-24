@@ -239,7 +239,7 @@ void gts_cacheDisabled (
 
 	if(lIdxX == DOMAIN_COLS - 1){
 		dNeigBedElevE = -9999.0;
-	}
+	} 
 	if( lIdxY == DOMAIN_ROWS - 1) {
 		dNeigBedElevN = -9999.0;
 	}
@@ -272,8 +272,8 @@ void gts_cacheDisabled (
 	}
 
 	// Reconstruct interfaces
-	
-		// -> North
+		
+	// -> North
 	poliniAdjuster(usePoleniN, pCellData.x, pNeigDataN.x, dOpt_zymax, &dCellBedElev, &dNeigBedElevN, &pNeigDataN, DOMAIN_DIR_N);
 	if( dNeigBedElevN == -9999.0) {
 		pFlux[DOMAIN_DIR_N].x = 0.0;
@@ -294,11 +294,11 @@ void gts_cacheDisabled (
 		pNeigDataN.x  = pRight.S0;
 		dNeigBedElevN = pRight.S6;
 		pFlux[DOMAIN_DIR_N] = riemannSolver( DOMAIN_DIR_N, pLeft, pRight, false );
-		}
+	}
 	dCellBedElev = dCellBedElev_original;
-
 	
-		// -> South
+	
+	// -> South
 	poliniAdjuster(usePoleniS, pCellData.x, pNeigDataS.x, dOpt_znymax, &dCellBedElev, &dNeigBedElevS, &pNeigDataS, DOMAIN_DIR_S);
 	if( dNeigBedElevS == -9999.0) {
 		pFlux[DOMAIN_DIR_S].x = 0.0;
@@ -319,11 +319,11 @@ void gts_cacheDisabled (
 		pNeigDataS.x  = pLeft.S0;
 		dNeigBedElevS = pLeft.S6;
 		pFlux[DOMAIN_DIR_S] = riemannSolver( DOMAIN_DIR_S, pLeft, pRight, false );
-		}
+	}
 	dCellBedElev = dCellBedElev_original;
+
 	
-	
-		// -> East
+	// -> East
 	poliniAdjuster(usePoleniE, pCellData.x, pNeigDataE.x, dOpt_zxmax, &dCellBedElev, &dNeigBedElevE, &pNeigDataE, DOMAIN_DIR_E);
 	if( dNeigBedElevE == -9999.0) {
 		pFlux[DOMAIN_DIR_E].x = 0.0;
@@ -344,10 +344,10 @@ void gts_cacheDisabled (
 		pNeigDataE.x  = pRight.S0;
 		dNeigBedElevE = pRight.S6;
 		pFlux[DOMAIN_DIR_E] = riemannSolver( DOMAIN_DIR_E, pLeft, pRight, false );
-		}
+	}
 	dCellBedElev = dCellBedElev_original;
 	
-		// -> West
+	// -> West
 	poliniAdjuster(usePoleniW, pCellData.x, pNeigDataW.x, dOpt_znxmax, &dCellBedElev, &dNeigBedElevW, &pNeigDataW, DOMAIN_DIR_W);
 	if( dNeigBedElevW == -9999.0) {
 		pFlux[DOMAIN_DIR_W].x = 0.0;
@@ -368,7 +368,7 @@ void gts_cacheDisabled (
 		pNeigDataW.x  = pLeft.S0;
 		dNeigBedElevW = pLeft.S6;
 		pFlux[DOMAIN_DIR_W] = riemannSolver( DOMAIN_DIR_W, pLeft, pRight, false );
-		}
+	}
 	dCellBedElev = dCellBedElev_original;
 
 	// Source term vector
@@ -407,7 +407,7 @@ void gts_cacheDisabled (
 		pCellData.z = 0.0;
 		pCellData.w = 0.0;
 	}
-
+	
 	//if (ulIdx == 1057){
 	//	printf("N: x: %f y: %f z: %f \n",pFlux[DOMAIN_DIR_N].x,pFlux[DOMAIN_DIR_N].y, pFlux[DOMAIN_DIR_N].z);
 	//	printf("E: x: %f y: %f z: %f \n",pFlux[DOMAIN_DIR_E].x,pFlux[DOMAIN_DIR_E].y, pFlux[DOMAIN_DIR_E].z);
@@ -484,12 +484,12 @@ void poliniAdjuster(
 		//should neigh be also dike_z?
 		*cell_z = dike_z;
 	}
-	
+		
 	// Cell Lower / Neig Higher
 	if (flowDepth <= 0.0 && flowDepthNeigh > 0.0){
 		*neig_z = dike_z;
 	}
-
+		
 	// Cell Higher / Neig Higher
 	if (flowDepth > 0.0 && flowDepthNeigh > 0.0){
 		*cell_z = dike_z;
