@@ -33,13 +33,36 @@ typedef struct sFaceStructure {
 #ifdef USE_FUNCTION_STUBS
 
 // Function definitions
+
+// Structure definitions
+typedef struct sUsePolini {
+	bool	usePoliniN;
+	bool	usePoliniE;
+	bool	usePoliniS;
+	bool	usePoliniW;
+} sUsePolini;
+
+void poliniAdjuster(
+	bool activated,
+	cl_double cell_s,
+	cl_double neig_s,
+	cl_double dike_z,
+	cl_double* cell_z,
+	cl_double* neig_z,
+	cl_double4* pneig,
+	cl_uchar direction
+);
+
 __kernel  REQD_WG_SIZE_FULL_TS
 void gts_cacheDisabled ( 
 	__constant	cl_double *,
 	__global	cl_double const * restrict,
 	__global	cl_double4 *,
 	__global	cl_double4 *,
-	__global    cl_double const * restrict
+	__global    cl_double const * restrict,
+	__global	sUsePolini const * restrict,	
+	__global	cl_double const * restrict,	
+	__global	cl_double const * restrict	
 );
 
 __kernel  REQD_WG_SIZE_FULL_TS

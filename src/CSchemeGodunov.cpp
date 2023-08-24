@@ -828,7 +828,7 @@ bool CSchemeGodunov::prepare1OKernels()
 		oclKernelFullTimestep = oclModel->getKernel( "gts_cacheDisabled" );
 		oclKernelFullTimestep->setGroupSize( this->ulNonCachedWorkgroupSizeX, this->ulNonCachedWorkgroupSizeY );
 		oclKernelFullTimestep->setGlobalSize( this->ulNonCachedGlobalSizeX, this->ulNonCachedGlobalSizeY );
-		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning};	
+		COCLBuffer* aryArgsFullTimestep[] = { oclBufferTimestep, oclBufferCellBed, oclBufferCellStates, oclBufferCellStatesAlt, oclBufferCellManning, oclBufferUsePoleni, oclBuffer_opt_zxmax, oclBuffer_opt_zymax };
 		oclKernelFullTimestep->assignArguments( aryArgsFullTimestep );
 	}
 	if ( this->ucConfiguration == model::schemeConfigurations::godunovType::kCacheEnabled )
